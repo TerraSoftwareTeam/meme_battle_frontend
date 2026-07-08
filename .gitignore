@@ -1,0 +1,58 @@
+# Gradle
+.gradle/
+build/
+**/build/
+.kotlin/
+kotlin-js-store/
+
+# IntelliJ IDEA / Android Studio
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+
+# Local / Sensitive properties
+local.properties
+secrets.properties
+*.keystore
+*.jks
+
+# Android specific
+*.apk
+*.ap_
+*.dex
+*.class
+bin/
+gen/
+.cxx/
+captures/
+
+# iOS specific
+.DS_Store
+DerivedData/
+iosApp/DerivedData/
+iosApp/build/
+*.xcworkspace
+!iosApp/*.xcodeproj
+xcuserdata/
+*.xcuserdatad
+*.xcworkspacedata
+*.xcuserstate
+
+# Node/JS (if any)
+node_modules/
+.yarn/
+
+# Log files
+*.log
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Backup files
+*~
+*.bak
+*.swp
