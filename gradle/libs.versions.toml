@@ -45,6 +45,7 @@ mvikotlin = "4.4.0"
 # ─── Decompose ────────────────────────────────────────────────────────────────
 decompose = "3.5.0"
 essenty = "2.5.0"
+buildkonfig = "0.15.1"
 
 
 [libraries]
@@ -142,6 +143,7 @@ composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "k
 
 # ─── Room ─────────────────────────────────────────────────────────────────────
 room = { id = "androidx.room", version.ref = "room" }
+buildkonfig = { id = "com.codingfeline.buildkonfig", version.ref = "buildkonfig" }
 
 [bundles]
 compose-adaptive = ["compose-material3-adaptive", "compose-material3-adaptive-layout"]

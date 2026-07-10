@@ -26,10 +26,12 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
+            api(projects.core.navigation)
             implementation(libs.compose.ui)
             implementation(libs.compose.material3)
             implementation(libs.compose.foundation)
             implementation(libs.compose.components.resources)
+            implementation(libs.kotlinx.coroutines.core)
         }
     }
 }

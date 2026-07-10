@@ -26,6 +26,7 @@ kotlin {
         commonMain.dependencies {
             implementation(project(":feature:packs:api"))
             implementation(project(":core:navigation"))
+            implementation(project(":core:domain:packs"))
             
             implementation(libs.koin.compose)
             implementation(libs.koin.compose.viewmodel)

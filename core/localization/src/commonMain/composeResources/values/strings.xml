@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Meme Battle</string>
+    <string name="welcome">Welcome to Meme Battle!</string>
+    <string name="play">Play</string>
+    <string name="store">Store</string>
+</resources>

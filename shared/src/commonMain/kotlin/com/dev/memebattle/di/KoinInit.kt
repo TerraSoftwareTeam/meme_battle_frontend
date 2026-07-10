@@ -12,6 +12,7 @@ import com.dev.memebattle.core.network.di.networkModule
 import com.dev.network.game.current.di.gameNetworkModule
 import com.dev.network.media.current.di.mediaNetworkModule
 import com.dev.network.user.current.di.userNetworkModule
+import com.dev.memebattle.core.data.packs.di.packsDataModule
 import com.dev.network.user_auth.current.di.user_authNetworkModule
 import org.koin.core.context.startKoin
 import org.koin.core.module.dsl.singleOf
@@ -32,6 +33,7 @@ fun initKoin() {
             userNetworkModule,
             mediaNetworkModule,
             gameNetworkModule,
+            packsDataModule,
             homeModule,
             packsModule,
             gameSetupModule,

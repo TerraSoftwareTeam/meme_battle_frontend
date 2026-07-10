@@ -7,18 +7,20 @@ import org.koin.core.module.Module
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
+import com.dev.memebattle.core.network.BuildKonfig
+
 expect fun platformNetworkModule(): Module
 
 val networkModule = module {
     includes(platformNetworkModule())
 
     single<HttpClient>(named("unauthenticated")) {
-        AppHttpClientFactory.createUnauthenticated("https://api.example.com") // TODO: replace with your BuildKonfig base url
+        AppHttpClientFactory.createUnauthenticated(BuildKonfig.API_BASE_URL)
     }
 
     single<HttpClient>(named("authenticated")) {
         AppHttpClientFactory.createAuthenticated(
-            baseUrl = "https://api.example.com", // TODO: replace with your BuildKonfig base url
+            baseUrl = BuildKonfig.API_BASE_URL,
             tokenStorage = get(),
             unauthenticatedClientProvider = { get(named("unauthenticated")) }
         )

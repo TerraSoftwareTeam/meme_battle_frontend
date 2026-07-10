@@ -19,7 +19,8 @@ class PacksFeatureEntryImpl : TypedFeatureEntry<PacksComponent, PacksRoute>(), P
         val koin = getKoin()
         return PacksComponentImpl(
             componentContext = componentContext,
-            storeFactory = koin.get()
+            storeFactory = koin.get(),
+            packRepository = koin.get(),
         )
     }
 

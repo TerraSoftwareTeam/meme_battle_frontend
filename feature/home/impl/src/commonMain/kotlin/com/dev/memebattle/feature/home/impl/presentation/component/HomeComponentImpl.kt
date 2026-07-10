@@ -7,12 +7,18 @@ import com.arkivanov.mvikotlin.extensions.coroutines.stateFlow
 import com.arkivanov.mvikotlin.extensions.coroutines.labels
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import com.dev.memebattle.core.navigation.output.NavigationOutput
+import com.dev.memebattle.feature.gameSetup.api.route.GameSetupRoute
+import com.dev.memebattle.feature.packs.api.route.PacksRoute
 import com.dev.memebattle.feature.home.impl.presentation.store.HomeStore
 import com.dev.memebattle.feature.home.impl.presentation.store.HomeStoreFactory
-
 
 class HomeComponentImpl(
     componentContext: ComponentContext,
@@ -28,7 +34,18 @@ class HomeComponentImpl(
     @OptIn(ExperimentalCoroutinesApi::class)
     override val state: StateFlow<HomeStore.State> = store.stateFlow(scope)
 
-    override val output: kotlinx.coroutines.flow.Flow<com.dev.memebattle.core.navigation.output.NavigationOutput> = kotlinx.coroutines.flow.emptyFlow()
+    private val _output = MutableSharedFlow<NavigationOutput>()
+    override val output: Flow<NavigationOutput> = _output
+
+    init {
+        labelsFlow.onEach { effect ->
+            when (effect) {
+                is HomeStore.Effect.NavigateToPlay -> _output.emit(NavigationOutput.NavigateTo(GameSetupRoute))
+                is HomeStore.Effect.NavigateToStore -> _output.emit(NavigationOutput.NavigateTo(PacksRoute))
+            }
+        }.launchIn(scope)
+    }
 
     override fun onIntent(intent: HomeStore.Intent) = store.accept(intent)
 }
+

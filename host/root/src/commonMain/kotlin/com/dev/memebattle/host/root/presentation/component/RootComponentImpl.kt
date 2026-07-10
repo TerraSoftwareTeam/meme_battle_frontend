@@ -11,6 +11,7 @@ import com.arkivanov.decompose.value.Value
 import com.arkivanov.essenty.lifecycle.coroutines.coroutineScope
 import com.dev.memebattle.core.navigation.entry.FeatureComponent
 import com.dev.memebattle.core.navigation.entry.FeatureEntry
+import com.dev.memebattle.core.navigation.layer.HostLayer
 import com.dev.memebattle.core.navigation.output.NavigationContext
 import com.dev.memebattle.core.navigation.output.NavigationOutput
 import com.dev.memebattle.core.navigation.output.NavigationOutputHandler
@@ -25,7 +26,7 @@ class RootComponentImpl(
     componentContext: ComponentContext,
 ) : RootComponent, ComponentContext by componentContext, KoinComponent {
 
-    private val hostLayers: List<com.dev.memebattle.core.navigation.layer.HostLayer> = getKoin().getAll()
+    private val hostLayers: List<HostLayer> = getKoin().getAll()
     private val featureEntries: List<FeatureEntry<*>> = getKoin().getAll()
     private val handlers: List<NavigationOutputHandler> = getKoin().getAll()
 
@@ -36,7 +37,7 @@ class RootComponentImpl(
 
     override val childStack: Value<ChildStack<AppRoute, RootComponent.Child>> = childStack(
         source = navigation,
-        serializer = null, // Временно без сериализации, так как AppRoute - interface без @Serializable
+        serializer = null,
         initialConfiguration = initialRoute,
         handleBackButton = true,
         childFactory = ::createChild
@@ -44,7 +45,7 @@ class RootComponentImpl(
 
     private val navContext = object : NavigationContext {
         override val navigation: StackNavigation<AppRoute> get() = this@RootComponentImpl.navigation
-        override val stack: Value<ChildStack<out AppRoute, FeatureComponent>> get() = TODO("Not fully mapped")
+        override val stack: Value<ChildStack<AppRoute, FeatureComponent>> get() = TODO("Not fully mapped")
         
         override fun findComponent(route: AppRoute): FeatureComponent? {
             return childStack.value.items.find { it.configuration == route }?.instance?.component
@@ -90,6 +91,8 @@ class RootComponentImpl(
                 navigation.bringToFront(output.route)
             }
             is NavigationOutput.ReplaceAll -> navigation.replaceAll(*output.stack.toTypedArray())
+            // ShowNotification перехватывается NotificationOutputHandler выше
+            is NavigationOutput.ShowNotification -> Unit
         }
     }
 

@@ -15,7 +15,11 @@ internal class HomeStoreFactory(
 
     private inner class HomeExecutor : CoroutineExecutor<HomeStore.Intent, Nothing, HomeStore.State, Message, HomeStore.Effect>() {
         override fun executeIntent(intent: HomeStore.Intent) {
-            when (intent) { is HomeStore.Intent.Init -> {} }
+            when (intent) {
+                is HomeStore.Intent.Init -> {}
+                is HomeStore.Intent.OnPlayClicked -> publish(HomeStore.Effect.NavigateToPlay)
+                is HomeStore.Intent.OnStoreClicked -> publish(HomeStore.Effect.NavigateToStore)
+            }
         }
     }
     private sealed interface Message { data class Loading(val isLoading: Boolean) : Message }

@@ -21,6 +21,7 @@ kotlin {
             implementation(libs.decompose.compose)
             implementation(libs.essenty.lifecycle.coroutines)
             implementation(libs.koin.core)
+            implementation(libs.koin.compose)
             implementation(compose.components.resources)
         }
     }

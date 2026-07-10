@@ -1,5 +1,22 @@
+import java.util.Properties
+import com.codingfeline.buildkonfig.compiler.FieldSpec.Type.STRING
+
 plugins {
     id("kmp.dev.library")
+    alias(libs.plugins.buildkonfig)
+}
+
+val envFile = rootProject.file(".env")
+val envProperties = Properties()
+if (envFile.exists()) {
+    envProperties.load(envFile.inputStream())
+}
+
+buildkonfig {
+    packageName = "com.dev.memebattle.core.network"
+    defaultConfigs {
+        buildConfigField(STRING, "API_BASE_URL", envProperties.getProperty("API_BASE_URL") ?: "https://meme.skyfly.hackclub.app")
+    }
 }
 
 kotlin {

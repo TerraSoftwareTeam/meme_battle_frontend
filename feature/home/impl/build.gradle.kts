@@ -25,7 +25,11 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation(project(":feature:home:api"))
+            implementation(project(":feature:game-setup:api"))
+            implementation(project(":feature:packs:api"))
             implementation(project(":core:navigation"))
+            implementation(project(":core:localization"))
+            implementation(libs.compose.components.resources)
             
             implementation(libs.koin.compose)
             implementation(libs.koin.compose.viewmodel)

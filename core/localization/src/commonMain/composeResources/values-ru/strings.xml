@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Битва Мемов</string>
+    <string name="welcome">Добро пожаловать в Битву Мемов!</string>
+    <string name="play">Играть</string>
+    <string name="store">Магазин</string>
+</resources>
