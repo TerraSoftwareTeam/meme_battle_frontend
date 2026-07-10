@@ -74,6 +74,15 @@ abstract class GenerateNetworkModuleTask : DefaultTask() {
                     compileSdk = libs.versions.compileSdk.get().toInt()
                     minSdk = libs.versions.minSdk.get().toInt()
                 }
+                listOf(
+                    iosArm64(),
+                    iosSimulatorArm64()
+                ).forEach { iosTarget ->
+                    iosTarget.binaries.framework {
+                        baseName = "${serviceName.replaceFirstChar { it.uppercase() }}Network"
+                        isStatic = true
+                    }
+                }
                 sourceSets {
                     commonMain.dependencies {
                         api(projects.core.network)
@@ -128,6 +137,15 @@ abstract class GenerateNetworkModuleTask : DefaultTask() {
                         namespace = "com.dev.memebattle.network.${serviceName}.current"
                         compileSdk = libs.versions.compileSdk.get().toInt()
                         minSdk = libs.versions.minSdk.get().toInt()
+                    }
+                    listOf(
+                        iosArm64(),
+                        iosSimulatorArm64()
+                    ).forEach { iosTarget ->
+                        iosTarget.binaries.framework {
+                            baseName = "${serviceName.replaceFirstChar { it.uppercase() }}CurrentNetwork"
+                            isStatic = true
+                        }
                     }
                     sourceSets {
                         commonMain.dependencies {

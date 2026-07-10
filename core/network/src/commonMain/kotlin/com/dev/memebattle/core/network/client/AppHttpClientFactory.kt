@@ -22,18 +22,20 @@ object AppHttpClientFactory {
     }
 
     fun createUnauthenticated(baseUrl: String): HttpClient = HttpClient {
-        expectSuccess = true
+        // NOTE: expectSuccess must be false so that auth responses (token refresh, etc.)
+        // are not thrown as exceptions before we can read their body.
+        expectSuccess = false
         
         install(ContentNegotiation) { json(buildJsonConfig()) }
         install(Logging) {
             logger = object : Logger {
                 override fun log(message: String) = println("Ktor[unauth]: $message")
             }
-            level = LogLevel.BODY
+            level = LogLevel.INFO
         }
         defaultRequest { 
             url(baseUrl)
-            contentType(ContentType.Application.Json) 
+            contentType(ContentType.Application.Json)
         }
     }
 
@@ -42,6 +44,9 @@ object AppHttpClientFactory {
         tokenStorage: TokenStorage,
         unauthenticatedClientProvider: () -> HttpClient
     ): HttpClient = HttpClient {
+        // expectSuccess = true so that 4xx/5xx become ClientRequestException in safeCall.
+        // The AppAuthPlugin uses HttpSend-level interception (on(Send)) which runs BEFORE
+        // Ktor's expectSuccess check, so our 401-retry logic executes first.
         expectSuccess = true
         
         install(ContentNegotiation) { json(buildJsonConfig()) }
@@ -49,7 +54,7 @@ object AppHttpClientFactory {
             logger = object : Logger {
                 override fun log(message: String) = println("Ktor[auth]: $message")
             }
-            level = LogLevel.BODY
+            level = LogLevel.INFO
         }
         install(AppAuthPlugin) {
             this.tokenStorage = tokenStorage
@@ -58,7 +63,7 @@ object AppHttpClientFactory {
         }
         defaultRequest { 
             url(baseUrl)
-            contentType(ContentType.Application.Json) 
+            contentType(ContentType.Application.Json)
         }
     }
 }

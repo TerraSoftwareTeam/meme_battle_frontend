@@ -28,7 +28,7 @@ kotlin {
             implementation(project(":feature:game-setup:api"))
             implementation(project(":feature:packs:api"))
             implementation(project(":core:navigation"))
-            implementation(project(":core:localization"))
+            api(project(":core:localization"))
             implementation(libs.compose.components.resources)
             
             implementation(libs.koin.compose)

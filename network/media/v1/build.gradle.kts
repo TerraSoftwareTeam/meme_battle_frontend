@@ -8,6 +8,16 @@ kotlin {
         compileSdk = libs.versions.compileSdk.get().toInt()
         minSdk = libs.versions.minSdk.get().toInt()
     }
+    listOf(
+        iosArm64(),
+        iosSimulatorArm64()
+    ).forEach { iosTarget ->
+        iosTarget.binaries.framework {
+            baseName = "MediaNetwork"
+            isStatic = true
+        }
+    }
+
     sourceSets {
         commonMain.dependencies {
             api(projects.core.network)

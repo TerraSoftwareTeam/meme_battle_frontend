@@ -21,6 +21,7 @@ class PacksFeatureEntryImpl : TypedFeatureEntry<PacksComponent, PacksRoute>(), P
             componentContext = componentContext,
             storeFactory = koin.get(),
             packRepository = koin.get(),
+            mediaApiService = koin.get(),
         )
     }
 

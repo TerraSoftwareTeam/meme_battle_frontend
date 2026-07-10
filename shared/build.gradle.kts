@@ -5,7 +5,7 @@ plugins {
 kotlin {
     androidLibrary {
         namespace = "com.dev.memebattle.shared"
-        compileSdk = 34
+        compileSdk = 36
     }
 
     sourceSets {

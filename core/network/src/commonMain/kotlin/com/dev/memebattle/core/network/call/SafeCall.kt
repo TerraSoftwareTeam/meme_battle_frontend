@@ -10,7 +10,7 @@ import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.io.IOException
 
 /**
- * Executes a network call and safely maps Ktor exceptions to NetworkError.
+ * Executes a network call and safely maps Ktor exceptions to NetworkResult.
  */
 inline suspend fun <T> safeCall(block: suspend () -> T): NetworkResult<T> {
     return try {

@@ -23,8 +23,9 @@ val sharedModule = module {
     single<StoreFactory> { LoggingStoreFactory(DefaultStoreFactory()) }
 }
 
-fun initKoin() {
+fun initKoin(config: (org.koin.core.KoinApplication.() -> Unit)? = null) {
     startKoin {
+        config?.invoke(this)
         modules(
             sharedModule,
             rootHostModule,

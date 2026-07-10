@@ -27,6 +27,9 @@ kotlin {
             implementation(project(":feature:packs:api"))
             implementation(project(":core:navigation"))
             implementation(project(":core:domain:packs"))
+            api(project(":core:localization"))
+            implementation(project(":network:media:v1"))
+            implementation(compose.components.resources)
             
             implementation(libs.koin.compose)
             implementation(libs.koin.compose.viewmodel)
@@ -38,6 +41,9 @@ kotlin {
             implementation(libs.decompose.core)
             implementation(libs.decompose.compose)
             implementation(libs.essenty.lifecycle.coroutines)
+            
+            implementation(libs.filekit.compose)
+            implementation(libs.coil.compose)
         }
     }
 }

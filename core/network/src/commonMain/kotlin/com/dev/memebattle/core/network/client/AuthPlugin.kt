@@ -14,6 +14,8 @@ import io.ktor.http.isSuccess
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
+import io.ktor.client.statement.bodyAsText
+
 class AuthPluginConfig {
     lateinit var tokenStorage: TokenStorage
     lateinit var unauthenticatedClientProvider: () -> HttpClient
@@ -27,16 +29,24 @@ val AppAuthPlugin = createClientPlugin("AppAuthPlugin", ::AuthPluginConfig) {
     
     val mutex = Mutex()
 
+    val json = kotlinx.serialization.json.Json { ignoreUnknownKeys = true }
+
     suspend fun requestGuestToken(): String? {
         return try {
             val client = unauthenticatedClientProvider()
             val response = client.post("$baseUrl/auth/guest")
             if (response.status.isSuccess()) {
-                val body = response.body<BaseResponse<LocalAuthBody>>().data
+                val text = response.bodyAsText()
+                val body = json.decodeFromString<BaseResponse<LocalAuthBody>>(text).data
                 tokenStorage.saveTokens(body.accessToken, body.refreshToken, AuthOrigin.GUEST)
                 body.accessToken
-            } else null
+            } else {
+                println("[AuthPlugin] requestGuestToken status failed: ${response.status}")
+                null
+            }
         } catch (e: Exception) {
+            println("[AuthPlugin] requestGuestToken exception: ${e.message}")
+            e.printStackTrace()
             null
         }
     }
@@ -48,7 +58,8 @@ val AppAuthPlugin = createClientPlugin("AppAuthPlugin", ::AuthPluginConfig) {
                 setBody(LocalRefreshSessionDto(refreshToken = refreshToken))
             }
             if (resp.status.isSuccess()) {
-                val body = resp.body<BaseResponse<LocalAuthBody>>().data
+                val text = resp.bodyAsText()
+                val body = json.decodeFromString<BaseResponse<LocalAuthBody>>(text).data
                 val currentOrigin = tokenStorage.authOrigin.value
                 tokenStorage.saveTokens(
                     accessToken = body.accessToken,
@@ -56,22 +67,33 @@ val AppAuthPlugin = createClientPlugin("AppAuthPlugin", ::AuthPluginConfig) {
                     origin = if (currentOrigin == AuthOrigin.NONE) AuthOrigin.GUEST else currentOrigin
                 )
                 body
-            } else null
+            } else {
+                println("[AuthPlugin] refreshTokens status failed: ${resp.status}")
+                null
+            }
         } catch (e: Exception) {
+            println("[AuthPlugin] refreshTokens exception: ${e.message}")
+            e.printStackTrace()
             null
         }
     }
 
     suspend fun requestGuestTokensBody(): LocalAuthBody? {
-         return try {
+          return try {
             val client = unauthenticatedClientProvider()
             val resp = client.post("$baseUrl/auth/guest")
             if (resp.status.isSuccess()) {
-                val body = resp.body<BaseResponse<LocalAuthBody>>().data
+                val text = resp.bodyAsText()
+                val body = json.decodeFromString<BaseResponse<LocalAuthBody>>(text).data
                 tokenStorage.saveTokens(body.accessToken, body.refreshToken, AuthOrigin.GUEST)
                 body
-            } else null
+            } else {
+                println("[AuthPlugin] requestGuestTokensBody status failed: ${resp.status}")
+                null
+            }
         } catch (e: Exception) {
+            println("[AuthPlugin] requestGuestTokensBody exception: ${e.message}")
+            e.printStackTrace()
             null
         }
     }
@@ -82,12 +104,15 @@ val AppAuthPlugin = createClientPlugin("AppAuthPlugin", ::AuthPluginConfig) {
         }
         
         var accessToken = tokenStorage.getAccessToken()
+        println("[AuthPlugin] Request to ${request.url}, token=${accessToken?.take(20)}...")
 
         if (accessToken.isNullOrBlank()) {
             mutex.withLock {
                 accessToken = tokenStorage.getAccessToken()
                 if (accessToken.isNullOrBlank()) {
+                    println("[AuthPlugin] No token, requesting guest token...")
                     accessToken = requestGuestToken()
+                    println("[AuthPlugin] Got guest token: ${accessToken?.take(20)}...")
                 }
             }
         }
@@ -97,9 +122,12 @@ val AppAuthPlugin = createClientPlugin("AppAuthPlugin", ::AuthPluginConfig) {
             request.headers.append(HttpHeaders.Authorization, "Bearer $accessToken")
         }
 
-        var call = proceed(request)
+        val call = proceed(request)
+        val statusCode = call.response.status.value
+        println("[AuthPlugin] Response status: $statusCode for ${request.url}")
         
-        if (call.response.status.value == 401) {
+        if (statusCode == 401) {
+            println("[AuthPlugin] Got 401, attempting token refresh...")
             val refreshToken = tokenStorage.getRefreshToken()
             val newTokens = mutex.withLock {
                 if (!refreshToken.isNullOrBlank()) {
@@ -110,11 +138,13 @@ val AppAuthPlugin = createClientPlugin("AppAuthPlugin", ::AuthPluginConfig) {
             }
 
             if (newTokens == null) {
+                println("[AuthPlugin] Token refresh failed, clearing storage")
                 tokenStorage.clear()
             } else {
+                println("[AuthPlugin] Got new token, retrying request...")
                 request.headers.remove(HttpHeaders.Authorization)
                 request.headers.append(HttpHeaders.Authorization, "Bearer ${newTokens.accessToken}")
-                call = proceed(request)
+                return@on proceed(request)
             }
         }
         

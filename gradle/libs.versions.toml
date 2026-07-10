@@ -46,7 +46,7 @@ mvikotlin = "4.4.0"
 decompose = "3.5.0"
 essenty = "2.5.0"
 buildkonfig = "0.15.1"
-
+filekit = "0.8.2"
 
 [libraries]
 # ─── Gradle Plugins (для build-logic/build.gradle.kts) ────────────────────────
@@ -123,6 +123,13 @@ mvikotlin-timetravel = { module = "com.arkivanov.mvikotlin:mvikotlin-timetravel"
 decompose-core = { module = "com.arkivanov.decompose:decompose", version.ref = "decompose" }
 decompose-compose = { module = "com.arkivanov.decompose:extensions-compose", version.ref = "decompose" }
 essenty-lifecycle-coroutines = { module = "com.arkivanov.essenty:lifecycle-coroutines", version.ref = "essenty" }
+
+# ─── FileKit ──────────────────────────────────────────────────────────────────
+filekit-core = { module = "io.github.vinceglb:filekit-core", version.ref = "filekit" }
+filekit-compose = { module = "io.github.vinceglb:filekit-compose", version.ref = "filekit" }
+
+# ─── Coil ─────────────────────────────────────────────────────────────────────
+coil-compose = { module = "io.coil-kt.coil3:coil-compose", version = "3.0.0-alpha10" }
 
 
 [plugins]

@@ -4,6 +4,7 @@ import com.codingfeline.buildkonfig.compiler.FieldSpec.Type.STRING
 plugins {
     id("kmp.dev.library")
     alias(libs.plugins.buildkonfig)
+    alias(libs.plugins.kotlinSerialization)
 }
 
 val envFile = rootProject.file(".env")
@@ -49,6 +50,17 @@ kotlin {
         androidMain.dependencies {
             implementation("androidx.security:security-crypto-ktx:1.1.0-alpha06")
             implementation(libs.koin.android)
+            implementation(libs.ktor.client.cio)
+        }
+        val iosMain = maybeCreate("iosMain").apply {
+            dependencies {
+                implementation(libs.ktor.client.darwin)
+            }
+        }
+        val wasmJsMain = maybeCreate("wasmJsMain").apply {
+            dependencies {
+                implementation(libs.ktor.client.js)
+            }
         }
     }
 }

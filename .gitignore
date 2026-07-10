@@ -57,3 +57,8 @@ node_modules/
 *~
 *.bak
 *.swp
+
+# Generated assets and resources
+androidApp/src/main/assets/composeResources/
+core/localization/src/androidMain/
+
