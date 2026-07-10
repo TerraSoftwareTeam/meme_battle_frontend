@@ -24,6 +24,7 @@ class PacksCreateComponentImpl(
     private val mediaApiService: MediaApiService,
     private val onClose: () -> Unit,
     private val onShowNotification: (message: String, type: NotificationType) -> Unit,
+    private val onCreatedCallback: (packId: String) -> Unit,
 ) : PacksCreateComponent, ComponentContext by componentContext {
 
     private val scope = coroutineScope()
@@ -47,5 +48,9 @@ class PacksCreateComponentImpl(
             message,
             if (isError) NotificationType.Negative else NotificationType.Neutral
         )
+    }
+
+    override fun onCreated(packId: String) {
+        onCreatedCallback(packId)
     }
 }

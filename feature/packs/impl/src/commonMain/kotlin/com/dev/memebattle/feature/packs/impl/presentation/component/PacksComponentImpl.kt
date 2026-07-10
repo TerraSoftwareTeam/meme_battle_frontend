@@ -143,6 +143,10 @@ class PacksComponentImpl(
             onClose = { panelsNavigation.dismissExtra() },
             onShowNotification = { message, type ->
                 outputChannel.trySend(NavigationOutput.ShowNotification(message = message, type = type))
+            },
+            onCreatedCallback = { packId ->
+                panelsNavigation.dismissExtra()
+                panelsNavigation.activateDetails(DetailsConfig.Details(packId))
             }
         )
 

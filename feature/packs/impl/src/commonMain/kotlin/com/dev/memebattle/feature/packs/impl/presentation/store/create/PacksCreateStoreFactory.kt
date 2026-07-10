@@ -57,8 +57,17 @@ internal class PacksCreateStoreFactory(
                         val mediaIds = mutableListOf<Long>()
                         for (file in currentState.selectedFiles) {
                             println("[PacksCreateStore] Reading file: ${file.name}")
-                            val byteArray = file.readBytes()
-                            println("[PacksCreateStore] File read complete: ${byteArray.size} bytes, uploading...")
+                            val rawBytes = file.readBytes()
+                            println("[PacksCreateStore] File read complete: ${rawBytes.size} bytes, compressing if needed...")
+                            
+                            val maxSizeBytes = 2 * 1024 * 1024L // 2 MB limit
+                            val byteArray = compressImageIfNeeded(rawBytes, maxSizeBytes)
+                            if (byteArray.size < rawBytes.size) {
+                                println("[PacksCreateStore] File compressed from ${rawBytes.size} to ${byteArray.size} bytes")
+                            } else {
+                                println("[PacksCreateStore] Using original file size: ${byteArray.size} bytes")
+                            }
+                            
                             val fileName = file.name
                             val result = mediaApiService.uploadImageMedia(byteArray, fileName)
                             println("[PacksCreateStore] Upload result: $result")
@@ -83,8 +92,7 @@ internal class PacksCreateStoreFactory(
                         )
                         println("[PacksCreateStore] createMemePack result: $createResult")
                         createResult.onSuccess {
-                            publish(PacksCreateStore.Effect.Created)
-                            publish(PacksCreateStore.Effect.NavigateBack)
+                            publish(PacksCreateStore.Effect.Created(it.id))
                         }.onFailure {
                             dispatch(Message.SetError(it.message ?: "Failed to create pack"))
                             publish(PacksCreateStore.Effect.ShowError(it.message ?: "Failed to create pack"))
@@ -99,8 +107,7 @@ internal class PacksCreateStoreFactory(
                             prompts = currentState.prompts
                         )
                         createResult.onSuccess {
-                            publish(PacksCreateStore.Effect.Created)
-                            publish(PacksCreateStore.Effect.NavigateBack)
+                            publish(PacksCreateStore.Effect.Created(it.id))
                         }.onFailure {
                             dispatch(Message.SetError(it.message ?: "Failed to create pack"))
                             publish(PacksCreateStore.Effect.ShowError(it.message ?: "Failed to create pack"))
