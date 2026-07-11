@@ -24,7 +24,7 @@
     <string name="packs_create_safety_0">0+</string>
     <string name="packs_create_safety_16">16+</string>
     <string name="packs_create_safety_18">18+</string>
-    <string name="packs_create_select_images">Select Images (%d selected)</string>
+    <string name="packs_create_select_images">Select Images</string>
     <string name="packs_create_files_to_upload">Files to upload:</string>
     <string name="packs_create_situation_prompt">Situation / Prompt</string>
     <string name="packs_create_submit">Create Pack</string>

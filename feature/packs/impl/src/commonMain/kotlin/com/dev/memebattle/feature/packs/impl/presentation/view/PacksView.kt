@@ -18,15 +18,7 @@ import com.dev.memebattle.feature.packs.impl.presentation.view.details.PacksDeta
 import org.jetbrains.compose.resources.stringResource
 import com.dev.memebattle.core.localization.Res
 import com.dev.memebattle.core.localization.*
-/**
- * Корневой экран фичи Packs.
- *
- * Адаптивное поведение (через Material3 Adaptive):
- * - Compact  → одна панель за раз (Single-pane). Навигация между Catalog/Details/Create через стек.
- * - Medium+  → двухпанельный режим: Catalog слева (фиксирован), Details/Create справа.
- *
- * Реализован через Decompose ChildPanels + SupportingPaneScaffold из material3-adaptive.
- */
+
 @OptIn(com.arkivanov.decompose.ExperimentalDecomposeApi::class)
 @Composable
 fun PacksView(component: PacksComponent) {
@@ -125,7 +117,7 @@ private fun RightPanelPlaceholder(modifier: Modifier = Modifier) {
         modifier = modifier
             .background(Color(0xFF0F0820))
     ) {
-        androidx.compose.foundation.layout.Column(
+        Column(
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,

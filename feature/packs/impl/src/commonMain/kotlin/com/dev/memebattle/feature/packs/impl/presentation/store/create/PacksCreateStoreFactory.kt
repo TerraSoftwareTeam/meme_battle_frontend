@@ -60,7 +60,7 @@ internal class PacksCreateStoreFactory(
                             val rawBytes = file.readBytes()
                             println("[PacksCreateStore] File read complete: ${rawBytes.size} bytes, compressing if needed...")
                             
-                            val maxSizeBytes = 2 * 1024 * 1024L // 2 MB limit
+                            val maxSizeBytes = 2 * 1024 * 1024 * 15L  // 2 MB limit
                             val byteArray = compressImageIfNeeded(rawBytes, maxSizeBytes)
                             if (byteArray.size < rawBytes.size) {
                                 println("[PacksCreateStore] File compressed from ${rawBytes.size} to ${byteArray.size} bytes")

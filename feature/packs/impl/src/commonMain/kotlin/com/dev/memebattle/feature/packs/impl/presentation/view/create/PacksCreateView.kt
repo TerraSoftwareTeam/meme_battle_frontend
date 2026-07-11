@@ -1,7 +1,6 @@
 package com.dev.memebattle.feature.packs.impl.presentation.view.create
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -15,36 +14,32 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.foundation.shape.CircleShape
-import coil3.compose.AsyncImage
-import com.dev.memebattle.core.domain.packs.model.SafetyLevel
 import com.dev.memebattle.feature.packs.impl.presentation.component.create.PacksCreateComponent
 import com.dev.memebattle.feature.packs.impl.presentation.store.create.PacksCreateStore
+import com.dev.memebattle.feature.packs.impl.presentation.view.create.widgets.PackTypeSelector
+import com.dev.memebattle.feature.packs.impl.presentation.view.create.widgets.SafetyLevelSelector
+import com.dev.memebattle.feature.packs.impl.presentation.view.create.widgets.FileImageCard
+import com.dev.memebattle.feature.packs.impl.presentation.view.create.widgets.BackgroundTop
+import com.dev.memebattle.feature.packs.impl.presentation.view.create.widgets.BackgroundBottom
+import com.dev.memebattle.feature.packs.impl.presentation.view.create.widgets.TextPrimary
+import com.dev.memebattle.feature.packs.impl.presentation.view.create.widgets.TextSecondary
+import com.dev.memebattle.feature.packs.impl.presentation.view.create.widgets.AccentColor
+import com.dev.memebattle.feature.packs.impl.presentation.view.create.widgets.ErrorColor
+import com.dev.memebattle.feature.packs.impl.presentation.view.create.widgets.SurfaceColor
 import io.github.vinceglb.filekit.compose.rememberFilePickerLauncher
 import io.github.vinceglb.filekit.core.PickerMode
 import io.github.vinceglb.filekit.core.PickerType
-import io.github.vinceglb.filekit.core.PlatformFile
 import kotlinx.coroutines.flow.collectLatest
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.getString
 import com.dev.memebattle.core.localization.Res
 import com.dev.memebattle.core.localization.*
-
-private val BackgroundTop = Color(0xFF1A1035)
-private val BackgroundBottom = Color(0xFF08040F)
-private val TextPrimary = Color(0xFFFFFFFF)
-private val TextSecondary = Color(0xFFB0A2C7)
-private val AccentColor = Color(0xFF8B5CF6)
-private val ErrorColor = Color(0xFFEF4444)
-private val SurfaceColor = Color(0xFF2A1B4E)
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -169,7 +164,7 @@ fun PacksCreateView(
                             shape = RoundedCornerShape(12.dp)
                         ) {
                             Text(
-                                stringResource(Res.string.packs_create_select_images, state.selectedFiles.size),
+                                stringResource(Res.string.packs_create_select_images),
                                 color = TextPrimary,
                                 fontWeight = FontWeight.SemiBold
                             )
@@ -254,7 +249,8 @@ fun PacksCreateView(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(24.dp)
+                    .navigationBarsPadding()
+                    .padding(horizontal = 24.dp, vertical = 16.dp)
             ) {
                 Button(
                     onClick = { component.onIntent(PacksCreateStore.Intent.Create) },
@@ -278,147 +274,6 @@ fun PacksCreateView(
                     }
                 }
             }
-        }
-    }
-}
-
-@Composable
-private fun PackTypeSelector(
-    selectedType: PacksCreateStore.PackType,
-    onTypeSelected: (PacksCreateStore.PackType) -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(48.dp)
-            .background(SurfaceColor, RoundedCornerShape(24.dp))
-            .padding(4.dp)
-    ) {
-        val types = PacksCreateStore.PackType.entries
-        types.forEach { type ->
-            val isSelected = selectedType == type
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight()
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(if (isSelected) AccentColor else Color.Transparent)
-                    .clickable { onTypeSelected(type) },
-                contentAlignment = Alignment.Center
-            ) {
-                val textRes = if (type == PacksCreateStore.PackType.Memes) Res.string.packs_type_memes else Res.string.packs_type_situations
-                Text(
-                    text = stringResource(textRes),
-                    color = if (isSelected) Color.White else TextSecondary,
-                    fontWeight = FontWeight.SemiBold
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun SafetyLevelSelector(
-    selectedLevel: SafetyLevel,
-    onLevelSelected: (SafetyLevel) -> Unit
-) {
-    Column {
-        Text(stringResource(Res.string.packs_create_safety_level), color = TextSecondary, fontSize = 14.sp, modifier = Modifier.padding(bottom = 8.dp))
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(40.dp)
-                .background(SurfaceColor, RoundedCornerShape(8.dp))
-        ) {
-            val levels = SafetyLevel.entries
-            levels.forEach { level ->
-                val isSelected = selectedLevel == level
-                val textRes = when (level) {
-                    SafetyLevel.FAMILY_FRIENDLY -> Res.string.packs_create_safety_0
-                    SafetyLevel.SPICY -> Res.string.packs_create_safety_16
-                    SafetyLevel.EXPLICIT -> Res.string.packs_create_safety_18
-                }
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxHeight()
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(if (isSelected) AccentColor else Color.Transparent)
-                        .clickable { onLevelSelected(level) },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = stringResource(textRes),
-                        color = if (isSelected) Color.White else TextSecondary,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Medium
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun FileImageCard(
-    file: PlatformFile,
-    onRemove: () -> Unit
-) {
-    var bytes by remember(file) { mutableStateOf<ByteArray?>(null) }
-    LaunchedEffect(file) {
-        bytes = file.readBytes()
-    }
-
-    Box(
-        modifier = Modifier
-            .width(100.dp)
-            .aspectRatio(3f / 4f)
-            .background(Color.Black, RoundedCornerShape(8.dp))
-            .clip(RoundedCornerShape(8.dp))
-    ) {
-        if (bytes != null) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color(0xFF0F0820)),
-                contentAlignment = Alignment.Center
-            ) {
-                AsyncImage(
-                    model = bytes,
-                    contentDescription = null,
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Fit
-                )
-            }
-        } else {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(SurfaceColor),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(24.dp),
-                    color = AccentColor,
-                    strokeWidth = 2.dp
-                )
-            }
-        }
-
-        IconButton(
-            onClick = onRemove,
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .padding(4.dp)
-                .size(24.dp)
-                .background(Color.Black.copy(alpha = 0.5f), CircleShape)
-        ) {
-            Icon(
-                Icons.Default.Close,
-                contentDescription = "Remove",
-                tint = Color.White,
-                modifier = Modifier.size(16.dp)
-            )
         }
     }
 }

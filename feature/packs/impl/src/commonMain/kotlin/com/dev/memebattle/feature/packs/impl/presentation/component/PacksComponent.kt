@@ -7,9 +7,6 @@ import com.dev.memebattle.core.navigation.entry.FeatureComponent
 import com.dev.memebattle.feature.packs.impl.presentation.component.catalog.PacksCatalogComponent
 import com.dev.memebattle.feature.packs.impl.presentation.component.create.PacksCreateComponent
 import com.dev.memebattle.feature.packs.impl.presentation.component.details.PacksDetailsComponent
-import com.dev.memebattle.feature.packs.impl.presentation.store.PacksStore
-import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.StateFlow
 
 interface PacksComponent : FeatureComponent {
 
@@ -32,8 +29,4 @@ interface PacksComponent : FeatureComponent {
      */
     fun setAdaptiveMode(mode: ChildPanelsMode)
 
-    // ── Legacy PacksStore (совместимость) ──────────────────────────────────
-    val state: StateFlow<PacksStore.State>
-    val effects: SharedFlow<PacksStore.Effect>
-    fun onIntent(intent: PacksStore.Intent)
 }

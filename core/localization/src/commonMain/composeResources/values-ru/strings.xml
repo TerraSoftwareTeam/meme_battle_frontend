@@ -24,7 +24,7 @@
     <string name="packs_create_safety_0">0+</string>
     <string name="packs_create_safety_16">16+</string>
     <string name="packs_create_safety_18">18+</string>
-    <string name="packs_create_select_images">Выбрать изображения (выбрано: %d)</string>
+    <string name="packs_create_select_images">Выбрать изображения</string>
     <string name="packs_create_files_to_upload">Файлы для загрузки:</string>
     <string name="packs_create_situation_prompt">Ситуация / Текст</string>
     <string name="packs_create_submit">Создать пак</string>

@@ -15,8 +15,6 @@ import com.arkivanov.decompose.router.panels.setMode
 import com.arkivanov.decompose.value.Value
 import com.arkivanov.essenty.lifecycle.coroutines.coroutineScope
 import com.arkivanov.mvikotlin.core.store.StoreFactory
-import com.arkivanov.mvikotlin.extensions.coroutines.labels
-import com.arkivanov.mvikotlin.extensions.coroutines.stateFlow
 import com.dev.memebattle.core.domain.packs.repository.PackRepository
 import com.dev.memebattle.core.navigation.output.NavigationOutput
 import com.dev.memebattle.feature.packs.impl.presentation.component.catalog.PacksCatalogComponent
@@ -25,15 +23,8 @@ import com.dev.memebattle.feature.packs.impl.presentation.component.create.Packs
 import com.dev.memebattle.feature.packs.impl.presentation.component.create.PacksCreateComponentImpl
 import com.dev.memebattle.feature.packs.impl.presentation.component.details.PacksDetailsComponent
 import com.dev.memebattle.feature.packs.impl.presentation.component.details.PacksDetailsComponentImpl
-import com.dev.memebattle.feature.packs.impl.presentation.store.PacksStore
-import com.dev.memebattle.feature.packs.impl.presentation.store.PacksStoreFactory
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
-import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.channels.Channel
 import kotlinx.serialization.Serializable
 
@@ -155,14 +146,5 @@ class PacksComponentImpl(
         panelsNavigation.setMode(mode)
     }
 
-    // ── Legacy PacksStore (совместимость) ────────────────────────────────────
-
-    private val store = PacksStoreFactory(storeFactory, packRepository).create()
-    private val labelsFlow = store.labels.shareIn(scope, SharingStarted.Eagerly, replay = 0)
-
-    @OptIn(ExperimentalCoroutinesApi::class)
-    override val state: StateFlow<PacksStore.State> = store.stateFlow(scope)
-    override val effects: SharedFlow<PacksStore.Effect> = labelsFlow
     override val output: Flow<NavigationOutput> = outputChannel.receiveAsFlow()
-    override fun onIntent(intent: PacksStore.Intent) = store.accept(intent)
 }

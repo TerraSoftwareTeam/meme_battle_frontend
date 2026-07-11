@@ -35,7 +35,6 @@ object AppHttpClientFactory {
         }
         defaultRequest { 
             url(baseUrl)
-            contentType(ContentType.Application.Json)
         }
     }
 
@@ -63,7 +62,6 @@ object AppHttpClientFactory {
         }
         defaultRequest { 
             url(baseUrl)
-            contentType(ContentType.Application.Json)
         }
     }
 }
