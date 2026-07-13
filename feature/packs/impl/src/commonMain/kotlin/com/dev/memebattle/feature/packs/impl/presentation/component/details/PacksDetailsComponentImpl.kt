@@ -5,6 +5,7 @@ import com.arkivanov.essenty.lifecycle.coroutines.coroutineScope
 import com.arkivanov.mvikotlin.core.store.StoreFactory
 import com.arkivanov.mvikotlin.extensions.coroutines.stateFlow
 import com.arkivanov.mvikotlin.extensions.coroutines.labels
+import com.dev.memebattle.core.domain.packs.repository.PackRepository
 import com.dev.memebattle.feature.packs.impl.presentation.store.details.PacksDetailsStore
 import com.dev.memebattle.feature.packs.impl.presentation.store.details.PacksDetailsStoreFactory
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -16,12 +17,14 @@ import kotlinx.coroutines.flow.shareIn
 class PacksDetailsComponentImpl(
     componentContext: ComponentContext,
     private val storeFactory: StoreFactory,
+    private val packRepository: PackRepository,
     private val packId: String,
+    private val kind: PacksDetailsStore.PackKind,
     private val onClose: () -> Unit,
 ) : PacksDetailsComponent, ComponentContext by componentContext {
 
     private val scope = coroutineScope()
-    private val store = PacksDetailsStoreFactory(storeFactory).create()
+    private val store = PacksDetailsStoreFactory(storeFactory, packRepository).create()
 
     @OptIn(ExperimentalCoroutinesApi::class)
     override val state: StateFlow<PacksDetailsStore.State> = store.stateFlow(scope)
@@ -30,7 +33,7 @@ class PacksDetailsComponentImpl(
         store.labels.shareIn(scope, SharingStarted.Eagerly, replay = 0)
 
     init {
-        store.accept(PacksDetailsStore.Intent.Load(packId))
+        store.accept(PacksDetailsStore.Intent.Load(packId, kind))
     }
 
     override fun onIntent(intent: PacksDetailsStore.Intent) {

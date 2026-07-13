@@ -26,12 +26,34 @@ internal fun MemePackDto.toDomain(): MemePack = MemePack(
     safetyLevel = safety_level.toDomain(),
 )
 
-internal fun PackMemeDetailsDto.toDomain(): MemeCard = MemeCard(
-    id = id,
-    packId = pack_id,
-    mediaId = media_id,
-    mediaUrl = media_url,
-)
+object PlatformEnv {
+    var webOrigin: String? = null
+}
+
+internal fun PackMemeDetailsDto.toDomain(): MemeCard {
+    val fullUrl = when {
+        // Relative path → prepend API base
+        media_url.startsWith("/") ->
+            "${com.dev.memebattle.core.network.BuildKonfig.API_BASE_URL}$media_url"
+        // CDN URL → rewrite through local /cdn-proxy to fix CORS ("*, *" header bug)
+        media_url.contains("cdn.hackclub.com") || media_url.contains("user-cdn.hackclub-assets.com") -> {
+            val prefix = PlatformEnv.webOrigin ?: ""
+            media_url
+                .replace("https://user-cdn.hackclub-assets.com", "$prefix/cdn-proxy")
+                .replace("http://user-cdn.hackclub-assets.com", "$prefix/cdn-proxy")
+                .replace("https://cdn.hackclub.com", "$prefix/cdn-proxy")
+                .replace("http://cdn.hackclub.com", "$prefix/cdn-proxy")
+        }
+        else -> media_url
+    }
+    println("PackMemeDetailsDto.toDomain: mapping '$media_url' -> '$fullUrl' (webOrigin=${PlatformEnv.webOrigin})")
+    return MemeCard(
+        id = id,
+        packId = pack_id,
+        mediaId = media_id,
+        mediaUrl = fullUrl,
+    )
+}
 
 internal fun MemePackDetailsResponse.toDomain(): MemePackDetails = MemePackDetails(
     pack = pack.toDomain(),

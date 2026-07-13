@@ -44,6 +44,7 @@ kotlin {
             
             implementation(libs.filekit.compose)
             implementation(libs.coil.compose)
+            implementation(libs.coil.network.ktor)
         }
     }
 }

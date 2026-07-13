@@ -12,6 +12,9 @@ import org.koin.mp.KoinPlatform.getKoin
 
 @OptIn(ExperimentalComposeUiApi::class)
 fun main() {
+    val origin = kotlinx.browser.window.location.origin
+    println("webOrigin initialized to: $origin")
+    com.dev.memebattle.core.data.packs.mapper.PlatformEnv.webOrigin = origin
     initKoin()
 
     val lifecycle = LifecycleRegistry()

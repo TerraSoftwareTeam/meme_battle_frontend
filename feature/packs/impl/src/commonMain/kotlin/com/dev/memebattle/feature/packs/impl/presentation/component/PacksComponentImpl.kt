@@ -51,7 +51,7 @@ class PacksComponentImpl(
     @Serializable
     sealed interface DetailsConfig {
         @Serializable
-        data class Details(val packId: String) : DetailsConfig
+        data class Details(val packId: String, val kind: String = "meme") : DetailsConfig
     }
 
     @Serializable
@@ -86,7 +86,7 @@ class PacksComponentImpl(
             },
             detailsFactory = { config, ctx ->
                 when (config) {
-                    is DetailsConfig.Details -> createDetails(ctx, config.packId)
+                    is DetailsConfig.Details -> createDetails(ctx, config.packId, config.kind)
                 }
             },
             extraFactory = { config, ctx ->
@@ -104,8 +104,8 @@ class PacksComponentImpl(
             componentContext = ctx,
             storeFactory = storeFactory,
             packRepository = packRepository,
-            onNavigateToDetails = { packId ->
-                panelsNavigation.activateDetails(DetailsConfig.Details(packId))
+            onNavigateToDetails = { packId, kind ->
+                panelsNavigation.activateDetails(DetailsConfig.Details(packId, kind))
             },
             onNavigateToCreate = {
                 panelsNavigation.activateExtra(ExtraConfig.Create)
@@ -116,13 +116,21 @@ class PacksComponentImpl(
         )
 
     @OptIn(ExperimentalDecomposeApi::class)
-    private fun createDetails(ctx: ComponentContext, packId: String): PacksDetailsComponent =
-        PacksDetailsComponentImpl(
+    private fun createDetails(ctx: ComponentContext, packId: String, kindStr: String): PacksDetailsComponent {
+        val kind = if (kindStr == "situation") {
+            com.dev.memebattle.feature.packs.impl.presentation.store.details.PacksDetailsStore.PackKind.Situation
+        } else {
+            com.dev.memebattle.feature.packs.impl.presentation.store.details.PacksDetailsStore.PackKind.Meme
+        }
+        return PacksDetailsComponentImpl(
             componentContext = ctx,
             storeFactory = storeFactory,
+            packRepository = packRepository,
             packId = packId,
+            kind = kind,
             onClose = { panelsNavigation.dismissDetails() },
         )
+    }
 
     @OptIn(ExperimentalDecomposeApi::class)
     private fun createCreate(ctx: ComponentContext): PacksCreateComponent =

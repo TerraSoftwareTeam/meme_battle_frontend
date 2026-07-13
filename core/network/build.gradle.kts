@@ -15,6 +15,7 @@ if (envFile.exists()) {
 
 buildkonfig {
     packageName = "com.dev.memebattle.core.network"
+    exposeObjectWithName = "BuildKonfig"
     defaultConfigs {
         buildConfigField(STRING, "API_BASE_URL", envProperties.getProperty("API_BASE_URL") ?: "https://meme.skyfly.hackclub.app")
     }

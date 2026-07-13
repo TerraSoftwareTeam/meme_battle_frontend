@@ -24,6 +24,8 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(libs.decompose.core)
     implementation(libs.koin.android)
+    implementation(libs.coil.compose)
+    implementation(libs.coil.network.ktor)
 }
 
 val copyLocalizationResources by tasks.registering(Copy::class) {

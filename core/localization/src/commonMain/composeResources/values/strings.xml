@@ -29,4 +29,13 @@
     <string name="packs_create_situation_prompt">Situation / Prompt</string>
     <string name="packs_create_submit">Create Pack</string>
     <string name="packs_create_success">Pack created successfully!</string>
+    <string name="packs_details_author">Author ID</string>
+    <string name="packs_details_language">Language</string>
+    <string name="packs_details_created">Created</string>
+    <string name="packs_details_public">Public</string>
+    <string name="packs_details_private">Private</string>
+    <string name="packs_details_cards">Cards</string>
+    <string name="packs_details_no_description">No description</string>
+    <string name="packs_details_loading">Loading...</string>
+    <string name="packs_details_empty_cards">No cards yet</string>
 </resources>

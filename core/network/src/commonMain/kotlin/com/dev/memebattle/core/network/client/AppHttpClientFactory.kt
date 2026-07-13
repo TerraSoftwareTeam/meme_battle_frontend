@@ -2,17 +2,29 @@ package com.dev.memebattle.core.network.client
 
 import com.dev.memebattle.core.network.auth.TokenStorage
 import io.ktor.client.HttpClient
+import io.ktor.client.plugins.api.createClientPlugin
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.http.ContentType
+import io.ktor.http.content.OutgoingContent
 import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 
 object AppHttpClientFactory {
+
+    private val JsonContentTypePlugin = createClientPlugin("JsonContentTypePlugin") {
+        onRequest { request, content ->
+            if (content !is OutgoingContent && content != Unit) {
+                if (request.contentType() == null) {
+                    request.contentType(ContentType.Application.Json)
+                }
+            }
+        }
+    }
 
     private fun buildJsonConfig() = Json {
         ignoreUnknownKeys = true
@@ -27,11 +39,12 @@ object AppHttpClientFactory {
         expectSuccess = false
         
         install(ContentNegotiation) { json(buildJsonConfig()) }
+        install(JsonContentTypePlugin)
         install(Logging) {
             logger = object : Logger {
                 override fun log(message: String) = println("Ktor[unauth]: $message")
             }
-            level = LogLevel.INFO
+            level = LogLevel.HEADERS
         }
         defaultRequest { 
             url(baseUrl)
@@ -49,11 +62,12 @@ object AppHttpClientFactory {
         expectSuccess = true
         
         install(ContentNegotiation) { json(buildJsonConfig()) }
+        install(JsonContentTypePlugin)
         install(Logging) {
             logger = object : Logger {
                 override fun log(message: String) = println("Ktor[auth]: $message")
             }
-            level = LogLevel.INFO
+            level = LogLevel.HEADERS
         }
         install(AppAuthPlugin) {
             this.tokenStorage = tokenStorage
@@ -65,3 +79,4 @@ object AppHttpClientFactory {
         }
     }
 }
+

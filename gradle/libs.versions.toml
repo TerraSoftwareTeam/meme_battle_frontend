@@ -130,6 +130,7 @@ filekit-compose = { module = "io.github.vinceglb:filekit-compose", version.ref =
 
 # ─── Coil ─────────────────────────────────────────────────────────────────────
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version = "3.0.0-alpha10" }
+coil-network-ktor = { module = "io.coil-kt.coil3:coil-network-ktor3", version = "3.0.0-alpha10" }
 
 
 [plugins]

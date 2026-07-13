@@ -18,7 +18,7 @@ class PacksCatalogComponentImpl(
     componentContext: ComponentContext,
     private val storeFactory: StoreFactory,
     private val packRepository: PackRepository,
-    private val onNavigateToDetails: (packId: String) -> Unit,
+    private val onNavigateToDetails: (packId: String, kind: String) -> Unit,
     private val onNavigateToCreate: () -> Unit,
     private val onNavigateBack: () -> Unit,
 ) : PacksCatalogComponent, ComponentContext by componentContext {
@@ -39,7 +39,10 @@ class PacksCatalogComponentImpl(
     override fun onIntent(intent: PacksCatalogStore.Intent) {
         when (intent) {
             // Навигационные эффекты перехватываем и проксируем вверх через колбэки
-            is PacksCatalogStore.Intent.OpenDetails -> onNavigateToDetails(intent.packId)
+            is PacksCatalogStore.Intent.OpenDetails -> {
+                val kind = if (state.value.activeType == PacksCatalogStore.PackType.Situations) "situation" else "meme"
+                onNavigateToDetails(intent.packId, kind)
+            }
             is PacksCatalogStore.Intent.OpenCreate -> onNavigateToCreate()
             is PacksCatalogStore.Intent.GoBack -> onNavigateBack()
             else -> store.accept(intent)

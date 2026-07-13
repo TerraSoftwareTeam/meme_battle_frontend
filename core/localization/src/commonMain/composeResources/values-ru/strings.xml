@@ -29,4 +29,13 @@
     <string name="packs_create_situation_prompt">Ситуация / Текст</string>
     <string name="packs_create_submit">Создать пак</string>
     <string name="packs_create_success">Пак успешно создан!</string>
+    <string name="packs_details_author">ID автора</string>
+    <string name="packs_details_language">Язык</string>
+    <string name="packs_details_created">Создан</string>
+    <string name="packs_details_public">Публичный</string>
+    <string name="packs_details_private">Приватный</string>
+    <string name="packs_details_cards">Карточки</string>
+    <string name="packs_details_no_description">Без описания</string>
+    <string name="packs_details_loading">Загрузка...</string>
+    <string name="packs_details_empty_cards">Карточек пока нет</string>
 </resources>
