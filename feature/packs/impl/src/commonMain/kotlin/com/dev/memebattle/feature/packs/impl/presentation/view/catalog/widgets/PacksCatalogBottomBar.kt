@@ -39,7 +39,7 @@ internal fun PacksCatalogBottomBar(
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        // ── Выбор типа пака (Табы) ──────────────────────────────────
+
         Row(
             modifier = Modifier
                 .weight(1f)
@@ -61,7 +61,7 @@ internal fun PacksCatalogBottomBar(
             )
         }
 
-        // ── Кнопка создания пака ──────────────────────────────────────
+
         Button(
             onClick = onCreateClick,
             modifier = Modifier.height(52.dp),

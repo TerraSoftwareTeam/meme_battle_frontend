@@ -21,13 +21,13 @@ import com.dev.memebattle.feature.packs.impl.presentation.store.catalog.PacksCat
 import com.dev.memebattle.feature.packs.impl.presentation.view.catalog.widgets.PacksCatalogBottomBar
 import com.dev.memebattle.feature.packs.impl.presentation.view.catalog.widgets.PacksList
 import com.dev.memebattle.feature.packs.impl.presentation.view.catalog.widgets.AccentPrimary
+import com.dev.memebattle.feature.packs.impl.presentation.view.catalog.widgets.BackgroundBottom
+import com.dev.memebattle.feature.packs.impl.presentation.view.catalog.widgets.BackgroundTop
 import kotlinx.coroutines.flow.collectLatest
 import org.jetbrains.compose.resources.stringResource
 import com.dev.memebattle.core.localization.Res
 import com.dev.memebattle.core.localization.packs_title
 
-private val BackgroundTop = Color(0xFF1A1035)
-private val BackgroundBottom = Color(0xFF08040F)
 
 @Composable
 fun PacksCatalogView(
@@ -50,7 +50,7 @@ fun PacksCatalogView(
             )
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
-            // ── Top Bar ──────────────────────────────────────────────────
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -74,7 +74,7 @@ fun PacksCatalogView(
                 )
             }
 
-            // ── Список паков ─────────────────────────────────────────────
+
             PacksList(
                 state = state,
                 onPackClick = { packId ->
@@ -83,7 +83,7 @@ fun PacksCatalogView(
                 modifier = Modifier.weight(1f),
             )
 
-            // ── Нижний бар с действиями ───────────────────────────────────
+
             PacksCatalogBottomBar(
                 activeType = state.activeType,
                 onSwitchType = { type ->
@@ -95,7 +95,7 @@ fun PacksCatalogView(
             )
         }
 
-        // ── Индикатор загрузки ────────────────────────────────────────────
+
         AnimatedVisibility(
             visible = state.isLoading,
             enter = fadeIn(),

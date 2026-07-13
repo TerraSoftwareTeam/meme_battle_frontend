@@ -35,14 +35,12 @@ fun PacksView(component: PacksComponent) {
         }
 
         if (isMultiPane) {
-            // ══════════════════════════════════════════════════════════════════════
-            // DUAL / TRIPLE-PANE: каталог слева, детали/создание справа
-            // ══════════════════════════════════════════════════════════════════════
+
             Row(modifier = Modifier.fillMaxSize()) {
                 val catalogWeight = if (isLargeScreen) 0.75f else 0.5f
                 val extraWeight = 1f - catalogWeight
 
-                // ── Левая панель: каталог (всегда видим) ─────────────────────────
+
                 PacksCatalogView(
                     component = panels.main.instance,
                     modifier = Modifier
@@ -50,7 +48,7 @@ fun PacksView(component: PacksComponent) {
                         .fillMaxHeight(),
                 )
 
-                // ── Вертикальный разделитель ──────────────────────────────────────
+
                 Box(
                     modifier = Modifier
                         .fillMaxHeight()
@@ -58,7 +56,7 @@ fun PacksView(component: PacksComponent) {
                         .background(Color.White.copy(alpha = 0.08f))
                 )
 
-                // ── Правая панель: Extra (Create) → Details → пустой placeholder ─
+
                 Box(modifier = Modifier.weight(extraWeight).fillMaxHeight()) {
                     when {
                         panels.extra != null -> {
@@ -80,9 +78,7 @@ fun PacksView(component: PacksComponent) {
                 }
             }
         } else {
-            // ══════════════════════════════════════════════════════════════════════
-            // SINGLE-PANE: один экран за раз
-            // ══════════════════════════════════════════════════════════════════════
+
             Box(modifier = Modifier.fillMaxSize()) {
                 when {
                     panels.extra != null -> {
@@ -109,7 +105,7 @@ fun PacksView(component: PacksComponent) {
     }
 }
 
-// ─── Placeholder для правой панели когда нет активного контента ───────────────
+
 
 @Composable
 private fun RightPanelPlaceholder(modifier: Modifier = Modifier) {

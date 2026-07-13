@@ -25,32 +25,9 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import com.dev.memebattle.core.domain.packs.model.SafetyLevel
 import com.dev.memebattle.feature.packs.impl.presentation.store.catalog.PacksCatalogStore
-import com.dev.memebattle.feature.packs.impl.presentation.view.details.CardBack
+import com.dev.memebattle.feature.packs.impl.presentation.view.details.widgets.CardBack
 import kotlin.math.abs
 import kotlin.math.absoluteValue
-
-// Curated humorous situations for previews
-private val CuratedSituations = listOf(
-    "Баг на проде в пятницу в 17:59",
-    "Тимлид зашел в голосовой канал",
-    "Я: это таск на 5 минут\nТакже я через 3 дня:",
-    "Дизайнер опять перерисовал макет",
-    "Git push --force в main ветку",
-    "Собеседование по зуму без камеры",
-    "Код работает, но никто не знает почему",
-)
-
-private val MemeGradients = listOf(
-    Brush.linearGradient(listOf(Color(0xFF8A2387), Color(0xFFF27121))),
-    Brush.linearGradient(listOf(Color(0xFFF27121), Color(0xFFE94057))),
-    Brush.linearGradient(listOf(Color(0xFF00C6FF), Color(0xFF0072FF))),
-    Brush.linearGradient(listOf(Color(0xFF11998E), Color(0xFF38EF7D))),
-    Brush.linearGradient(listOf(Color(0xFFF12711), Color(0xFFF5AF19))),
-    Brush.linearGradient(listOf(Color(0xFFFF007F), Color(0xFF7F00FF))),
-    Brush.linearGradient(listOf(Color(0xFF4CA1AF), Color(0xFFC4E0E5))),
-    Brush.linearGradient(listOf(Color(0xFF1D976C), Color(0xFF93F9B9))),
-    Brush.linearGradient(listOf(Color(0xFFFF5F6D), Color(0xFFFFC371)))
-)
 
 private val SituationAccents = listOf(
     Color(0xFFFF5252),
@@ -90,7 +67,7 @@ internal fun PackCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    // Elegant vertical gradient backdrop for the fan area to create depth
+
     val fanBackdropGradient = Brush.verticalGradient(
         colors = listOf(
             Color(0xFF281C4F),
@@ -101,6 +78,7 @@ internal fun PackCard(
     Card(
         modifier = modifier
             .fillMaxWidth()
+            .clip(RoundedCornerShape(20.dp))
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(20.dp),
         border = BorderStroke(1.dp, CardBorder),
@@ -110,7 +88,7 @@ internal fun PackCard(
         Column(
             modifier = Modifier.fillMaxWidth()
         ) {
-            // Fan of cards container with depth backdrop
+
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -124,7 +102,7 @@ internal fun PackCard(
                 )
             }
 
-            // Pack details section (fixed height of 84.dp ensures all cards have identical layout and sizes)
+
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -132,7 +110,7 @@ internal fun PackCard(
                     .padding(horizontal = 14.dp, vertical = 14.dp),
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
-                // Header (Name + Language Badge)
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -152,7 +130,7 @@ internal fun PackCard(
                         modifier = Modifier.weight(1f)
                     )
                     Spacer(Modifier.width(8.dp))
-                    // Language Badge
+
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(6.dp))
@@ -168,13 +146,13 @@ internal fun PackCard(
                     }
                 }
 
-                // Bottom row: Safety badge & creation date
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Safety Level Badge
+
                     val (safetyText, safetyBg, safetyTextCol) = when (safetyLevel) {
                         SafetyLevel.FAMILY_FRIENDLY -> Triple("0+", Color(0xFF43A047), Color.White)
                         SafetyLevel.SPICY -> Triple("16+", Color(0xFFFFD54F), Color(0xFF3E2723))
@@ -194,7 +172,7 @@ internal fun PackCard(
                         )
                     }
 
-                    // Creation date (properly formatted, falling back to a dash if blank)
+
                     val formattedDate = formatCreationDate(createdAt).ifBlank { "-" }
                     Text(
                         text = formattedDate,
@@ -220,14 +198,14 @@ private fun CardFan(
             .height(115.dp),
         contentAlignment = Alignment.Center
     ) {
-        // Deterministic count between 3 and 7 cards in the preview
+
         val count = (packId.hashCode().absoluteValue % 5) + 3
         val middleIndex = (count - 1) / 2f
 
         for (i in 0 until count) {
             val distanceFromMiddle = i - middleIndex
 
-            // Rotation angle: fanning out symmetrically and tightly
+
             val maxRotation = when (count) {
                 1 -> 0f
                 2 -> 4f
@@ -239,7 +217,7 @@ private fun CardFan(
             }
             val rotation = distanceFromMiddle * (maxRotation / (if (middleIndex == 0f) 1f else middleIndex))
 
-            // Horizontal displacement: keeps cards within bounds
+
             val maxTransX = when (count) {
                 1 -> 0.dp
                 2 -> 10.dp
@@ -251,7 +229,7 @@ private fun CardFan(
             }
             val translationX = distanceFromMiddle * (maxTransX.value / (if (middleIndex == 0f) 1f else middleIndex))
 
-            // Vertical displacement: arches slightly down on the sides
+
             val maxTransY = when (count) {
                 1 -> 0.dp
                 2 -> 2.dp
@@ -263,7 +241,7 @@ private fun CardFan(
             }
             val translationY = abs(distanceFromMiddle) * (maxTransY.value / (if (middleIndex == 0f) 1f else middleIndex))
 
-            // Symmetrical z-index ensures middle card is fully on top
+
             val cardZIndex = (count - abs(distanceFromMiddle)).toFloat()
 
             if (packType == PacksCatalogStore.PackType.Memes) {

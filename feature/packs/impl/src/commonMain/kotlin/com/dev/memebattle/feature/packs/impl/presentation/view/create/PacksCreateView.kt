@@ -3,12 +3,8 @@ package com.dev.memebattle.feature.packs.impl.presentation.view.create
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -17,21 +13,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.dev.memebattle.feature.packs.impl.presentation.component.create.PacksCreateComponent
 import com.dev.memebattle.feature.packs.impl.presentation.store.create.PacksCreateStore
-import com.dev.memebattle.feature.packs.impl.presentation.view.create.widgets.PackTypeSelector
-import com.dev.memebattle.feature.packs.impl.presentation.view.create.widgets.SafetyLevelSelector
-import com.dev.memebattle.feature.packs.impl.presentation.view.create.widgets.FileImageCard
-import com.dev.memebattle.feature.packs.impl.presentation.view.create.widgets.BackgroundTop
-import com.dev.memebattle.feature.packs.impl.presentation.view.create.widgets.BackgroundBottom
-import com.dev.memebattle.feature.packs.impl.presentation.view.create.widgets.TextPrimary
-import com.dev.memebattle.feature.packs.impl.presentation.view.create.widgets.TextSecondary
-import com.dev.memebattle.feature.packs.impl.presentation.view.create.widgets.AccentColor
-import com.dev.memebattle.feature.packs.impl.presentation.view.create.widgets.ErrorColor
-import com.dev.memebattle.feature.packs.impl.presentation.view.create.widgets.SurfaceColor
+import com.dev.memebattle.feature.packs.impl.presentation.view.create.widgets.*
 import io.github.vinceglb.filekit.compose.rememberFilePickerLauncher
 import io.github.vinceglb.filekit.core.PickerMode
 import io.github.vinceglb.filekit.core.PickerType
@@ -41,7 +27,7 @@ import org.jetbrains.compose.resources.getString
 import com.dev.memebattle.core.localization.Res
 import com.dev.memebattle.core.localization.*
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PacksCreateView(
     component: PacksCreateComponent,
@@ -156,91 +142,26 @@ fun PacksCreateView(
                 }
 
                 if (state.type == PacksCreateStore.PackType.Memes) {
-                    item {
-                        Button(
-                            onClick = { filePicker.launch() },
-                            modifier = Modifier.fillMaxWidth().height(56.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = SurfaceColor),
-                            shape = RoundedCornerShape(12.dp)
-                        ) {
-                            Text(
-                                stringResource(Res.string.packs_create_select_images),
-                                color = TextPrimary,
-                                fontWeight = FontWeight.SemiBold
-                            )
+                    createMemesSection(
+                        selectedFiles = state.selectedFiles,
+                        onLaunchPicker = { filePicker.launch() },
+                        onRemoveFile = { file ->
+                            component.onIntent(PacksCreateStore.Intent.UpdateSelectedFiles(state.selectedFiles - file))
                         }
-                    }
-                    if (state.selectedFiles.isNotEmpty()) {
-                        item {
-                            FlowRow(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                verticalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                state.selectedFiles.forEach { file ->
-                                    FileImageCard(
-                                        file = file,
-                                        onRemove = {
-                                            component.onIntent(PacksCreateStore.Intent.UpdateSelectedFiles(state.selectedFiles - file))
-                                        }
-                                    )
-                                }
-                            }
-                        }
-                    }
+                    )
                 } else {
-                    item {
-                        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                            OutlinedTextField(
-                                value = currentPromptInput,
-                                onValueChange = { currentPromptInput = it },
-                                label = { Text(stringResource(Res.string.packs_create_situation_prompt), color = TextSecondary) },
-                                modifier = Modifier.weight(1f),
-                                singleLine = true,
-                                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                                keyboardActions = KeyboardActions(onDone = {
-                                    if (currentPromptInput.isNotBlank()) {
-                                        component.onIntent(PacksCreateStore.Intent.AddPrompt(currentPromptInput))
-                                        currentPromptInput = ""
-                                    }
-                                }),
-                                colors = outlinedTextFieldColors()
-                            )
-                            Spacer(Modifier.width(8.dp))
-                            IconButton(
-                                onClick = {
-                                    if (currentPromptInput.isNotBlank()) {
-                                        component.onIntent(PacksCreateStore.Intent.AddPrompt(currentPromptInput))
-                                        currentPromptInput = ""
-                                    }
-                                },
-                                modifier = Modifier
-                                    .size(56.dp)
-                                    .background(AccentColor, RoundedCornerShape(12.dp))
-                            ) {
-                                Icon(Icons.Default.Add, contentDescription = "Add", tint = Color.White)
-                            }
+                    createSituationsSection(
+                        prompts = state.prompts,
+                        currentPromptInput = currentPromptInput,
+                        onPromptInputChange = { currentPromptInput = it },
+                        onAddPrompt = {
+                            component.onIntent(PacksCreateStore.Intent.AddPrompt(it))
+                            currentPromptInput = ""
+                        },
+                        onRemovePrompt = {
+                            component.onIntent(PacksCreateStore.Intent.RemovePrompt(it))
                         }
-                    }
-
-                    itemsIndexed(state.prompts) { index, prompt ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(SurfaceColor, RoundedCornerShape(8.dp))
-                                .padding(horizontal = 16.dp, vertical = 12.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text(prompt, color = TextPrimary, modifier = Modifier.weight(1f))
-                            IconButton(
-                                onClick = { component.onIntent(PacksCreateStore.Intent.RemovePrompt(index)) },
-                                modifier = Modifier.size(24.dp)
-                            ) {
-                                Icon(Icons.Default.Close, contentDescription = "Remove", tint = ErrorColor)
-                            }
-                        }
-                    }
+                    )
                 }
 
                 item { Spacer(modifier = Modifier.height(32.dp)) }
@@ -277,14 +198,3 @@ fun PacksCreateView(
         }
     }
 }
-
-@Composable
-private fun outlinedTextFieldColors() = OutlinedTextFieldDefaults.colors(
-    focusedTextColor = TextPrimary,
-    unfocusedTextColor = TextPrimary,
-    focusedContainerColor = Color.Transparent,
-    unfocusedContainerColor = Color.Transparent,
-    focusedBorderColor = AccentColor,
-    unfocusedBorderColor = SurfaceColor,
-    cursorColor = AccentColor
-)
