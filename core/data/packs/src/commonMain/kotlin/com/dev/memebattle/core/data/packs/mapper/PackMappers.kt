@@ -14,14 +14,14 @@ import com.dev.network.game.current.dto.PackMemeDetailsDto
 import com.dev.network.game.current.dto.PackSituationDto
 import com.dev.network.game.current.dto.SituationPackDetailsResponse
 import com.dev.network.game.current.dto.SituationPackDto
-
+import com.dev.network.game.current.dto.LanguageCode
 internal fun MemePackDto.toDomain(): MemePack = MemePack(
     id = id,
     name = name,
     description = description,
     isPublic = is_public,
     authorId = author_id,
-    languageCode = language_code,
+    languageCode = language_code.toDomain(),
     createdAt = created_at,
     safetyLevel = safety_level.toDomain(),
 )
@@ -66,7 +66,7 @@ internal fun SituationPackDto.toDomain(): SituationPack = SituationPack(
     description = description,
     isPublic = is_public,
     authorId = author_id,
-    languageCode = language_code,
+    languageCode = language_code.toDomain(),
     createdAt = created_at,
     safetyLevel = safety_level.toDomain(),
 )
@@ -92,4 +92,16 @@ internal fun SafetyLevel.toDto(): ContentSafetyLevel = when (this) {
     SafetyLevel.FAMILY_FRIENDLY -> ContentSafetyLevel.FAMILY_FRIENDLY
     SafetyLevel.SPICY -> ContentSafetyLevel.SPICY
     SafetyLevel.EXPLICIT -> ContentSafetyLevel.EXPLICIT
+}
+
+internal fun LanguageCode.toDomain(): String = when (this) {
+    LanguageCode.RU -> "ru"
+    LanguageCode.EN -> "en"
+    LanguageCode.UND -> "und"
+}
+
+internal fun String.toLanguageCodeDto(): LanguageCode = when (this.lowercase()) {
+    "ru" -> LanguageCode.RU
+    "en" -> LanguageCode.EN
+    else -> LanguageCode.UND
 }

@@ -8,6 +8,8 @@
     <string name="packs_create">Создать</string>
     <string name="packs_type_memes">Мемы</string>
     <string name="packs_type_situations">Ситуации</string>
+    <string name="packs_filter_all">Все</string>
+    <string name="packs_filter_personal">Мои</string>
     <string name="packs_no_memes">Пока нет паков с мемами</string>
     <string name="packs_no_situations">Пока нет паков с ситуациями</string>
     <string name="packs_details_title">Детали пака</string>

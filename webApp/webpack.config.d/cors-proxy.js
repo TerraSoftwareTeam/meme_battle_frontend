@@ -17,5 +17,16 @@ config.devServer.proxy = [
                 proxyRes.headers['access-control-allow-origin'] = '*';
             }
         }
+    },
+    // API proxy: routes all /api-proxy/* requests to the backend.
+    // This makes the browser see same-origin requests → no CORS preflight at all,
+    // which fixes PATCH/DELETE being blocked by missing Access-Control-Allow-Methods.
+    {
+        context: ['/api-proxy'],
+        target: 'https://meme.skyfly.hackclub.app',
+        changeOrigin: true,
+        secure: true,
+        pathRewrite: { '^/api-proxy': '' },
     }
 ];
+

@@ -20,6 +20,7 @@ class PacksCatalogComponentImpl(
     private val packRepository: PackRepository,
     private val onNavigateToDetails: (packId: String, kind: String) -> Unit,
     private val onNavigateToCreate: () -> Unit,
+    private val onNavigateToEdit: (packId: String, kind: String) -> Unit,
     private val onNavigateBack: () -> Unit,
 ) : PacksCatalogComponent, ComponentContext by componentContext {
 
@@ -42,6 +43,10 @@ class PacksCatalogComponentImpl(
             is PacksCatalogStore.Intent.OpenDetails -> {
                 val kind = if (state.value.activeType == PacksCatalogStore.PackType.Situations) "situation" else "meme"
                 onNavigateToDetails(intent.packId, kind)
+            }
+            is PacksCatalogStore.Intent.OpenEdit -> {
+                val kind = if (state.value.activeType == PacksCatalogStore.PackType.Situations) "situation" else "meme"
+                onNavigateToEdit(intent.packId, kind)
             }
             is PacksCatalogStore.Intent.OpenCreate -> onNavigateToCreate()
             is PacksCatalogStore.Intent.GoBack -> onNavigateBack()

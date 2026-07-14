@@ -15,6 +15,8 @@ import com.dev.memebattle.feature.packs.impl.presentation.component.PacksCompone
 import com.dev.memebattle.feature.packs.impl.presentation.view.catalog.PacksCatalogView
 import com.dev.memebattle.feature.packs.impl.presentation.view.create.PacksCreateView
 import com.dev.memebattle.feature.packs.impl.presentation.view.details.PacksDetailsView
+import com.dev.memebattle.feature.packs.impl.presentation.view.edit.PacksEditView
+import com.dev.memebattle.feature.packs.impl.presentation.component.PacksExtraComponent
 import org.jetbrains.compose.resources.stringResource
 import com.dev.memebattle.core.localization.Res
 import com.dev.memebattle.core.localization.*
@@ -60,10 +62,20 @@ fun PacksView(component: PacksComponent) {
                 Box(modifier = Modifier.weight(extraWeight).fillMaxHeight()) {
                     when {
                         panels.extra != null -> {
-                            PacksCreateView(
-                                component = panels.extra!!.instance,
-                                modifier = Modifier.fillMaxSize(),
-                            )
+                            when (val extra = panels.extra!!.instance) {
+                                is PacksExtraComponent.Create -> {
+                                    PacksCreateView(
+                                        component = extra.instance,
+                                        modifier = Modifier.fillMaxSize(),
+                                    )
+                                }
+                                is PacksExtraComponent.Edit -> {
+                                    PacksEditView(
+                                        component = extra.instance,
+                                        modifier = Modifier.fillMaxSize(),
+                                    )
+                                }
+                            }
                         }
                         panels.details != null -> {
                             PacksDetailsView(
@@ -82,10 +94,20 @@ fun PacksView(component: PacksComponent) {
             Box(modifier = Modifier.fillMaxSize()) {
                 when {
                     panels.extra != null -> {
-                        PacksCreateView(
-                            component = panels.extra!!.instance,
-                            modifier = Modifier.fillMaxSize(),
-                        )
+                        when (val extra = panels.extra!!.instance) {
+                            is PacksExtraComponent.Create -> {
+                                PacksCreateView(
+                                    component = extra.instance,
+                                    modifier = Modifier.fillMaxSize(),
+                                )
+                            }
+                            is PacksExtraComponent.Edit -> {
+                                PacksEditView(
+                                    component = extra.instance,
+                                    modifier = Modifier.fillMaxSize(),
+                                )
+                            }
+                        }
                     }
                     panels.details != null -> {
                         PacksDetailsView(

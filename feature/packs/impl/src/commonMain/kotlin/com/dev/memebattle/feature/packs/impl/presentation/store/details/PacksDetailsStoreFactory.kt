@@ -19,12 +19,24 @@ internal class PacksDetailsStoreFactory(
         Store<PacksDetailsStore.Intent, PacksDetailsStore.State, PacksDetailsStore.Effect> by storeFactory.create(
             name = "PacksDetailsStore",
             initialState = PacksDetailsStore.State(),
+            bootstrapper = com.arkivanov.mvikotlin.core.store.SimpleBootstrapper(Unit),
             executorFactory = ::Executor,
             reducer = ReducerImpl,
         ) {}
 
     private inner class Executor :
-        CoroutineExecutor<PacksDetailsStore.Intent, Nothing, PacksDetailsStore.State, Message, PacksDetailsStore.Effect>() {
+        CoroutineExecutor<PacksDetailsStore.Intent, Unit, PacksDetailsStore.State, Message, PacksDetailsStore.Effect>() {
+
+        override fun executeAction(action: Unit) {
+            scope.launch {
+                packRepository.packUpdates.collect { updatedId ->
+                    val s = state()
+                    if (s.packId == updatedId && s.kind != null) {
+                        load(s.packId, s.kind)
+                    }
+                }
+            }
+        }
 
         override fun executeIntent(intent: PacksDetailsStore.Intent) {
             when (intent) {

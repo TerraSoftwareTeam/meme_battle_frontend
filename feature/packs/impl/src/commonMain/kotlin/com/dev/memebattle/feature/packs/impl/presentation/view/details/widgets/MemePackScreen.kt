@@ -28,7 +28,7 @@ import com.dev.memebattle.core.domain.packs.model.MemeCard
 import com.dev.memebattle.core.domain.packs.model.MemePack
 import com.dev.memebattle.core.localization.Res
 import com.dev.memebattle.core.localization.packs_details_empty_cards
-import com.dev.memebattle.feature.packs.impl.presentation.view.details.CardDeckSelector
+import com.dev.memebattle.feature.packs.impl.presentation.view.shared.CardDeckSelector
 import com.dev.memebattle.feature.packs.impl.presentation.view.details.DeckTextSec
 import org.jetbrains.compose.resources.stringResource
 
@@ -56,7 +56,7 @@ internal fun MemePackScreen(pack: MemePack, cards: List<MemeCard>) {
                     .fillMaxHeight()
                     .aspectRatio(3f / 4f)
             ) {
-                LargeCardPreview(url = cards.getOrNull(safeIdx)?.mediaUrl, idx = safeIdx)
+                LargeCardPreview(model = cards.getOrNull(safeIdx)?.mediaUrl, idx = safeIdx)
             }
         }
 
@@ -83,7 +83,7 @@ internal fun MemePackScreen(pack: MemePack, cards: List<MemeCard>) {
                     .height(140.dp)
                     .padding(horizontal = 8.dp),
             ) { idx, isSelected ->
-                MemeCardFace(url = cards[idx].mediaUrl, isSelected = isSelected)
+                MemeCardFace(model = cards[idx].mediaUrl, isSelected = isSelected)
             }
         } else {
             Box(Modifier.fillMaxWidth().height(80.dp), Alignment.Center) {

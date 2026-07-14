@@ -8,6 +8,8 @@
     <string name="packs_create">Create</string>
     <string name="packs_type_memes">Memes</string>
     <string name="packs_type_situations">Situations</string>
+    <string name="packs_filter_all">Global</string>
+    <string name="packs_filter_personal">My Packs</string>
     <string name="packs_no_memes">No meme packs yet</string>
     <string name="packs_no_situations">No situation packs yet</string>
     <string name="packs_details_title">Pack Details</string>

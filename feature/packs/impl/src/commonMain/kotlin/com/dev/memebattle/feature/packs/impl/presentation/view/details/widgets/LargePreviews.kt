@@ -33,7 +33,7 @@ import com.dev.memebattle.feature.packs.impl.presentation.view.details.DeckTextP
 import com.dev.memebattle.feature.packs.impl.presentation.view.details.SituationAccents
 
 @Composable
-internal fun LargeCardPreview(url: String?, idx: Int) {
+internal fun LargeCardPreview(model: Any?, idx: Int) {
     val scale by animateFloatAsState(1f, spring(0.65f, 350f), label = "ps")
     Card(
         modifier = Modifier.fillMaxSize().graphicsLayer { scaleX = scale; scaleY = scale },
@@ -43,9 +43,9 @@ internal fun LargeCardPreview(url: String?, idx: Int) {
         elevation = CardDefaults.cardElevation(12.dp),
     ) {
         Box(Modifier.fillMaxSize().background(Color.Black), contentAlignment = Alignment.Center) {
-            if (!url.isNullOrBlank()) {
+            if (model != null && (model !is String || model.isNotBlank())) {
                 SubcomposeAsyncImage(
-                    model = url,
+                    model = model,
                     contentDescription = null,
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Fit,

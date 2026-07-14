@@ -61,3 +61,5 @@ include(":feature:game-setup:impl")
 include(":feature:gameplay:api")
 include(":feature:gameplay:impl")
 // endregion FEATURE Gameplay
+
+include(":network:game:v2")

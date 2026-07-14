@@ -13,8 +13,31 @@ import io.ktor.http.content.OutgoingContent
 import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
+import io.ktor.http.encodedPath
 
 object AppHttpClientFactory {
+
+    private class BaseUrlConfig {
+        var baseUrl: String = ""
+    }
+
+    private val BaseUrlPlugin = createClientPlugin("BaseUrlPlugin", ::BaseUrlConfig) {
+        val parsedBase = io.ktor.http.Url(pluginConfig.baseUrl)
+        val basePath = parsedBase.encodedPath.trimEnd('/')
+
+        onRequest { request, _ ->
+            request.url.protocol = parsedBase.protocol
+            request.url.host = parsedBase.host
+            if (parsedBase.port != 0 && parsedBase.port != 80 && parsedBase.port != 443) {
+                request.url.port = parsedBase.port
+            }
+            
+            val currentPath = request.url.encodedPath
+            if (basePath.isNotEmpty() && !currentPath.startsWith(basePath)) {
+                request.url.encodedPath = basePath + if (currentPath.startsWith("/")) currentPath else "/$currentPath"
+            }
+        }
+    }
 
     private val JsonContentTypePlugin = createClientPlugin("JsonContentTypePlugin") {
         onRequest { request, content ->
@@ -46,9 +69,7 @@ object AppHttpClientFactory {
             }
             level = LogLevel.HEADERS
         }
-        defaultRequest { 
-            url(baseUrl)
-        }
+        install(BaseUrlPlugin) { this.baseUrl = baseUrl }
     }
 
     fun createAuthenticated(
@@ -74,9 +95,7 @@ object AppHttpClientFactory {
             this.unauthenticatedClientProvider = unauthenticatedClientProvider
             this.baseUrl = baseUrl
         }
-        defaultRequest { 
-            url(baseUrl)
-        }
+        install(BaseUrlPlugin) { this.baseUrl = baseUrl }
     }
 }
 

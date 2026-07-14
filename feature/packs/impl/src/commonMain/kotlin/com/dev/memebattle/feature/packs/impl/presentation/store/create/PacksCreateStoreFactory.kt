@@ -92,7 +92,8 @@ internal class PacksCreateStoreFactory(
                         )
                         println("[PacksCreateStore] createMemePack result: $createResult")
                         createResult.onSuccess {
-                            publish(PacksCreateStore.Effect.Created(it.id))
+                            kotlinx.coroutines.delay(500)
+                            publish(PacksCreateStore.Effect.Created(it.id, "meme"))
                         }.onFailure {
                             dispatch(Message.SetError(it.message ?: "Failed to create pack"))
                             publish(PacksCreateStore.Effect.ShowError(it.message ?: "Failed to create pack"))
@@ -107,7 +108,8 @@ internal class PacksCreateStoreFactory(
                             prompts = currentState.prompts
                         )
                         createResult.onSuccess {
-                            publish(PacksCreateStore.Effect.Created(it.id))
+                            kotlinx.coroutines.delay(500)
+                            publish(PacksCreateStore.Effect.Created(it.id, "situation"))
                         }.onFailure {
                             dispatch(Message.SetError(it.message ?: "Failed to create pack"))
                             publish(PacksCreateStore.Effect.ShowError(it.message ?: "Failed to create pack"))

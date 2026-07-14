@@ -9,5 +9,5 @@ interface PacksCreateComponent {
     val effects: SharedFlow<PacksCreateStore.Effect>
     fun onIntent(intent: PacksCreateStore.Intent)
     fun showNotification(message: String, isError: Boolean = false)
-    fun onCreated(packId: String)
+    fun onCreated(packId: String, kind: String)
 }

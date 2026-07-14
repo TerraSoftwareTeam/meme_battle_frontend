@@ -9,6 +9,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -65,6 +69,7 @@ internal fun PackCard(
     safetyLevel: SafetyLevel,
     languageCode: String,
     onClick: () -> Unit,
+    onEditClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
 
@@ -100,6 +105,24 @@ internal fun PackCard(
                     packId = id,
                     packType = packType
                 )
+                
+                if (onEditClick != null) {
+                    IconButton(
+                        onClick = { onEditClick() },
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(4.dp)
+                            .size(32.dp)
+                            .background(Color.Black.copy(alpha = 0.5f), CircleShape)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = "Edit",
+                            tint = Color.White,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                }
             }
 
 

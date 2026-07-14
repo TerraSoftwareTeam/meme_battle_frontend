@@ -23,11 +23,11 @@ import com.dev.memebattle.feature.packs.impl.presentation.view.details.DeckAccen
 import com.dev.memebattle.feature.packs.impl.presentation.view.details.DeckTextPri
 
 @Composable
-internal fun MemeCardFace(url: String, isSelected: Boolean) {
+internal fun MemeCardFace(model: Any?, isSelected: Boolean) {
     Box(Modifier.fillMaxSize().background(Color.Black), contentAlignment = Alignment.Center) {
-        if (url.isNotBlank()) {
+        if (model != null && (model !is String || model.isNotBlank())) {
             SubcomposeAsyncImage(
-                model = url,
+                model = model,
                 contentDescription = null,
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Fit,

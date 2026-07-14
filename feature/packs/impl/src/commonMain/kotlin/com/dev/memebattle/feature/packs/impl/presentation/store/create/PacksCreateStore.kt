@@ -42,7 +42,7 @@ interface PacksCreateStore : Store<PacksCreateStore.Intent, PacksCreateStore.Sta
 
     sealed interface Effect {
         data object NavigateBack : Effect
-        data class Created(val packId: String) : Effect
+        data class Created(val packId: String, val kind: String) : Effect
         data class ShowError(val message: String) : Effect
     }
 }

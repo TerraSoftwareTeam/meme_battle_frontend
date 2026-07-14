@@ -28,7 +28,7 @@ import com.dev.memebattle.core.domain.packs.model.SituationCard
 import com.dev.memebattle.core.domain.packs.model.SituationPack
 import com.dev.memebattle.core.localization.Res
 import com.dev.memebattle.core.localization.packs_details_empty_cards
-import com.dev.memebattle.feature.packs.impl.presentation.view.details.CardDeckSelector
+import com.dev.memebattle.feature.packs.impl.presentation.view.shared.CardDeckSelector
 import com.dev.memebattle.feature.packs.impl.presentation.view.details.DeckTextSec
 import com.dev.memebattle.feature.packs.impl.presentation.view.details.SituationAccents
 import org.jetbrains.compose.resources.stringResource

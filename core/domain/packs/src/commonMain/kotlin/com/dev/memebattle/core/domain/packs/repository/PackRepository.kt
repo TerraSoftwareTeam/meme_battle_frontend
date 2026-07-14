@@ -19,6 +19,15 @@ interface PackRepository {
     /** Список ситуационных паков. Обновляется при любых мутациях автоматически. */
     val situationPacks: StateFlow<List<SituationPack>>
 
+    /** Список личных мем-паков пользователя. */
+    val myMemePacks: StateFlow<List<MemePack>>
+
+    /** Список личных ситуационных паков пользователя. */
+    val mySituationPacks: StateFlow<List<SituationPack>>
+    
+    /** Поток событий обновления паков (выдает id пака при изменении его деталей) */
+    val packUpdates: kotlinx.coroutines.flow.SharedFlow<String>
+
     // ─── Детали паков (cache-first) ───────────────────────────────────────────
 
     /**
@@ -40,6 +49,10 @@ interface PackRepository {
 
     /** Принудительно загружает список ситуационных паков из сети и обновляет [situationPacks]. */
     suspend fun refreshSituationPacks(): Result<Unit>
+
+    suspend fun refreshMyMemePacks(): Result<Unit>
+
+    suspend fun refreshMySituationPacks(): Result<Unit>
 
     // ─── Мутации мем-паков ────────────────────────────────────────────────────
 

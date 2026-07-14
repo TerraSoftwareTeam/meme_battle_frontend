@@ -1,4 +1,4 @@
-package com.dev.memebattle.feature.packs.impl.presentation.view.details
+package com.dev.memebattle.feature.packs.impl.presentation.view.shared
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
@@ -14,6 +14,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.dev.memebattle.feature.packs.impl.presentation.view.details.DeckAccent
+import com.dev.memebattle.feature.packs.impl.presentation.view.details.DeckTextSec
 import com.dev.memebattle.feature.packs.impl.presentation.view.details.widgets.PeekingCard
 import com.dev.memebattle.feature.packs.impl.presentation.view.details.widgets.SlotMachineLever
 import kotlinx.coroutines.launch
@@ -93,16 +95,13 @@ internal fun CardDeckSelector(
                 },
             contentAlignment = Alignment.Center
         ) {
-            val startIdx = (displayedIdx - 2).coerceIn(0, (totalCount - 5).coerceAtLeast(0))
-            val endIdx   = (startIdx + 4).coerceAtMost(totalCount - 1)
-            val visibleCount = endIdx - startIdx + 1
-
+            val startIdx = currentPage * pageSize
+            val visibleCount = pageSize
 
             val spacingDp = 5.dp
             val totalSpacing = spacingDp * (visibleCount - 1)
             val maxCardWidth = (maxWidth - totalSpacing) / visibleCount
             val maxCardHeight = maxHeight * 0.82f
-
 
             val cardHeight = minOf(maxCardHeight, maxCardWidth * 4f / 3f)
             val cardWidth = cardHeight * 3f / 4f
@@ -111,29 +110,40 @@ internal fun CardDeckSelector(
                 horizontalArrangement = Arrangement.spacedBy(spacingDp, Alignment.CenterHorizontally),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                for (cardIdx in startIdx..endIdx) {
-                    val isSelected   = cardIdx == displayedIdx
-                    val peekFraction = if (isSelected) 0.80f else 0.36f
+                for (slotIdx in 0 until visibleCount) {
+                    val cardIdx = startIdx + slotIdx
+                    if (cardIdx < totalCount) {
+                        val isSelected   = cardIdx == displayedIdx
+                        val peekFraction = if (isSelected) 0.80f else 0.36f
 
-                    Box(
-                        modifier = Modifier
-                            .size(width = cardWidth, height = cardHeight)
-                            .clickable(
-                                interactionSource = remember { MutableInteractionSource() },
-                                indication = null
-                            ) {
-                                if (!isSelected) {
-                                    displayedIdx = cardIdx
-                                    onSelect(cardIdx)
+                        Box(
+                            modifier = Modifier
+                                .size(width = cardWidth, height = cardHeight)
+                                .clickable(
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    indication = null
+                                ) {
+                                    if (!isSelected) {
+                                        displayedIdx = cardIdx
+                                        onSelect(cardIdx)
+                                    }
                                 }
-                            }
-                    ) {
-                        PeekingCard(
-                            peekFraction = peekFraction,
-                            isSelected   = isSelected,
-                            modifier     = Modifier.fillMaxSize(),
                         ) {
-                            cardSlot(cardIdx, isSelected)
+                            PeekingCard(
+                                peekFraction = peekFraction,
+                                isSelected   = isSelected,
+                                modifier     = Modifier.fillMaxSize(),
+                            ) {
+                                cardSlot(cardIdx, isSelected)
+                            }
+                        }
+                    } else {
+                        Box(
+                            modifier = Modifier.size(width = cardWidth, height = cardHeight)
+                        ) {
+                            com.dev.memebattle.feature.packs.impl.presentation.view.details.widgets.CardBack(
+                                modifier = Modifier.fillMaxSize()
+                            )
                         }
                     }
                 }
@@ -144,10 +154,10 @@ internal fun CardDeckSelector(
 
 
         SlotMachineLever(
-            onFlipUp   = { flipToPage((currentPage + 1).coerceAtMost(totalPages - 1)) },
-            onFlipDown = { flipToPage((currentPage - 1).coerceAtLeast(0)) },
-            canUp      = currentPage < totalPages - 1,
-            canDown    = currentPage > 0,
+            onFlipUp   = { flipToPage((currentPage - 1).coerceAtLeast(0)) },
+            onFlipDown = { flipToPage((currentPage + 1).coerceAtMost(totalPages - 1)) },
+            canUp      = currentPage > 0,
+            canDown    = currentPage < totalPages - 1,
             modifier   = Modifier.width(38.dp).fillMaxHeight(),
         )
     }

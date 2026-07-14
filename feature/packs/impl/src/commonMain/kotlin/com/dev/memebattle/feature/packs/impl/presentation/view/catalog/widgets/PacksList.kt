@@ -27,14 +27,17 @@ internal data class PackUiModel(
 internal fun PacksList(
     state: PacksCatalogStore.State,
     onPackClick: (String) -> Unit,
+    onEditClick: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val uiPacks = when (state.activeType) {
-        PacksCatalogStore.PackType.Memes -> state.memePacks.map { 
-            PackUiModel(it.id, it.name, it.description, it.createdAt, it.safetyLevel, it.languageCode) 
+        PacksCatalogStore.PackType.Memes -> {
+            val packs = if (state.activeFilter == PacksCatalogStore.PackFilter.Personal) state.myMemePacks else state.memePacks
+            packs.map { PackUiModel(it.id, it.name, it.description, it.createdAt, it.safetyLevel, it.languageCode) }
         }
-        PacksCatalogStore.PackType.Situations -> state.situationPacks.map { 
-            PackUiModel(it.id, it.name, it.description, it.createdAt, it.safetyLevel, it.languageCode) 
+        PacksCatalogStore.PackType.Situations -> {
+            val packs = if (state.activeFilter == PacksCatalogStore.PackFilter.Personal) state.mySituationPacks else state.situationPacks
+            packs.map { PackUiModel(it.id, it.name, it.description, it.createdAt, it.safetyLevel, it.languageCode) }
         }
     }
 
@@ -68,6 +71,9 @@ internal fun PacksList(
                     safetyLevel = pack.safetyLevel,
                     languageCode = pack.languageCode,
                     onClick = { onPackClick(pack.id) },
+                    onEditClick = if (state.activeFilter == PacksCatalogStore.PackFilter.Personal) {
+                        { onEditClick(pack.id) }
+                    } else null,
                 )
             }
         }

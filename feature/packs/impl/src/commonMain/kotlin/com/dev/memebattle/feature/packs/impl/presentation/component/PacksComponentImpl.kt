@@ -23,6 +23,8 @@ import com.dev.memebattle.feature.packs.impl.presentation.component.create.Packs
 import com.dev.memebattle.feature.packs.impl.presentation.component.create.PacksCreateComponentImpl
 import com.dev.memebattle.feature.packs.impl.presentation.component.details.PacksDetailsComponent
 import com.dev.memebattle.feature.packs.impl.presentation.component.details.PacksDetailsComponentImpl
+import com.dev.memebattle.feature.packs.impl.presentation.component.edit.PacksEditComponent
+import com.dev.memebattle.feature.packs.impl.presentation.component.edit.PacksEditComponentImpl
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.channels.Channel
@@ -58,6 +60,8 @@ class PacksComponentImpl(
     sealed interface ExtraConfig {
         @Serializable
         data object Create : ExtraConfig
+        @Serializable
+        data class Edit(val packId: String, val kind: String) : ExtraConfig
     }
 
     // ── PanelsNavigation ─────────────────────────────────────────────────────
@@ -67,7 +71,7 @@ class PacksComponentImpl(
 
     @OptIn(ExperimentalDecomposeApi::class)
     @Suppress("UNCHECKED_CAST")
-    override val panels: Value<ChildPanels<MainConfig, PacksCatalogComponent, DetailsConfig, PacksDetailsComponent, ExtraConfig, PacksCreateComponent>> =
+    override val panels: Value<ChildPanels<MainConfig, PacksCatalogComponent, DetailsConfig, PacksDetailsComponent, ExtraConfig, PacksExtraComponent>> =
         childPanels(
             source = panelsNavigation,
             // Triple<KSerializer, KSerializer, KSerializer> для 3-панельного варианта
@@ -91,7 +95,8 @@ class PacksComponentImpl(
             },
             extraFactory = { config, ctx ->
                 when (config) {
-                    is ExtraConfig.Create -> createCreate(ctx)
+                    is ExtraConfig.Create -> PacksExtraComponent.Create(createCreate(ctx))
+                    is ExtraConfig.Edit -> PacksExtraComponent.Edit(createEdit(ctx, config.packId, config.kind))
                 }
             },
         )
@@ -109,6 +114,9 @@ class PacksComponentImpl(
             },
             onNavigateToCreate = {
                 panelsNavigation.activateExtra(ExtraConfig.Create)
+            },
+            onNavigateToEdit = { packId, kind ->
+                panelsNavigation.activateExtra(ExtraConfig.Edit(packId, kind))
             },
             onNavigateBack = {
                 outputChannel.trySend(NavigationOutput.Back)
@@ -143,9 +151,29 @@ class PacksComponentImpl(
             onShowNotification = { message, type ->
                 outputChannel.trySend(NavigationOutput.ShowNotification(message = message, type = type))
             },
-            onCreatedCallback = { packId ->
+            onCreatedCallback = { packId, kind ->
                 panelsNavigation.dismissExtra()
-                panelsNavigation.activateDetails(DetailsConfig.Details(packId))
+                panelsNavigation.activateDetails(DetailsConfig.Details(packId, kind))
+            }
+        )
+
+    @OptIn(ExperimentalDecomposeApi::class)
+    private fun createEdit(ctx: ComponentContext, packId: String, kind: String): PacksEditComponent =
+        PacksEditComponentImpl(
+            componentContext = ctx,
+            storeFactory = storeFactory,
+            packRepository = packRepository,
+            mediaApiService = mediaApiService,
+            packId = packId,
+            kind = kind,
+            onClose = { panelsNavigation.dismissExtra() },
+            onSaved = { savedPackId, savedKind ->
+                panelsNavigation.dismissExtra()
+                panelsNavigation.activateDetails(DetailsConfig.Details(savedPackId, savedKind))
+                outputChannel.trySend(NavigationOutput.ShowNotification(message = "Пэк успешно обновлён!", type = com.dev.memebattle.core.navigation.output.NotificationType.Positive))
+            },
+            onShowNotification = { message, type ->
+                outputChannel.trySend(NavigationOutput.ShowNotification(message = message, type = type))
             }
         )
 

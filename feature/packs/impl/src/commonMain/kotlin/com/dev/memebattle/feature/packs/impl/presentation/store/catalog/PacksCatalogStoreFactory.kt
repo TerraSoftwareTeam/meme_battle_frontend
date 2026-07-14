@@ -29,8 +29,10 @@ internal class PacksCatalogStoreFactory(
                 is PacksCatalogStore.Intent.Init -> init()
                 is PacksCatalogStore.Intent.Refresh -> refresh()
                 is PacksCatalogStore.Intent.SwitchPackType -> switchType(intent.type)
+                is PacksCatalogStore.Intent.SwitchPackFilter -> switchFilter(intent.filter)
                 is PacksCatalogStore.Intent.OpenDetails -> publish(PacksCatalogStore.Effect.NavigateToDetails(intent.packId))
                 is PacksCatalogStore.Intent.OpenCreate -> publish(PacksCatalogStore.Effect.NavigateToCreate)
+                is PacksCatalogStore.Intent.OpenEdit -> {} // Intercepted in component
                 is PacksCatalogStore.Intent.GoBack -> {} // Intercepted in component
             }
         }
@@ -47,12 +49,24 @@ internal class PacksCatalogStoreFactory(
                 }
             }
             scope.launch {
+                packRepository.myMemePacks.collect { packs ->
+                    dispatch(Message.MyMemePacks(packs))
+                }
+            }
+            scope.launch {
+                packRepository.mySituationPacks.collect { packs ->
+                    dispatch(Message.MySituationPacks(packs))
+                }
+            }
+            scope.launch {
                 if (packRepository.memePacks.value.isEmpty()) {
                     dispatch(Message.Loading(true))
                     packRepository.refreshMemePacks()
                         .onFailure { dispatch(Message.Error(it.message)) }
                     packRepository.refreshSituationPacks()
                         .onFailure { dispatch(Message.Error(it.message)) }
+                    packRepository.refreshMyMemePacks()
+                    packRepository.refreshMySituationPacks()
                     dispatch(Message.Loading(false))
                 }
             }
@@ -62,19 +76,31 @@ internal class PacksCatalogStoreFactory(
             scope.launch {
                 dispatch(Message.Refreshing(true))
                 val type = state().activeType
-                if (type == PacksCatalogStore.PackType.Memes) {
-                    packRepository.refreshMemePacks()
-                        .onFailure { publish(PacksCatalogStore.Effect.ShowError(it.message ?: "Unknown error")) }
-                } else {
-                    packRepository.refreshSituationPacks()
-                        .onFailure { publish(PacksCatalogStore.Effect.ShowError(it.message ?: "Unknown error")) }
+                val filter = state().activeFilter
+                
+                val result = when {
+                    type == PacksCatalogStore.PackType.Memes && filter == PacksCatalogStore.PackFilter.All ->
+                        packRepository.refreshMemePacks()
+                    type == PacksCatalogStore.PackType.Memes && filter == PacksCatalogStore.PackFilter.Personal ->
+                        packRepository.refreshMyMemePacks()
+                    type == PacksCatalogStore.PackType.Situations && filter == PacksCatalogStore.PackFilter.All ->
+                        packRepository.refreshSituationPacks()
+                    type == PacksCatalogStore.PackType.Situations && filter == PacksCatalogStore.PackFilter.Personal ->
+                        packRepository.refreshMySituationPacks()
+                    else -> Result.success(Unit)
                 }
+
+                result.onFailure { publish(PacksCatalogStore.Effect.ShowError(it.message ?: "Unknown error")) }
                 dispatch(Message.Refreshing(false))
             }
         }
 
         private fun switchType(type: PacksCatalogStore.PackType) {
             dispatch(Message.SwitchType(type))
+        }
+
+        private fun switchFilter(filter: PacksCatalogStore.PackFilter) {
+            dispatch(Message.SwitchFilter(filter))
         }
     }
 
@@ -83,8 +109,11 @@ internal class PacksCatalogStoreFactory(
         data class Refreshing(val isRefreshing: Boolean) : Message
         data class MemePacks(val packs: List<MemePack>) : Message
         data class SituationPacks(val packs: List<SituationPack>) : Message
+        data class MyMemePacks(val packs: List<MemePack>) : Message
+        data class MySituationPacks(val packs: List<SituationPack>) : Message
         data class Error(val message: String?) : Message
         data class SwitchType(val type: PacksCatalogStore.PackType) : Message
+        data class SwitchFilter(val filter: PacksCatalogStore.PackFilter) : Message
     }
 
     private object ReducerImpl : Reducer<PacksCatalogStore.State, Message> {
@@ -93,8 +122,11 @@ internal class PacksCatalogStoreFactory(
             is Message.Refreshing -> copy(isRefreshing = msg.isRefreshing)
             is Message.MemePacks -> copy(memePacks = msg.packs)
             is Message.SituationPacks -> copy(situationPacks = msg.packs)
+            is Message.MyMemePacks -> copy(myMemePacks = msg.packs)
+            is Message.MySituationPacks -> copy(mySituationPacks = msg.packs)
             is Message.Error -> copy(isLoading = false, error = msg.message)
             is Message.SwitchType -> copy(activeType = msg.type)
+            is Message.SwitchFilter -> copy(activeFilter = msg.filter)
         }
     }
 }

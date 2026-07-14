@@ -52,7 +52,7 @@ fun PacksCreateView(
                 is PacksCreateStore.Effect.NavigateBack -> component.onIntent(PacksCreateStore.Intent.Close)
                 is PacksCreateStore.Effect.Created -> {
                     component.showNotification(message = getString(Res.string.packs_create_success))
-                    component.onCreated(effect.packId)
+                    component.onCreated(effect.packId, effect.kind)
                 }
                 is PacksCreateStore.Effect.ShowError -> {
                     component.showNotification(message = effect.message, isError = true)
