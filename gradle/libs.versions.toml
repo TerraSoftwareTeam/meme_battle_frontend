@@ -122,6 +122,7 @@ mvikotlin-timetravel = { module = "com.arkivanov.mvikotlin:mvikotlin-timetravel"
 # ─── Decompose ────────────────────────────────────────────────────────────────
 decompose-core = { module = "com.arkivanov.decompose:decompose", version.ref = "decompose" }
 decompose-compose = { module = "com.arkivanov.decompose:extensions-compose", version.ref = "decompose" }
+decompose-android = { module = "com.arkivanov.decompose:extensions-android", version.ref = "decompose" }
 essenty-lifecycle-coroutines = { module = "com.arkivanov.essenty:lifecycle-coroutines", version.ref = "essenty" }
 
 # ─── FileKit ──────────────────────────────────────────────────────────────────

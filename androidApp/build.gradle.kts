@@ -23,6 +23,7 @@ dependencies {
     implementation(projects.core.localization)
     implementation(libs.androidx.activity.compose)
     implementation(libs.decompose.core)
+    implementation(libs.decompose.android)
     implementation(libs.koin.android)
     implementation(libs.coil.compose)
     implementation(libs.coil.network.ktor)

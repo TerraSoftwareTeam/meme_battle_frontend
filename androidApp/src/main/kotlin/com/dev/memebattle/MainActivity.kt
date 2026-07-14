@@ -3,7 +3,7 @@ package com.dev.memebattle
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import com.arkivanov.decompose.defaultComponentContext
+import com.arkivanov.decompose.retainedComponent
 import com.dev.memebattle.di.initKoin
 import com.dev.memebattle.host.root.presentation.component.RootComponentImpl
 import com.dev.memebattle.host.root.presentation.view.RootScreen
@@ -16,9 +16,9 @@ class MainActivity : ComponentActivity() {
 
         initKoinIfNeeded()
 
-        val rootComponent = RootComponentImpl(
-            componentContext = defaultComponentContext()
-        )
+        val rootComponent = retainedComponent { componentContext ->
+            RootComponentImpl(componentContext = componentContext)
+        }
 
         setContent {
             RootScreen(component = rootComponent)
