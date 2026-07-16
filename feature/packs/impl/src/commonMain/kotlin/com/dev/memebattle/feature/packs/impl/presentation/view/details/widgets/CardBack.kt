@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.dp
 internal fun CardBack(modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
-            .clip(RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(10.dp))
             .background(
                 Brush.linearGradient(listOf(Color(0xFF2A1B5E), Color(0xFF1A0D3D)))
             )

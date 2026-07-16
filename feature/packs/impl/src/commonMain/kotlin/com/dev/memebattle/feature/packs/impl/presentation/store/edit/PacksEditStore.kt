@@ -19,6 +19,8 @@ interface PacksEditStore : Store<PacksEditStore.Intent, PacksEditStore.State, Pa
         data class UpdateSelectedFiles(val files: List<io.github.vinceglb.filekit.core.PlatformFile>) : Intent
         data class DeleteMemeCard(val cardId: String) : Intent
         data class DeleteSituationCard(val cardId: String) : Intent
+        data class UpdateLanguage(val languageCode: String) : Intent
+        data object DeletePack : Intent
         data object Save : Intent
     }
 
@@ -48,5 +50,6 @@ interface PacksEditStore : Store<PacksEditStore.Intent, PacksEditStore.State, Pa
         data object NavigateBack : Effect
         data class Saved(val packId: String, val kind: String) : Effect
         data class ShowNotification(val message: String, val isError: Boolean = false) : Effect
+        data object Deleted : Effect
     }
 }

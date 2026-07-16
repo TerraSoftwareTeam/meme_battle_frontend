@@ -3,6 +3,12 @@ package com.dev.memebattle.feature.packs.impl.presentation.view.catalog
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -14,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -82,6 +89,16 @@ fun PacksCatalogView(
 
                 Spacer(Modifier.weight(1f))
 
+                val infiniteTransition = rememberInfiniteTransition()
+                val rotation by infiniteTransition.animateFloat(
+                    initialValue = 0f,
+                    targetValue = 360f,
+                    animationSpec = infiniteRepeatable(
+                        animation = tween(1000, easing = LinearEasing),
+                        repeatMode = RepeatMode.Restart
+                    )
+                )
+
                 IconButton(
                     onClick = { component.onIntent(PacksCatalogStore.Intent.Refresh) },
                     modifier = Modifier.padding(end = 8.dp)
@@ -89,7 +106,10 @@ fun PacksCatalogView(
                     Icon(
                         imageVector = Icons.Default.Refresh,
                         contentDescription = "Refresh",
-                        tint = Color.White
+                        tint = Color.White,
+                        modifier = Modifier.graphicsLayer {
+                            rotationZ = if (state.isLoading || state.isRefreshing) rotation else 0f
+                        }
                     )
                 }
                 Row(
@@ -136,14 +156,7 @@ fun PacksCatalogView(
         }
 
 
-        AnimatedVisibility(
-            visible = state.isLoading,
-            enter = fadeIn(),
-            exit = fadeOut(),
-            modifier = Modifier.align(Alignment.Center)
-        ) {
-            CircularProgressIndicator(color = AccentPrimary)
-        }
+
     }
 }
 

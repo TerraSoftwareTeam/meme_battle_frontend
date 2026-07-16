@@ -18,6 +18,7 @@ buildkonfig {
     exposeObjectWithName = "BuildKonfig"
     defaultConfigs {
         buildConfigField(STRING, "API_BASE_URL", envProperties.getProperty("API_BASE_URL") ?: "https://meme.skyfly.hackclub.app")
+        buildConfigField(STRING, "WS_BASE_URL", envProperties.getProperty("WS_BASE_URL") ?: "wss://realtime.meme.skyfly.hackclub.app")
     }
 }
 
@@ -45,6 +46,7 @@ kotlin {
             api(libs.ktor.serialization.json)
             api(libs.ktor.client.logging)
             api(libs.ktor.client.auth)
+            api(libs.ktor.client.websockets)
             api(libs.kotlinx.coroutines.core)
             api(libs.koin.core)
         }

@@ -14,6 +14,8 @@ import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 import io.ktor.http.encodedPath
+import io.ktor.client.plugins.websocket.WebSockets
+import io.ktor.serialization.kotlinx.KotlinxWebsocketSerializationConverter
 
 object AppHttpClientFactory {
 
@@ -70,6 +72,9 @@ object AppHttpClientFactory {
             level = LogLevel.HEADERS
         }
         install(BaseUrlPlugin) { this.baseUrl = baseUrl }
+        install(WebSockets) {
+            contentConverter = KotlinxWebsocketSerializationConverter(buildJsonConfig())
+        }
     }
 
     fun createAuthenticated(
@@ -96,6 +101,9 @@ object AppHttpClientFactory {
             this.baseUrl = baseUrl
         }
         install(BaseUrlPlugin) { this.baseUrl = baseUrl }
+        install(WebSockets) {
+            contentConverter = KotlinxWebsocketSerializationConverter(buildJsonConfig())
+        }
     }
 }
 

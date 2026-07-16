@@ -128,12 +128,18 @@ val AppAuthPlugin = createClientPlugin("AppAuthPlugin", ::AuthPluginConfig) {
         
         if (statusCode == 401) {
             println("[AuthPlugin] Got 401, attempting token refresh...")
-            val refreshToken = tokenStorage.getRefreshToken()
             val newTokens = mutex.withLock {
-                if (!refreshToken.isNullOrBlank()) {
-                    refreshTokens(refreshToken) ?: requestGuestTokensBody()
+                val currentAccessToken = tokenStorage.getAccessToken()
+                if (currentAccessToken != null && currentAccessToken != accessToken) {
+                    println("[AuthPlugin] Token was already refreshed by another request")
+                    LocalAuthBody(currentAccessToken, tokenStorage.getRefreshToken() ?: "")
                 } else {
-                    requestGuestTokensBody()
+                    val currentRefreshToken = tokenStorage.getRefreshToken()
+                    if (!currentRefreshToken.isNullOrBlank()) {
+                        refreshTokens(currentRefreshToken) ?: requestGuestTokensBody()
+                    } else {
+                        requestGuestTokensBody()
+                    }
                 }
             }
 

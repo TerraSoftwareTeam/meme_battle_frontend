@@ -61,6 +61,9 @@ fun PacksEditView(
                 is PacksEditStore.Effect.Saved -> {
                     component.navigateToDetails(effect.packId, effect.kind)
                 }
+                is PacksEditStore.Effect.Deleted -> {
+                    component.onIntent(PacksEditStore.Intent.Close)
+                }
                 is PacksEditStore.Effect.ShowNotification -> {
                     component.showNotification(message = effect.message, isError = effect.isError)
                 }
@@ -263,6 +266,13 @@ fun PacksEditView(
                         )
                     }
 
+                    item {
+                        LanguageSelector(
+                            selectedLanguage = state.languageCode,
+                            onLanguageSelected = { component.onIntent(PacksEditStore.Intent.UpdateLanguage(it)) }
+                        )
+                    }
+
                     // Add new items section
                     item {
                         Spacer(modifier = Modifier.height(16.dp))
@@ -288,6 +298,22 @@ fun PacksEditView(
                             },
                             onRemovePrompt = { }
                         )
+                    }
+
+                    item { Spacer(modifier = Modifier.height(32.dp)) }
+
+                    item {
+                        Button(
+                            onClick = { component.onIntent(PacksEditStore.Intent.DeletePack) },
+                            modifier = Modifier.fillMaxWidth().height(56.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = ErrorColor.copy(alpha = 0.1f), 
+                                contentColor = ErrorColor
+                            ),
+                            shape = RoundedCornerShape(16.dp)
+                        ) {
+                            Text("Удалить пэк", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                        }
                     }
 
                     item { Spacer(modifier = Modifier.height(32.dp)) }

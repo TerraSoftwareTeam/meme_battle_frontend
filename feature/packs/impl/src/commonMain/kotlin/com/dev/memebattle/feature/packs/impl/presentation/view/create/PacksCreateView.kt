@@ -141,6 +141,13 @@ fun PacksCreateView(
                     )
                 }
 
+                item {
+                    LanguageSelector(
+                        selectedLanguage = state.languageCode,
+                        onLanguageSelected = { component.onIntent(PacksCreateStore.Intent.UpdateLanguage(it)) }
+                    )
+                }
+
                 if (state.type == PacksCreateStore.PackType.Memes) {
                     createMemesSection(
                         selectedFiles = state.selectedFiles,

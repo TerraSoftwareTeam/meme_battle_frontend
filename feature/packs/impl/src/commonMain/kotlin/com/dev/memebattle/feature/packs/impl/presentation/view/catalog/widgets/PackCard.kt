@@ -97,13 +97,13 @@ internal fun PackCard(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(fanBackdropGradient)
-                    .padding(top = 28.dp, bottom = 16.dp),
+                    .background(fanBackdropGradient),
                 contentAlignment = Alignment.Center
             ) {
                 CardFan(
                     packId = id,
-                    packType = packType
+                    packType = packType,
+                    modifier = Modifier.padding(top = 28.dp, bottom = 16.dp)
                 )
                 
                 if (onEditClick != null) {
@@ -111,7 +111,7 @@ internal fun PackCard(
                         onClick = { onEditClick() },
                         modifier = Modifier
                             .align(Alignment.TopEnd)
-                            .padding(4.dp)
+                            .padding(8.dp)
                             .size(32.dp)
                             .background(Color.Black.copy(alpha = 0.5f), CircleShape)
                     ) {
@@ -278,6 +278,7 @@ private fun CardFan(
                             this.translationY = translationY.dp.toPx()
                         },
                     shape = RoundedCornerShape(10.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.Transparent),
                     elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
                 ) {
                     CardBack(modifier = Modifier.fillMaxSize())

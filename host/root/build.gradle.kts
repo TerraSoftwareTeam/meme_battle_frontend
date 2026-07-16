@@ -5,7 +5,7 @@ plugins {
 kotlin {
     androidLibrary {
         namespace = "com.dev.memebattle.host.root"
-        compileSdk = 34
+        compileSdk = libs.versions.compileSdk.get().toInt()
     }
     @OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
     wasmJs {

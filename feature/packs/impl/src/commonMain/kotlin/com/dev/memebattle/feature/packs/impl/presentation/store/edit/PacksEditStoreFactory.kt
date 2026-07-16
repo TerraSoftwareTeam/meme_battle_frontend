@@ -41,6 +41,8 @@ internal class PacksEditStoreFactory(
                 is PacksEditStore.Intent.UpdateSelectedFiles -> dispatch(Message.UpdateSelectedFiles(intent.files))
                 is PacksEditStore.Intent.DeleteMemeCard -> deleteMemeCard(intent.cardId)
                 is PacksEditStore.Intent.DeleteSituationCard -> deleteSituationCard(intent.cardId)
+                is PacksEditStore.Intent.UpdateLanguage -> dispatch(Message.UpdateLanguage(intent.languageCode))
+                is PacksEditStore.Intent.DeletePack -> deletePack()
                 is PacksEditStore.Intent.Save -> savePack()
             }
         }
@@ -108,6 +110,26 @@ internal class PacksEditStoreFactory(
                     dispatch(Message.SituationCardDeleted(cardId))
                 } else {
                     publish(PacksEditStore.Effect.ShowNotification("Failed to delete card", true))
+                }
+                dispatch(Message.SetLoading(false))
+            }
+        }
+
+        private fun deletePack() {
+            val currentState = state()
+            dispatch(Message.SetLoading(true))
+            scope.launch {
+                val result = if (currentState.kind == "meme") {
+                    packRepository.deleteMemePack(currentState.packId)
+                } else {
+                    packRepository.deleteSituationPack(currentState.packId)
+                }
+                
+                if (result.isSuccess) {
+                    publish(PacksEditStore.Effect.ShowNotification("Pack deleted successfully!"))
+                    publish(PacksEditStore.Effect.Deleted)
+                } else {
+                    publish(PacksEditStore.Effect.ShowNotification("Failed to delete pack", true))
                 }
                 dispatch(Message.SetLoading(false))
             }
@@ -200,6 +222,7 @@ internal class PacksEditStoreFactory(
         data class UpdateSelectedFiles(val files: List<io.github.vinceglb.filekit.core.PlatformFile>) : Message
         data class MemeCardDeleted(val cardId: String) : Message
         data class SituationCardDeleted(val cardId: String) : Message
+        data class UpdateLanguage(val languageCode: String) : Message
     }
 
     private object ReducerImpl : Reducer<PacksEditStore.State, Message> {
@@ -222,6 +245,7 @@ internal class PacksEditStoreFactory(
             is Message.UpdateSelectedFiles -> copy(selectedFiles = msg.files)
             is Message.MemeCardDeleted -> copy(memeCards = memeCards.filter { it.id != msg.cardId })
             is Message.SituationCardDeleted -> copy(situationCards = situationCards.filter { it.id != msg.cardId })
+            is Message.UpdateLanguage -> copy(languageCode = msg.languageCode)
         }
     }
 }

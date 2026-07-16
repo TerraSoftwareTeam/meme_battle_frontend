@@ -21,6 +21,7 @@ kotlin {
             api(projects.network.media.current)
             api(projects.network.game.current)
             api(projects.core.data.packs)
+            api(projects.core.data.game)
             api(projects.feature.home.impl)
             api(projects.feature.packs.impl)
             api(projects.feature.gameSetup.impl)

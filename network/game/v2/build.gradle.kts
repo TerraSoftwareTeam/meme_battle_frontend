@@ -21,6 +21,7 @@ kotlin {
         commonMain.dependencies {
             api(projects.core.network)
             implementation(libs.ktor.client.core)
+            implementation(libs.ktor.client.websockets)
         }
     }
 }
