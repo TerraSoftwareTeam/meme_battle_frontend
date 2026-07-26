@@ -28,19 +28,20 @@ import com.dev.memebattle.feature.packs.impl.presentation.component.catalog.Pack
 import com.dev.memebattle.feature.packs.impl.presentation.store.catalog.PacksCatalogStore
 import com.dev.memebattle.feature.packs.impl.presentation.view.catalog.widgets.PacksCatalogBottomBar
 import com.dev.memebattle.feature.packs.impl.presentation.view.catalog.widgets.PacksList
-import com.dev.memebattle.feature.packs.impl.presentation.view.catalog.widgets.AccentPrimary
-import com.dev.memebattle.feature.packs.impl.presentation.view.catalog.widgets.BackgroundBottom
-import com.dev.memebattle.feature.packs.impl.presentation.view.catalog.widgets.BackgroundTop
+import com.dev.memebattle.core.ui.components.pack.AccentPrimary
+import com.dev.memebattle.core.ui.components.pack.BackgroundBottom
+import com.dev.memebattle.core.ui.components.pack.BackgroundTop
 import kotlinx.coroutines.flow.collectLatest
 import org.jetbrains.compose.resources.stringResource
 import com.dev.memebattle.core.localization.Res
 import com.dev.memebattle.core.localization.packs_title
 import com.dev.memebattle.core.localization.packs_filter_all
 import com.dev.memebattle.core.localization.packs_filter_personal
+import com.dev.memebattle.core.localization.packs_filter_liked
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.clickable
 import androidx.compose.ui.draw.clip
-import com.dev.memebattle.feature.packs.impl.presentation.view.catalog.widgets.TextSecondary
+import com.dev.memebattle.core.ui.components.pack.TextSecondary
 
 
 @Composable
@@ -127,6 +128,11 @@ fun PacksCatalogView(
                         text = stringResource(Res.string.packs_filter_personal),
                         isSelected = state.activeFilter == PacksCatalogStore.PackFilter.Personal,
                         onClick = { component.onIntent(PacksCatalogStore.Intent.SwitchPackFilter(PacksCatalogStore.PackFilter.Personal)) }
+                    )
+                    FilterTab(
+                        text = stringResource(Res.string.packs_filter_liked),
+                        isSelected = state.activeFilter == PacksCatalogStore.PackFilter.Liked,
+                        onClick = { component.onIntent(PacksCatalogStore.Intent.SwitchPackFilter(PacksCatalogStore.PackFilter.Liked)) }
                     )
                 }
             }

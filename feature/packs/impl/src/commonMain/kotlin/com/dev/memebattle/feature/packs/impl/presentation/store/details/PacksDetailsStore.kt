@@ -15,6 +15,7 @@ interface PacksDetailsStore : Store<PacksDetailsStore.Intent, PacksDetailsStore.
     sealed interface Intent {
         data class Load(val packId: String, val kind: PackKind) : Intent
         data object Close : Intent
+        data object ToggleLike : Intent
     }
 
     data class State(
@@ -30,6 +31,8 @@ interface PacksDetailsStore : Store<PacksDetailsStore.Intent, PacksDetailsStore.
         val situationPack: SituationPack? = null,
         val situationCards: List<SituationCard> = emptyList(),
 
+        val isLiked: Boolean = false,
+        val isLikeLoading: Boolean = false,
         val error: String? = null,
     )
 

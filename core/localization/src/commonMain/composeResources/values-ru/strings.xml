@@ -40,4 +40,20 @@
     <string name="packs_details_no_description">Без описания</string>
     <string name="packs_details_loading">Загрузка...</string>
     <string name="packs_details_empty_cards">Карточек пока нет</string>
+    <string name="packs_filter_liked">Избранное</string>
+    <string name="packs_like">В избранное</string>
+    <string name="packs_unlike">Убрать</string>
+
+    <!-- Create Lobby -->
+    <string name="lobby_create_title">Создать лобби</string>
+    <string name="lobby_create_close">Закрыть</string>
+    <string name="lobby_create_select_meme_packs">1. Выберите паки мемов</string>
+    <string name="lobby_create_select_situation_packs">2. Выберите паки ситуаций</string>
+    <string name="lobby_create_game_settings">3. Настройки игры</string>
+    <string name="lobby_create_mode_label">Режим</string>
+    <string name="lobby_create_mode_situation_to_meme">Ситуация к мему</string>
+    <string name="lobby_create_mode_meme_to_situation">Мем к ситуации</string>
+    <string name="lobby_create_rounds_label">Раундов</string>
+    <string name="lobby_create_hand_size_label">Карт в руке</string>
+    <string name="lobby_create_submit">Создать и играть</string>
 </resources>

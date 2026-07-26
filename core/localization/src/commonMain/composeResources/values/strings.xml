@@ -40,4 +40,20 @@
     <string name="packs_details_no_description">No description</string>
     <string name="packs_details_loading">Loading...</string>
     <string name="packs_details_empty_cards">No cards yet</string>
+    <string name="packs_filter_liked">Liked</string>
+    <string name="packs_like">Like</string>
+    <string name="packs_unlike">Unlike</string>
+
+    <!-- Create Lobby -->
+    <string name="lobby_create_title">Create Lobby</string>
+    <string name="lobby_create_close">Close</string>
+    <string name="lobby_create_select_meme_packs">1. Select Meme Packs</string>
+    <string name="lobby_create_select_situation_packs">2. Select Situation Packs</string>
+    <string name="lobby_create_game_settings">3. Game Settings</string>
+    <string name="lobby_create_mode_label">Mode</string>
+    <string name="lobby_create_mode_situation_to_meme">Situation to Meme</string>
+    <string name="lobby_create_mode_meme_to_situation">Meme to Situation</string>
+    <string name="lobby_create_rounds_label">Rounds</string>
+    <string name="lobby_create_hand_size_label">Hand Size</string>
+    <string name="lobby_create_submit">Create and Play</string>
 </resources>

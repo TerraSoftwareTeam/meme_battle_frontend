@@ -32,17 +32,25 @@ internal fun PacksList(
 ) {
     val uiPacks = when (state.activeType) {
         PacksCatalogStore.PackType.Memes -> {
-            val packs = if (state.activeFilter == PacksCatalogStore.PackFilter.Personal) state.myMemePacks else state.memePacks
+            val packs = when (state.activeFilter) {
+                PacksCatalogStore.PackFilter.All -> state.memePacks
+                PacksCatalogStore.PackFilter.Personal -> state.myMemePacks
+                PacksCatalogStore.PackFilter.Liked -> state.likedMemePacks
+            }
             packs.map { PackUiModel(it.id, it.name, it.description, it.createdAt, it.safetyLevel, it.languageCode) }
         }
         PacksCatalogStore.PackType.Situations -> {
-            val packs = if (state.activeFilter == PacksCatalogStore.PackFilter.Personal) state.mySituationPacks else state.situationPacks
+            val packs = when (state.activeFilter) {
+                PacksCatalogStore.PackFilter.All -> state.situationPacks
+                PacksCatalogStore.PackFilter.Personal -> state.mySituationPacks
+                PacksCatalogStore.PackFilter.Liked -> state.likedSituationPacks
+            }
             packs.map { PackUiModel(it.id, it.name, it.description, it.createdAt, it.safetyLevel, it.languageCode) }
         }
     }
 
     LazyVerticalGrid(
-        columns = GridCells.Adaptive(minSize = 150.dp),
+        columns = GridCells.Adaptive(minSize = 180.dp),
         modifier = modifier.fillMaxWidth(),
         contentPadding = PaddingValues(
             start = 16.dp,
@@ -62,13 +70,17 @@ internal fun PacksList(
             }
         } else {
             itemsIndexed(uiPacks, key = { _, pack -> pack.id }) { _, pack ->
-                PackCard(
+                com.dev.memebattle.core.ui.components.pack.PackCard(
                     id = pack.id,
                     name = pack.name,
                     description = pack.description,
                     createdAt = pack.createdAt,
-                    packType = state.activeType,
-                    safetyLevel = pack.safetyLevel,
+                    packType = if (state.activeType == PacksCatalogStore.PackType.Memes) com.dev.memebattle.core.ui.components.pack.PackCardKind.MEME else com.dev.memebattle.core.ui.components.pack.PackCardKind.SITUATION,
+                    safetyLevel = when (pack.safetyLevel) {
+                        SafetyLevel.FAMILY_FRIENDLY -> com.dev.memebattle.core.ui.components.pack.PackCardSafetyLevel.FAMILY_FRIENDLY
+                        SafetyLevel.SPICY -> com.dev.memebattle.core.ui.components.pack.PackCardSafetyLevel.SPICY
+                        SafetyLevel.EXPLICIT -> com.dev.memebattle.core.ui.components.pack.PackCardSafetyLevel.EXPLICIT
+                    },
                     languageCode = pack.languageCode,
                     onClick = { onPackClick(pack.id) },
                     onEditClick = if (state.activeFilter == PacksCatalogStore.PackFilter.Personal) {

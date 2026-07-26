@@ -15,5 +15,5 @@ interface GameSocketService {
 
     suspend fun subscribeToGame(gameId: String, token: String)
     suspend fun subscribeToPersonal(userId: String, token: String)
-    suspend fun subscribeToLobbies(token: String)
+    suspend fun subscribeToLobbies()
 }

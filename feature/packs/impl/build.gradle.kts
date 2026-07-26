@@ -27,6 +27,7 @@ kotlin {
             implementation(project(":feature:packs:api"))
             implementation(project(":core:navigation"))
             implementation(project(":core:domain:packs"))
+            implementation(project(":core:ui"))
             api(project(":core:localization"))
             implementation(project(":network:media:v1"))
             implementation(compose.components.resources)

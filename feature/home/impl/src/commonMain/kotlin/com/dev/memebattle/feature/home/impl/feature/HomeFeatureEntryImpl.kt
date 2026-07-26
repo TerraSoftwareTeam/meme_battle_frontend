@@ -19,7 +19,8 @@ class HomeFeatureEntryImpl : TypedFeatureEntry<HomeComponent, HomeRoute>(), Home
         val koin = getKoin()
         return HomeComponentImpl(
             componentContext = componentContext,
-            storeFactory = koin.get()
+            storeFactory = koin.get(),
+            gameSocketService = koin.get()
         )
     }
 

@@ -10,5 +10,5 @@ import com.dev.network.game.current.api.ws.GameSocketServiceImpl
 
 val gameNetworkModule = module {
     single<GameApiService> { GameApiServiceImpl(get(named("authenticated"))) }
-    single<GameSocketService> { GameSocketServiceImpl(get(named("authenticated")), get()) }
+    single<GameSocketService> { GameSocketServiceImpl(get(named("authenticated")), get(), get(named("wsBaseUrl"))) }
 }

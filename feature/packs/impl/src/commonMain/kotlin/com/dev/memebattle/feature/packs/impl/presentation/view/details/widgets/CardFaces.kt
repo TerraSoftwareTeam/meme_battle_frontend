@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.sp
 import coil3.compose.SubcomposeAsyncImage
 import com.dev.memebattle.feature.packs.impl.presentation.view.details.DeckAccent
 import com.dev.memebattle.feature.packs.impl.presentation.view.details.DeckTextPri
+import com.dev.memebattle.core.ui.components.pack.CardBack
 
 @Composable
 internal fun MemeCardFace(model: Any?, isSelected: Boolean) {

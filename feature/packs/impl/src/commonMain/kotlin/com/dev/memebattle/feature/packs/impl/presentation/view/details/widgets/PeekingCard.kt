@@ -17,6 +17,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.unit.dp
 import com.dev.memebattle.feature.packs.impl.presentation.view.details.DeckAccent
+import com.dev.memebattle.core.ui.components.pack.CardBack
 
 @Composable
 internal fun PeekingCard(

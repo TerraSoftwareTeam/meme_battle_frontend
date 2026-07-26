@@ -24,6 +24,8 @@ import com.dev.memebattle.core.localization.Res
 import com.dev.memebattle.core.localization.packs_create
 import com.dev.memebattle.core.localization.packs_type_memes
 import com.dev.memebattle.core.localization.packs_type_situations
+import com.dev.memebattle.core.ui.components.pack.AccentPrimary
+import com.dev.memebattle.core.ui.components.pack.TextSecondary
 
 @Composable
 internal fun PacksCatalogBottomBar(

@@ -4,4 +4,4 @@ import com.dev.memebattle.core.navigation.route.AppRoute
 import kotlinx.serialization.Serializable
 
 @Serializable
-data object GameplayRoute : AppRoute
+data class GameplayRoute(val gameId: String) : AppRoute

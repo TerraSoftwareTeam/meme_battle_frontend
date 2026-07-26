@@ -5,7 +5,6 @@ import com.arkivanov.mvikotlin.logging.store.LoggingStoreFactory
 import com.arkivanov.mvikotlin.main.store.DefaultStoreFactory
 import com.dev.memebattle.feature.home.impl.di.homeModule
 import com.dev.memebattle.feature.packs.impl.di.packsModule
-import com.dev.memebattle.feature.gameSetup.impl.di.gameSetupModule
 import com.dev.memebattle.feature.gameplay.impl.di.gameplayModule
 import com.dev.memebattle.host.root.di.rootHostModule
 import com.dev.memebattle.core.network.di.networkModule
@@ -39,7 +38,6 @@ fun initKoin(config: (org.koin.core.KoinApplication.() -> Unit)? = null) {
             dataGameModule,
             homeModule,
             packsModule,
-            gameSetupModule,
             gameplayModule
         )
     }

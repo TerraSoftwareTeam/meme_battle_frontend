@@ -7,7 +7,7 @@ import com.dev.memebattle.core.domain.packs.model.SituationPack
 interface PacksCatalogStore : Store<PacksCatalogStore.Intent, PacksCatalogStore.State, PacksCatalogStore.Effect> {
 
     enum class PackType { Memes, Situations }
-    enum class PackFilter { All, Personal }
+    enum class PackFilter { All, Personal, Liked }
 
     sealed interface Intent {
         data object Init : Intent
@@ -29,6 +29,8 @@ interface PacksCatalogStore : Store<PacksCatalogStore.Intent, PacksCatalogStore.
         val situationPacks: List<SituationPack> = emptyList(),
         val myMemePacks: List<MemePack> = emptyList(),
         val mySituationPacks: List<SituationPack> = emptyList(),
+        val likedMemePacks: List<MemePack> = emptyList(),
+        val likedSituationPacks: List<SituationPack> = emptyList(),
         val error: String? = null,
     )
 

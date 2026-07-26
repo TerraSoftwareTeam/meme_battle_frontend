@@ -4,6 +4,7 @@ import com.dev.memebattle.core.network.call.NetworkResult
 import com.dev.network.game.current.dto.AddMemesToPackRequest
 import com.dev.network.game.current.dto.AddSituationsToPackRequest
 import com.dev.network.game.current.dto.CreateGameRequest
+import com.dev.network.game.current.dto.JoinGameRequest
 import com.dev.network.game.current.dto.CreateMemePackRequest
 import com.dev.network.game.current.dto.CreateMemePackResponse
 import com.dev.network.game.current.dto.CreateSituationPackRequest
@@ -62,7 +63,7 @@ interface GameApiService {
 
   suspend fun updateGame(id: String, body: UpdateGameRequest): NetworkResult<GameDto>
 
-  suspend fun joinGame(id: String): NetworkResult<Unit>
+  suspend fun joinGame(id: String, body: JoinGameRequest = JoinGameRequest()): NetworkResult<Unit>
 
   suspend fun setReady(id: String, body: ReadyRequest): NetworkResult<Unit>
 

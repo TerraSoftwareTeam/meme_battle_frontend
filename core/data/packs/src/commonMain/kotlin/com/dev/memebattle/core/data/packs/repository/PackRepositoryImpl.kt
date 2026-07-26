@@ -1,5 +1,6 @@
 package com.dev.memebattle.core.data.packs.repository
 
+import com.dev.memebattle.core.data.packs.local.PackLikesLocalDataSource
 import com.dev.memebattle.core.data.packs.mapper.toDomain
 import com.dev.memebattle.core.data.packs.mapper.toDto
 import com.dev.memebattle.core.data.packs.mapper.toLanguageCodeDto
@@ -8,6 +9,7 @@ import com.dev.memebattle.core.domain.packs.model.MemePackDetails
 import com.dev.memebattle.core.domain.packs.model.SafetyLevel
 import com.dev.memebattle.core.domain.packs.model.SituationPack
 import com.dev.memebattle.core.domain.packs.model.SituationPackDetails
+import com.dev.memebattle.core.domain.packs.repository.LikedPacksState
 import com.dev.memebattle.core.domain.packs.repository.PackRepository
 import com.dev.memebattle.core.network.call.NetworkResult
 import com.dev.memebattle.core.network.error.NetworkError
@@ -18,14 +20,17 @@ import com.dev.network.game.current.dto.CreateMemePackRequest
 import com.dev.network.game.current.dto.CreateSituationPackRequest
 import com.dev.network.game.current.dto.UpdateMemePackRequest
 import com.dev.network.game.current.dto.UpdateSituationPackRequest
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.update
 
 internal class PackRepositoryImpl(
     private val api: GameApiService,
+    private val localLikes: PackLikesLocalDataSource,
 ) : PackRepository {
 
     // ─── Реактивные источники истины ──────────────────────────────────────────
@@ -297,6 +302,77 @@ internal class PackRepositoryImpl(
             _packUpdates.tryEmit(packId)
         }
 
+    // ─── Pack Likes ───────────────────────────────────────────────────────────
+
+    private val _likedMemePacks = MutableStateFlow<List<MemePack>>(emptyList())
+    override val likedMemePacks: StateFlow<List<MemePack>> = _likedMemePacks.asStateFlow()
+
+    private val _likedSituationPacks = MutableStateFlow<List<SituationPack>>(emptyList())
+    override val likedSituationPacks: StateFlow<List<SituationPack>> = _likedSituationPacks.asStateFlow()
+
+    override suspend fun refreshLikedMemePacks(): Result<Unit> {
+        loadLikedPacksFromCache()
+        return Result.success(Unit)
+    }
+
+    override suspend fun refreshLikedSituationPacks(): Result<Unit> {
+        loadLikedPacksFromCache()
+        return Result.success(Unit)
+    }
+
+    override suspend fun likeMemePack(id: String): Result<Unit> {
+        localLikes.addLikedMemePack(id)
+        val pack = _memePacks.value.find { it.id == id }
+            ?: _myMemePacks.value.find { it.id == id }
+        pack?.let {
+            _likedMemePacks.update { list ->
+                if (list.any { it.id == id }) list else list + it
+            }
+        }
+        return Result.success(Unit)
+    }
+
+    override suspend fun unlikeMemePack(id: String): Result<Unit> {
+        localLikes.removeLikedMemePack(id)
+        _likedMemePacks.update { list -> list.filter { it.id != id } }
+        return Result.success(Unit)
+    }
+
+    override suspend fun likeSituationPack(id: String): Result<Unit> {
+        localLikes.addLikedSituationPack(id)
+        val pack = _situationPacks.value.find { it.id == id }
+            ?: _mySituationPacks.value.find { it.id == id }
+        pack?.let {
+            _likedSituationPacks.update { list ->
+                if (list.any { it.id == id }) list else list + it
+            }
+        }
+        return Result.success(Unit)
+    }
+
+    override suspend fun unlikeSituationPack(id: String): Result<Unit> {
+        localLikes.removeLikedSituationPack(id)
+        _likedSituationPacks.update { list -> list.filter { it.id != id } }
+        return Result.success(Unit)
+    }
+
+    /** Загружает liked packs из локального хранилища при старте */
+    suspend fun loadLikedPacksFromCache() {
+        val likedMemeIds = localLikes.getLikedMemePackIds()
+        val likedSituationIds = localLikes.getLikedSituationPackIds()
+        
+        // Формируем списки из кэша
+        _likedMemePacks.value = likedMemeIds.mapNotNull { id ->
+            _memePacks.value.find { it.id == id }
+                ?: _myMemePacks.value.find { it.id == id }
+        }
+        
+        _likedSituationPacks.value = likedSituationIds.mapNotNull { id ->
+            _situationPacks.value.find { it.id == id }
+                ?: _mySituationPacks.value.find { it.id == id }
+        }
+    }
+
     // ─── Вспомогательный маппинг NetworkResult → Result ──────────────────────
 
     private inline fun <T, R> NetworkResult<T>.toResult(transform: (T) -> R): Result<R> =
@@ -315,5 +391,94 @@ internal class PackRepositoryImpl(
         is NetworkError.ApiException -> Exception("API error $code: $message")
         is NetworkError.Exception -> cause
         is NetworkError.Unknown -> Exception("Unknown network error")
+    }
+
+    // ─── Lazy Loading Liked Packs with State Flow ─────────────────────────────
+
+    override fun observeLikedMemePacks(): Flow<LikedPacksState<MemePack>> = flow {
+        // Получаем ID liked паков из локального хранилища
+        val likedIds = localLikes.getLikedMemePackIds()
+        
+        // Если нет ID - сразу Success с пустым списком
+        if (likedIds.isEmpty()) {
+            emit(LikedPacksState.Success(emptyList()))
+            return@flow
+        }
+        
+        // Эмитим Loading с количеством для отображения skeleton'ов
+        emit(LikedPacksState.Loading(likedIds.size))
+        
+        // Проверяем, есть ли данные в кэше
+        val cachedPacks = likedIds.mapNotNull { id ->
+            _memePacks.value.find { it.id == id } ?: _myMemePacks.value.find { it.id == id }
+        }
+        
+        // Если все данные есть в кэше - эмитим Success
+        if (cachedPacks.size == likedIds.size) {
+            emit(LikedPacksState.Success(cachedPacks))
+            return@flow
+        }
+        
+        // Не все данные в кэше - загружаем все паки с бэкенда
+        val result = api.listMemePacks()
+        when (result) {
+            is NetworkResult.Success -> {
+                val allPacks = result.data.map { it.toDomain() }
+                _memePacks.value = allPacks
+                
+                // Формируем список liked паков
+                val likedPacks = likedIds.mapNotNull { id ->
+                    allPacks.find { it.id == id }
+                }
+                
+                // Обновляем _likedMemePacks для других подписчиков
+                _likedMemePacks.value = likedPacks
+                
+                emit(LikedPacksState.Success(likedPacks))
+            }
+            is NetworkResult.Error -> {
+                // При ошибке возвращаем то что есть в кэше + пустые для остальных
+                emit(LikedPacksState.Success(cachedPacks))
+            }
+        }
+    }
+
+    override fun observeLikedSituationPacks(): Flow<LikedPacksState<SituationPack>> = flow {
+        val likedIds = localLikes.getLikedSituationPackIds()
+        
+        if (likedIds.isEmpty()) {
+            emit(LikedPacksState.Success(emptyList()))
+            return@flow
+        }
+        
+        emit(LikedPacksState.Loading(likedIds.size))
+        
+        val cachedPacks = likedIds.mapNotNull { id ->
+            _situationPacks.value.find { it.id == id } ?: _mySituationPacks.value.find { it.id == id }
+        }
+        
+        if (cachedPacks.size == likedIds.size) {
+            emit(LikedPacksState.Success(cachedPacks))
+            return@flow
+        }
+        
+        val result = api.listSituationPacks()
+        when (result) {
+            is NetworkResult.Success -> {
+                val allPacks = result.data.map { it.toDomain() }
+                _situationPacks.value = allPacks
+                
+                val likedPacks = likedIds.mapNotNull { id ->
+                    allPacks.find { it.id == id }
+                }
+                
+                _likedSituationPacks.value = likedPacks
+                
+                emit(LikedPacksState.Success(likedPacks))
+            }
+            is NetworkResult.Error -> {
+                emit(LikedPacksState.Success(cachedPacks))
+            }
+        }
     }
 }

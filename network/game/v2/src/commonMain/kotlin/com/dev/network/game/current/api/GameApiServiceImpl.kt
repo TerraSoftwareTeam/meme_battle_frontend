@@ -185,8 +185,9 @@ class GameApiServiceImpl(
     .body<com.dev.memebattle.core.network.call.BaseResponse<GameDto>>().data
   }
 
-  override suspend fun joinGame(id: String): NetworkResult<Unit> = safeCall {
+  override suspend fun joinGame(id: String, body: com.dev.network.game.current.dto.JoinGameRequest): NetworkResult<Unit> = safeCall {
     client.post("/games/$id/join") {
+      setBody(body)
     }
     .let { Unit }
   }
@@ -230,5 +231,37 @@ class GameApiServiceImpl(
     client.get("/games/$id/state") {
     }
     .body<com.dev.memebattle.core.network.call.BaseResponse<GameStateDto>>().data
+  }
+
+  // ─── Pack Likes ───────────────────────────────────────────────────────────
+
+  override suspend fun likeMemePack(id: String): NetworkResult<Unit> = safeCall {
+    client.post("/games/packs/memes/$id/like") {}
+    .let { Unit }
+  }
+
+  override suspend fun unlikeMemePack(id: String): NetworkResult<Unit> = safeCall {
+    client.delete("/games/packs/memes/$id/like") {}
+    .let { Unit }
+  }
+
+  override suspend fun getLikedMemePacks(): NetworkResult<List<MemePackDto>> = safeCall {
+    client.get("/games/packs/memes/liked") {}
+    .body<com.dev.memebattle.core.network.call.BaseResponse<List<MemePackDto>>>().data
+  }
+
+  override suspend fun likeSituationPack(id: String): NetworkResult<Unit> = safeCall {
+    client.post("/games/packs/situations/$id/like") {}
+    .let { Unit }
+  }
+
+  override suspend fun unlikeSituationPack(id: String): NetworkResult<Unit> = safeCall {
+    client.delete("/games/packs/situations/$id/like") {}
+    .let { Unit }
+  }
+
+  override suspend fun getLikedSituationPacks(): NetworkResult<List<SituationPackDto>> = safeCall {
+    client.get("/games/packs/situations/liked") {}
+    .body<com.dev.memebattle.core.network.call.BaseResponse<List<SituationPackDto>>>().data
   }
 }

@@ -54,10 +54,7 @@ include(":feature:packs:api")
 include(":feature:packs:impl")
 // endregion FEATURE Packs
 
-// region FEATURE GameSetup
-include(":feature:game-setup:api")
-include(":feature:game-setup:impl")
-// endregion FEATURE GameSetup
+
 
 // region FEATURE Gameplay
 include(":feature:gameplay:api")

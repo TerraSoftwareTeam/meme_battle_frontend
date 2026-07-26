@@ -5,6 +5,7 @@ import com.dev.memebattle.core.network.call.safeCall
 import com.dev.network.game.current.dto.AddMemesToPackRequest
 import com.dev.network.game.current.dto.AddSituationsToPackRequest
 import com.dev.network.game.current.dto.CreateGameRequest
+import com.dev.network.game.current.dto.JoinGameRequest
 import com.dev.network.game.current.dto.CreateMemePackRequest
 import com.dev.network.game.current.dto.CreateMemePackResponse
 import com.dev.network.game.current.dto.CreateSituationPackRequest
@@ -151,8 +152,9 @@ class GameApiServiceImpl(
     .body<com.dev.memebattle.core.network.call.BaseResponse<GameDto>>().data
   }
 
-  override suspend fun joinGame(id: String): NetworkResult<Unit> = safeCall {
+  override suspend fun joinGame(id: String, body: JoinGameRequest): NetworkResult<Unit> = safeCall {
     client.post("/games/$id/join") {
+      setBody(body)
     }
     .let { Unit }
   }

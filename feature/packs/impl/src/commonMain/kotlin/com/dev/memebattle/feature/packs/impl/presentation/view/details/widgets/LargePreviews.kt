@@ -31,6 +31,7 @@ import com.dev.memebattle.feature.packs.impl.presentation.view.details.DeckAccen
 import com.dev.memebattle.feature.packs.impl.presentation.view.details.DeckBorder
 import com.dev.memebattle.feature.packs.impl.presentation.view.details.DeckTextPri
 import com.dev.memebattle.feature.packs.impl.presentation.view.details.SituationAccents
+import com.dev.memebattle.core.ui.components.pack.CardBack
 
 @Composable
 internal fun LargeCardPreview(model: Any?, idx: Int) {

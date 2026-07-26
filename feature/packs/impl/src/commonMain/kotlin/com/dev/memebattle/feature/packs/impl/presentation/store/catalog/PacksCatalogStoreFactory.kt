@@ -59,6 +59,16 @@ internal class PacksCatalogStoreFactory(
                 }
             }
             scope.launch {
+                packRepository.likedMemePacks.collect { packs ->
+                    dispatch(Message.LikedMemePacks(packs))
+                }
+            }
+            scope.launch {
+                packRepository.likedSituationPacks.collect { packs ->
+                    dispatch(Message.LikedSituationPacks(packs))
+                }
+            }
+            scope.launch {
                 if (packRepository.memePacks.value.isEmpty()) {
                     dispatch(Message.Loading(true))
                     packRepository.refreshMemePacks()
@@ -67,6 +77,8 @@ internal class PacksCatalogStoreFactory(
                         .onFailure { dispatch(Message.Error(it.message)) }
                     packRepository.refreshMyMemePacks()
                     packRepository.refreshMySituationPacks()
+                    packRepository.refreshLikedMemePacks()
+                    packRepository.refreshLikedSituationPacks()
                     dispatch(Message.Loading(false))
                 }
             }
@@ -83,10 +95,14 @@ internal class PacksCatalogStoreFactory(
                         packRepository.refreshMemePacks()
                     type == PacksCatalogStore.PackType.Memes && filter == PacksCatalogStore.PackFilter.Personal ->
                         packRepository.refreshMyMemePacks()
+                    type == PacksCatalogStore.PackType.Memes && filter == PacksCatalogStore.PackFilter.Liked ->
+                        packRepository.refreshLikedMemePacks()
                     type == PacksCatalogStore.PackType.Situations && filter == PacksCatalogStore.PackFilter.All ->
                         packRepository.refreshSituationPacks()
                     type == PacksCatalogStore.PackType.Situations && filter == PacksCatalogStore.PackFilter.Personal ->
                         packRepository.refreshMySituationPacks()
+                    type == PacksCatalogStore.PackType.Situations && filter == PacksCatalogStore.PackFilter.Liked ->
+                        packRepository.refreshLikedSituationPacks()
                     else -> Result.success(Unit)
                 }
 
@@ -111,6 +127,8 @@ internal class PacksCatalogStoreFactory(
         data class SituationPacks(val packs: List<SituationPack>) : Message
         data class MyMemePacks(val packs: List<MemePack>) : Message
         data class MySituationPacks(val packs: List<SituationPack>) : Message
+        data class LikedMemePacks(val packs: List<MemePack>) : Message
+        data class LikedSituationPacks(val packs: List<SituationPack>) : Message
         data class Error(val message: String?) : Message
         data class SwitchType(val type: PacksCatalogStore.PackType) : Message
         data class SwitchFilter(val filter: PacksCatalogStore.PackFilter) : Message
@@ -124,6 +142,8 @@ internal class PacksCatalogStoreFactory(
             is Message.SituationPacks -> copy(situationPacks = msg.packs)
             is Message.MyMemePacks -> copy(myMemePacks = msg.packs)
             is Message.MySituationPacks -> copy(mySituationPacks = msg.packs)
+            is Message.LikedMemePacks -> copy(likedMemePacks = msg.packs)
+            is Message.LikedSituationPacks -> copy(likedSituationPacks = msg.packs)
             is Message.Error -> copy(isLoading = false, error = msg.message)
             is Message.SwitchType -> copy(activeType = msg.type)
             is Message.SwitchFilter -> copy(activeFilter = msg.filter)

@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -35,6 +37,8 @@ import kotlinx.coroutines.flow.collectLatest
 import org.jetbrains.compose.resources.stringResource
 import com.dev.memebattle.core.localization.Res
 import com.dev.memebattle.core.localization.packs_details_title
+import com.dev.memebattle.core.localization.packs_like
+import com.dev.memebattle.core.localization.packs_unlike
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -66,6 +70,21 @@ fun PacksDetailsView(component: PacksDetailsComponent, modifier: Modifier = Modi
                 navigationIcon = {
                     IconButton(onClick = { component.onIntent(PacksDetailsStore.Intent.Close) }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, null, tint = DeckTextPri)
+                    }
+                },
+                actions = {
+                    // Like/Unlike button
+                    IconButton(
+                        onClick = { component.onIntent(PacksDetailsStore.Intent.ToggleLike) },
+                        enabled = !state.isLikeLoading
+                    ) {
+                        Icon(
+                            imageVector = if (state.isLiked) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                            contentDescription = stringResource(
+                                if (state.isLiked) Res.string.packs_unlike else Res.string.packs_like
+                            ),
+                            tint = if (state.isLiked) Color(0xFFFF5252) else DeckTextPri
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),

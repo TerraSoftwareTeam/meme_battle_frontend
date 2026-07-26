@@ -12,6 +12,7 @@ import org.jetbrains.compose.resources.stringResource
 import com.dev.memebattle.core.localization.Res
 import com.dev.memebattle.core.localization.packs_no_memes
 import com.dev.memebattle.core.localization.packs_no_situations
+import com.dev.memebattle.core.ui.components.pack.TextSecondary
 
 @Composable
 internal fun EmptyPacksPlaceholder(

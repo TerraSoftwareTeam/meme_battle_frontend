@@ -1,12 +1,22 @@
 package com.dev.memebattle.feature.home.impl.presentation.component
 
+import com.arkivanov.decompose.ExperimentalDecomposeApi
+import com.arkivanov.decompose.router.panels.ChildPanels
+import com.arkivanov.decompose.router.panels.ChildPanelsMode
+import com.arkivanov.decompose.value.Value
 import com.dev.memebattle.core.navigation.entry.FeatureComponent
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.SharedFlow
-import com.dev.memebattle.feature.home.impl.presentation.store.HomeStore
+import com.dev.memebattle.feature.home.impl.presentation.component.menu.HomeMenuComponent
+import com.dev.memebattle.feature.home.impl.presentation.component.create.CreateLobbyComponent
 
 interface HomeComponent : FeatureComponent {
-    val state: StateFlow<HomeStore.State>
-    val effects: SharedFlow<HomeStore.Effect>
-    fun onIntent(intent: HomeStore.Intent)
+    @OptIn(ExperimentalDecomposeApi::class)
+    val panels: Value<ChildPanels<
+            HomeComponentImpl.MainConfig,
+            HomeMenuComponent,
+            HomeComponentImpl.DetailsConfig,
+            CreateLobbyComponent,
+            Nothing,
+            Nothing>>
+
+    fun setAdaptiveMode(mode: ChildPanelsMode)
 }

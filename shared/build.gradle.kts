@@ -24,7 +24,6 @@ kotlin {
             api(projects.core.data.game)
             api(projects.feature.home.impl)
             api(projects.feature.packs.impl)
-            api(projects.feature.gameSetup.impl)
             api(projects.feature.gameplay.impl)
             
             api(projects.host.root)

@@ -74,7 +74,7 @@ interface GameApiService {
 
   suspend fun updateGame(id: String, body: UpdateGameRequest): NetworkResult<GameDto>
 
-  suspend fun joinGame(id: String): NetworkResult<Unit>
+  suspend fun joinGame(id: String, body: com.dev.network.game.current.dto.JoinGameRequest): NetworkResult<Unit>
 
   suspend fun setReady(id: String, body: ReadyRequest): NetworkResult<Unit>
 
@@ -93,4 +93,18 @@ interface GameApiService {
   suspend fun startGameSession(id: String): NetworkResult<Unit>
 
   suspend fun getGameState(id: String): NetworkResult<GameStateDto>
+
+  // ─── Pack Likes ───────────────────────────────────────────────────────────
+
+  suspend fun likeMemePack(id: String): NetworkResult<Unit>
+
+  suspend fun unlikeMemePack(id: String): NetworkResult<Unit>
+
+  suspend fun getLikedMemePacks(): NetworkResult<List<MemePackDto>>
+
+  suspend fun likeSituationPack(id: String): NetworkResult<Unit>
+
+  suspend fun unlikeSituationPack(id: String): NetworkResult<Unit>
+
+  suspend fun getLikedSituationPacks(): NetworkResult<List<SituationPackDto>>
 }

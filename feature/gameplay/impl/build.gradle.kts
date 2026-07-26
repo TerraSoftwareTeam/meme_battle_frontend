@@ -26,6 +26,7 @@ kotlin {
         commonMain.dependencies {
             implementation(project(":feature:gameplay:api"))
             implementation(project(":core:navigation"))
+            implementation(project(":network:game:current"))
             
             implementation(libs.koin.compose)
             implementation(libs.koin.compose.viewmodel)

@@ -33,4 +33,8 @@ actual fun platformNetworkModule(): Module = module {
             unauthenticatedClientProvider = { get(named("unauthenticated")) }
         )
     }
+
+    single(named("wsBaseUrl")) {
+        WebApiConfig.wsBaseUrl ?: BuildKonfig.WS_BASE_URL
+    }
 }

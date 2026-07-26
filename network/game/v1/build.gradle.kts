@@ -3,6 +3,8 @@ plugins {
     kotlin("plugin.serialization")
 }
 kotlin {
+    iosArm64()
+    iosSimulatorArm64()
     androidLibrary {
         namespace = "com.dev.memebattle.network.game.v1"
         compileSdk = libs.versions.compileSdk.get().toInt()

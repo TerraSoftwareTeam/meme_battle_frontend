@@ -32,9 +32,12 @@ object PlatformEnv {
 
 internal fun PackMemeDetailsDto.toDomain(): MemeCard {
     val fullUrl = when {
-        // Relative path → prepend API base
-        media_url.startsWith("/") ->
-            "${com.dev.memebattle.core.network.BuildKonfig.API_BASE_URL}$media_url"
+        // Relative path → prepend API base (use local proxy on web to avoid CORS)
+        media_url.startsWith("/") -> {
+            val origin = PlatformEnv.webOrigin
+            if (origin != null) "$origin/api-proxy$media_url"
+            else "${com.dev.memebattle.core.network.BuildKonfig.API_BASE_URL}$media_url"
+        }
         // CDN URL → rewrite through local /cdn-proxy to fix CORS ("*, *" header bug)
         media_url.contains("cdn.hackclub.com") || media_url.contains("user-cdn.hackclub-assets.com") -> {
             val prefix = PlatformEnv.webOrigin ?: ""

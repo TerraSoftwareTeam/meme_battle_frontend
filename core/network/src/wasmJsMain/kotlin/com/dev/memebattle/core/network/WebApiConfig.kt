@@ -11,4 +11,10 @@ object WebApiConfig {
      * On dev: set to "$windowOrigin/api-proxy" to bypass CORS preflight.
      */
     var apiBaseUrl: String? = null
+
+    /**
+     * If non-null, overrides [BuildKonfig.WS_BASE_URL] for WebSocket connections.
+     * On dev: set to "$windowOrigin/ws-proxy" to bypass CORS via webpack dev-server ws proxy.
+     */
+    var wsBaseUrl: String? = null
 }

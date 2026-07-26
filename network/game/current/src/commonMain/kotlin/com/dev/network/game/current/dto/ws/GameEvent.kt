@@ -91,5 +91,6 @@ data class HandCard(
 @Serializable
 data class ScoreboardEntry(
     @SerialName("user_id") val userId: String,
-    @SerialName("score") val score: Int
+    @SerialName("score") val score: Int,
+    @SerialName("handle") val handle: String? = null,
 )

@@ -16,4 +16,6 @@ data class PlayerDto(
   val score: Int,
   @SerialName("user_id")
   val user_id: String,
+  @SerialName("handle")
+  val handle: String = "",
 )

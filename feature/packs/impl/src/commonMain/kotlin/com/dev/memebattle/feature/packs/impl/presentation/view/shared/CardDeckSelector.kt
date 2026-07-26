@@ -141,7 +141,7 @@ internal fun CardDeckSelector(
                         Box(
                             modifier = Modifier.size(width = cardWidth, height = cardHeight)
                         ) {
-                            com.dev.memebattle.feature.packs.impl.presentation.view.details.widgets.CardBack(
+                            com.dev.memebattle.core.ui.components.pack.CardBack(
                                 modifier = Modifier.fillMaxSize()
                             )
                         }

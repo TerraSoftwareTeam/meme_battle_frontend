@@ -28,15 +28,21 @@ object AppHttpClientFactory {
         val basePath = parsedBase.encodedPath.trimEnd('/')
 
         onRequest { request, _ ->
-            request.url.protocol = parsedBase.protocol
-            request.url.host = parsedBase.host
-            if (parsedBase.port != 0 && parsedBase.port != 80 && parsedBase.port != 443) {
-                request.url.port = parsedBase.port
-            }
+            // If it's a websocket URL or already has a different host, don't overwrite
+            if (request.url.protocol.name == "wss" || request.url.protocol.name == "ws") return@onRequest
             
-            val currentPath = request.url.encodedPath
-            if (basePath.isNotEmpty() && !currentPath.startsWith(basePath)) {
-                request.url.encodedPath = basePath + if (currentPath.startsWith("/")) currentPath else "/$currentPath"
+            // Only overwrite if it's a relative URL (empty host or localhost)
+            if (request.url.host == "localhost" || request.url.host.isEmpty()) {
+                request.url.protocol = parsedBase.protocol
+                request.url.host = parsedBase.host
+                if (parsedBase.port != 0 && parsedBase.port != 80 && parsedBase.port != 443) {
+                    request.url.port = parsedBase.port
+                }
+                
+                val currentPath = request.url.encodedPath
+                if (basePath.isNotEmpty() && !currentPath.startsWith(basePath)) {
+                    request.url.encodedPath = basePath + if (currentPath.startsWith("/")) currentPath else "/$currentPath"
+                }
             }
         }
     }

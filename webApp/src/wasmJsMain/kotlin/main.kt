@@ -18,6 +18,9 @@ fun main() {
     com.dev.memebattle.core.data.packs.mapper.PlatformEnv.webOrigin = origin
     // Route all API calls through local dev-server proxy to avoid CORS preflight for PATCH/DELETE
     WebApiConfig.apiBaseUrl = "$origin/api-proxy"
+    // Route WebSocket through local dev-server proxy to avoid CORS for ws/wss
+    val wsOrigin = origin.replace(Regex("^http"), "ws")
+    WebApiConfig.wsBaseUrl = "$wsOrigin/ws-proxy"
     initKoin()
 
 
