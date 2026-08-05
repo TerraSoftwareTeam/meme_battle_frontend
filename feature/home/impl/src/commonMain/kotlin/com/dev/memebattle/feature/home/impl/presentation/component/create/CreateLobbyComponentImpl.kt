@@ -69,6 +69,10 @@ class CreateLobbyComponentImpl(
         store.accept(CreateLobbyStore.Intent.SetHandSize(size))
     }
 
+    override fun updateHandle(handle: String) {
+        store.accept(CreateLobbyStore.Intent.UpdateHandleInput(handle))
+    }
+
     override fun createLobby() {
         store.accept(CreateLobbyStore.Intent.Create)
     }

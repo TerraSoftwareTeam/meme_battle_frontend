@@ -20,6 +20,8 @@ import com.dev.memebattle.feature.gameplay.impl.presentation.view.players.Gamepl
  * Сам по себе является тонким слоем без бизнес-логики:
  * он только извлекает компоненты из ChildPanels и передаёт слоты-лямбды.
  */
+import androidx.compose.runtime.collectAsState
+
 @OptIn(ExperimentalDecomposeApi::class)
 @Composable
 fun GameplayView(
@@ -36,7 +38,22 @@ fun GameplayView(
     GameplayAdaptiveLayout(
         windowWidthClass = windowWidthClass,
         gameContent = {
-            gameComponent?.let { GameplayGameScreen(it) }
+            gameComponent?.let { gameCtx ->
+                val infoState = infoComponent?.state?.collectAsState()?.value
+                val lobbyPlayersState = playersComponent?.state?.collectAsState()?.value
+                val myUserId = lobbyPlayersState?.players?.find { it.isMe }?.userId ?: ""
+                val amIReady = infoState?.amIReady ?: false
+                
+                GameplayGameScreen(
+                    component = gameCtx,
+                    myUserId = myUserId,
+                    lobbyPlayersState = lobbyPlayersState,
+                    infoState = infoState,
+                    onToggleReady = {
+                        infoComponent?.onIntent(com.dev.memebattle.feature.gameplay.impl.presentation.store.info.GameplayInfoStore.Intent.SetReady(!amIReady))
+                    }
+                )
+            }
         },
         infoContent = {
             infoComponent?.let { GameplayInfoScreen(it) }

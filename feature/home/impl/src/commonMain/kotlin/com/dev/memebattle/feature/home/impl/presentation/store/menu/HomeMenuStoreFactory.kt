@@ -5,6 +5,8 @@ import com.arkivanov.mvikotlin.core.store.StoreFactory
 import com.arkivanov.mvikotlin.core.utils.ExperimentalMviKotlinApi
 import com.arkivanov.mvikotlin.extensions.coroutines.CoroutineExecutor
 import com.arkivanov.mvikotlin.extensions.coroutines.coroutineBootstrapper
+import com.dev.memebattle.core.network.call.NetworkResult
+import com.dev.network.game.current.api.GameApiService
 import com.dev.network.game.current.api.ws.GameSocketService
 import com.dev.network.game.current.dto.ws.LobbyEvent
 import kotlinx.coroutines.Job
@@ -15,8 +17,10 @@ import kotlinx.coroutines.launch
 class HomeMenuStoreFactory(
     private val storeFactory: StoreFactory,
     private val gameSocketService: GameSocketService,
+    private val gameApiService: GameApiService,
     private val onNavigateToCreateLobby: () -> Unit,
-    private val onNavigateToStore: () -> Unit
+    private val onNavigateToStore: () -> Unit,
+    private val onNavigateToGame: (String) -> Unit,
 ) {
     @OptIn(ExperimentalMviKotlinApi::class)
     fun create(): HomeMenuStore =
@@ -30,7 +34,10 @@ class HomeMenuStoreFactory(
             reducer = { msg ->
                 when (msg) {
                     is Msg.ShowLobbies -> copy(isLobbyListVisible = true)
-                    is Msg.HideLobbies -> copy(isLobbyListVisible = false)
+                    is Msg.HideLobbies -> copy(isLobbyListVisible = false, lobbies = emptyList())
+                    is Msg.LoadingStarted -> copy(isLoading = true)
+                    is Msg.LoadingFinished -> copy(isLoading = false)
+                    is Msg.LobbiesLoaded -> copy(lobbies = msg.lobbies)
                     is Msg.LobbyCreated -> {
                         val newLobbies = lobbies.filter { it.id != msg.event.id } + msg.event
                         copy(lobbies = newLobbies.sortedByDescending { it.createdAt })
@@ -42,6 +49,11 @@ class HomeMenuStoreFactory(
                     is Msg.LobbyRemoved -> {
                         copy(lobbies = lobbies.filter { it.id != msg.event.id })
                     }
+                    is Msg.ShowJoinDialog -> copy(joinGameId = msg.gameId, joinHandleInput = "", joinError = null)
+                    is Msg.UpdateJoinHandleInput -> copy(joinHandleInput = msg.handle)
+                    is Msg.HideJoinDialog -> copy(joinGameId = null)
+                    is Msg.SetJoining -> copy(isJoining = msg.isJoining)
+                    is Msg.SetJoinError -> copy(joinError = msg.error)
                 }
             }
         ) {}
@@ -49,9 +61,17 @@ class HomeMenuStoreFactory(
     private sealed interface Msg {
         data object ShowLobbies : Msg
         data object HideLobbies : Msg
+        data object LoadingStarted : Msg
+        data object LoadingFinished : Msg
+        data class LobbiesLoaded(val lobbies: List<LobbyEvent.LobbyCreated>) : Msg
         data class LobbyCreated(val event: LobbyEvent.LobbyCreated) : Msg
         data class LobbyUpdated(val event: LobbyEvent.LobbyUpdated) : Msg
         data class LobbyRemoved(val event: LobbyEvent.LobbyRemoved) : Msg
+        data class ShowJoinDialog(val gameId: String) : Msg
+        data class UpdateJoinHandleInput(val handle: String) : Msg
+        data object HideJoinDialog : Msg
+        data class SetJoining(val isJoining: Boolean) : Msg
+        data class SetJoinError(val error: String?) : Msg
     }
 
     private inner class ExecutorImpl : CoroutineExecutor<HomeMenuStore.Intent, Unit, HomeMenuStore.State, Msg, HomeMenuStore.Effect>() {
@@ -74,14 +94,47 @@ class HomeMenuStoreFactory(
                 is HomeMenuStore.Intent.OnCreateLobbyClicked -> {
                     onNavigateToCreateLobby()
                 }
+                is HomeMenuStore.Intent.OnJoinLobbyClicked -> {
+                    dispatch(Msg.ShowJoinDialog(intent.gameId))
+                }
+                is HomeMenuStore.Intent.UpdateJoinHandleInput -> dispatch(Msg.UpdateJoinHandleInput(intent.handle))
+                is HomeMenuStore.Intent.CancelJoin -> dispatch(Msg.HideJoinDialog)
+                is HomeMenuStore.Intent.ConfirmJoin -> joinGame()
             }
         }
         
         private fun connectToSocket() {
-            if (socketJob != null) return
+            if (socketJob != null) {
+                println("[HomeMenuStore] connectToSocket: already connecting/connected, skipping")
+                return
+            }
+            println("[HomeMenuStore] connectToSocket: starting...")
             socketJob = scope.launch {
+                // 1. Загружаем текущий список лобби через REST
+                dispatch(Msg.LoadingStarted)
+                val gamesResult = gameApiService.listActiveGames()
+                if (gamesResult is NetworkResult.Success) {
+                    val lobbies = gamesResult.data.games.map { dto ->
+                        LobbyEvent.LobbyCreated(
+                            id = dto.id,
+                            hostId = dto.host_id,
+                            mode = dto.mode.name.lowercase(),
+                            maxRounds = dto.max_rounds,
+                            handSize = dto.hand_size,
+                            playersCount = dto.players_count,
+                            createdAt = dto.created_at,
+                        )
+                    }.sortedByDescending { it.createdAt }
+                    dispatch(Msg.LobbiesLoaded(lobbies))
+                }
+                dispatch(Msg.LoadingFinished)
+
+                // 2. Подключаем WS и слушаем обновления в реальном времени
+                println("[HomeMenuStore] Calling gameSocketService.connect()...")
                 gameSocketService.connect()
+                println("[HomeMenuStore] gameSocketService.connect() returned, subscribing to lobbies...")
                 gameSocketService.subscribeToLobbies()
+                println("[HomeMenuStore] Subscribed to lobbies, collecting events...")
                 gameSocketService.lobbyEvents.onEach { event ->
                     when (event) {
                         is LobbyEvent.LobbyCreated -> dispatch(Msg.LobbyCreated(event))
@@ -99,6 +152,40 @@ class HomeMenuStoreFactory(
             // job to stop reacting to lobby events.
             socketJob?.cancel()
             socketJob = null
+        }
+
+        private fun joinGame() {
+            val st = state()
+            val gameId = st.joinGameId ?: return
+            val handle = st.joinHandleInput.trim().takeIf { it.isNotEmpty() }
+            
+            scope.launch {
+                dispatch(Msg.SetJoining(true))
+                dispatch(Msg.SetJoinError(null))
+                val result = gameApiService.joinGame(
+                    gameId, 
+                    com.dev.network.game.current.dto.JoinGameRequest(handle = handle)
+                )
+                
+                when (result) {
+                    is NetworkResult.Success -> {
+                        dispatch(Msg.SetJoining(false))
+                        dispatch(Msg.HideJoinDialog)
+                        onNavigateToGame(gameId)
+                    }
+                    is NetworkResult.Error -> {
+                        // Если мы уже в игре, то joinGame вернет ошибку. Проверим, можем ли мы получить стейт
+                        val stateResult = gameApiService.getGameState(gameId)
+                        dispatch(Msg.SetJoining(false))
+                        if (stateResult is NetworkResult.Success) {
+                            dispatch(Msg.HideJoinDialog)
+                            onNavigateToGame(gameId)
+                        } else {
+                            dispatch(Msg.SetJoinError(result.error.toString()))
+                        }
+                    }
+                }
+            }
         }
     }
 }

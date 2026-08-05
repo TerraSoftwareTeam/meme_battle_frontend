@@ -62,3 +62,7 @@ include(":feature:gameplay:impl")
 // endregion FEATURE Gameplay
 
 include(":network:game:v2")
+
+include(":network:game:v3")
+
+include(":network:user_auth:v2")

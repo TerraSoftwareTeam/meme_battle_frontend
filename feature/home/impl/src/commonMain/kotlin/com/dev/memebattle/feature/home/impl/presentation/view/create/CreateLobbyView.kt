@@ -1,5 +1,6 @@
 package com.dev.memebattle.feature.home.impl.presentation.view.create
 
+import com.dev.network.game.current.dto.GameMode
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -190,8 +191,8 @@ fun CreateLobbyView(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 val modes = listOf(
-                    com.dev.network.game.current.dto.GameMode.SITUATION_TO_MEME to stringResource(Res.string.lobby_create_mode_situation_to_meme),
-                    com.dev.network.game.current.dto.GameMode.MEME_TO_SITUATION to stringResource(Res.string.lobby_create_mode_meme_to_situation),
+                    GameMode.SITUATION_TO_MEME to stringResource(Res.string.lobby_create_mode_situation_to_meme),
+                    GameMode.MEME_TO_SITUATION to stringResource(Res.string.lobby_create_mode_meme_to_situation),
                 )
                 modes.forEach { (mode, label) ->
                     val isSelected = state.mode == mode
@@ -287,6 +288,24 @@ fun CreateLobbyView(
                     activeTrackColor = Color(0xFF7C5DFA),
                     inactiveTrackColor = Color(0xFF2A1F44),
                 )
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            OutlinedTextField(
+                value = state.handleInput,
+                onValueChange = { component.updateHandle(it) },
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text("Your Handle (optional)") },
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Color(0xFF7C5DFA),
+                    unfocusedBorderColor = Color(0xFF3B2F5E),
+                    focusedLabelColor = Color(0xFF7C5DFA),
+                    unfocusedLabelColor = Color(0xFF887A9E),
+                    focusedTextColor = Color.White,
+                    unfocusedTextColor = Color.White
+                ),
+                shape = RoundedCornerShape(12.dp)
             )
 
             Spacer(modifier = Modifier.height(16.dp))

@@ -53,6 +53,8 @@ internal class GameplayInfoStoreFactory(
         data class ReadyCountChanged(val count: Int) : Msg
         data class VotedCountChanged(val count: Int) : Msg
         data class IsHostSet(val isHost: Boolean) : Msg
+        data class AmIReadyChanged(val isReady: Boolean) : Msg
+        data class IsSettingReadyChanged(val isSettingReady: Boolean) : Msg
         data object StartingGame : Msg
         data object StartingGameFinished : Msg
         data object LoadingFinished : Msg
@@ -70,6 +72,7 @@ internal class GameplayInfoStoreFactory(
 
         override fun executeIntent(intent: GameplayInfoStore.Intent) {
             when (intent) {
+                is GameplayInfoStore.Intent.Initialize -> intent.snapshot?.let { hydrateFromSnapshot(it) }
                 is GameplayInfoStore.Intent.Init -> Unit
                 is GameplayInfoStore.Intent.StartGame -> startGame()
                 is GameplayInfoStore.Intent.SetReady -> setReady(intent.isReady)
@@ -80,6 +83,11 @@ internal class GameplayInfoStoreFactory(
             dispatch(Msg.ModeSet(snapshot.game.mode))
             dispatch(Msg.PlayerCountChanged(snapshot.players.size))
             dispatch(Msg.ReadyCountChanged(snapshot.players.count { it.is_ready }))
+            
+            val me = snapshot.players.find { it.user_id == myUserId }
+            if (me != null) {
+                dispatch(Msg.AmIReadyChanged(me.is_ready))
+            }
 
             snapshot.round?.let { round ->
                 val phase = round.phase
@@ -98,8 +106,10 @@ internal class GameplayInfoStoreFactory(
                         dispatch(Msg.PlayerCountChanged(event.playersCount))
                     }
                     is GameEvent.PlayerReadyChanged -> {
-                        // Обновляем через пересчёт — PlayersStore держит список
-                        // GameplayComponentImpl после этого события делает пересчёт и рассылает
+                        if (event.userId == myUserId) {
+                            dispatch(Msg.AmIReadyChanged(event.isReady))
+                            dispatch(Msg.IsSettingReadyChanged(false))
+                        }
                     }
                     is GameEvent.GameStarted -> {
                         dispatch(Msg.TotalRoundsSet(event.roundsCount))
@@ -147,8 +157,13 @@ internal class GameplayInfoStoreFactory(
         }
 
         private fun setReady(isReady: Boolean) {
+            dispatch(Msg.IsSettingReadyChanged(true))
             scope.launch {
-                gameApiService.setReady(gameId, ReadyRequest(is_ready = isReady))
+                val result = gameApiService.setReady(gameId, ReadyRequest(is_ready = isReady))
+                if (result is NetworkResult.Error) {
+                    dispatch(Msg.IsSettingReadyChanged(false))
+                    publish(GameplayInfoStore.Effect.ShowError(result.error.userMessage()))
+                }
             }
         }
     }
@@ -163,6 +178,8 @@ internal class GameplayInfoStoreFactory(
             is Msg.ReadyCountChanged -> copy(readyCount = msg.count)
             is Msg.VotedCountChanged -> copy(votedCount = msg.count)
             is Msg.IsHostSet -> copy(isHost = msg.isHost)
+            is Msg.AmIReadyChanged -> copy(amIReady = msg.isReady)
+            is Msg.IsSettingReadyChanged -> copy(isSettingReady = msg.isSettingReady)
             is Msg.StartingGame -> copy(isStartingGame = true)
             is Msg.StartingGameFinished -> copy(isStartingGame = false)
             is Msg.LoadingFinished -> copy(isLoading = false)

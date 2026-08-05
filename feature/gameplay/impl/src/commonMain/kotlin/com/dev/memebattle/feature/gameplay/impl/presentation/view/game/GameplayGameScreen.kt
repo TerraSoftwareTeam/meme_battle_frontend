@@ -37,6 +37,7 @@ fun GameplayGameScreen(
     myUserId: String = "",
     lobbyPlayersState: com.dev.memebattle.feature.gameplay.impl.presentation.store.players.GameplayPlayersStore.State? = null,
     infoState: com.dev.memebattle.feature.gameplay.impl.presentation.store.info.GameplayInfoStore.State? = null,
+    onToggleReady: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val state by component.state.collectAsState()
@@ -74,11 +75,7 @@ fun GameplayGameScreen(
                     readyCount = infoState?.readyCount ?: 0,
                     amIReady = infoState?.amIReady ?: false,
                     isSettingReady = infoState?.isSettingReady ?: false,
-                    onToggleReady = {
-                        val isReady = infoState?.amIReady ?: false
-                        // Intent живёт в InfoComponent — передаётся через родительский компонент
-                        // Здесь пока null-safe stub; для реального вызова см. GameplayView
-                    },
+                    onToggleReady = onToggleReady,
                 )
 
                 GameplayGameStore.UiPhase.Submitting -> SubmittingContent(

@@ -71,7 +71,7 @@ fun LobbyContent(
         )
 
         Text(
-            text = "$readyCount из ${players.size} готовы",
+            text = "${players.count { it.isReady }} из ${players.size} готовы",
             style = MaterialTheme.typography.bodyMedium,
             color = Color(0xFF7C5DFA),
             modifier = Modifier.padding(top = 2.dp),
@@ -96,16 +96,12 @@ fun LobbyContent(
         // Кнопка готовности
         if (amIReady) {
             OutlinedButton(
-                onClick = onToggleReady,
+                onClick = { },
                 modifier = Modifier.fillMaxWidth().height(52.dp),
-                enabled = !isSettingReady,
+                enabled = false,
                 shape = RoundedCornerShape(16.dp),
             ) {
-                if (isSettingReady) {
-                    CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
-                } else {
-                    Text("✓ Готов  —  Отменить", fontWeight = FontWeight.Bold, color = Color(0xFF00C853))
-                }
+                Text("✓ Вы готовы", fontWeight = FontWeight.Bold, color = Color(0xFF00C853))
             }
         } else {
             Button(

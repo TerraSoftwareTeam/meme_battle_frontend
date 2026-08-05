@@ -10,7 +10,8 @@ sealed interface GameEvent {
     @SerialName("player_joined")
     data class PlayerJoined(
         @SerialName("user_id") val userId: String,
-        @SerialName("players_count") val playersCount: Int
+        @SerialName("players_count") val playersCount: Int,
+        @SerialName("handle") val handle: String = "",
     ) : GameEvent
 
     @Serializable

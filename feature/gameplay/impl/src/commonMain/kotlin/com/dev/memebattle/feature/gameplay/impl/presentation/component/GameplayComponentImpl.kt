@@ -10,6 +10,7 @@ import com.arkivanov.decompose.router.panels.childPanels
 import com.arkivanov.decompose.router.panels.setMode
 import com.arkivanov.decompose.value.Value
 import com.arkivanov.essenty.lifecycle.coroutines.coroutineScope
+import com.arkivanov.essenty.lifecycle.doOnDestroy
 import com.arkivanov.mvikotlin.core.store.StoreFactory
 import com.dev.memebattle.core.network.call.NetworkResult
 import com.dev.memebattle.core.navigation.output.NavigationOutput
@@ -21,7 +22,10 @@ import com.dev.memebattle.feature.gameplay.impl.presentation.component.players.G
 import com.dev.memebattle.feature.gameplay.impl.presentation.component.players.GameplayPlayersComponentImpl
 import com.dev.memebattle.feature.gameplay.impl.presentation.store.GameplayStore
 import com.dev.memebattle.feature.gameplay.impl.presentation.store.game.GameplayGameStore
+import com.dev.memebattle.feature.gameplay.impl.presentation.store.game.GameplayGameStoreFactory
+import com.dev.memebattle.feature.gameplay.impl.presentation.store.info.GameplayInfoStore
 import com.dev.memebattle.feature.gameplay.impl.presentation.store.players.GameplayPlayersStore
+import com.dev.memebattle.feature.gameplay.impl.presentation.store.players.GameplayPlayersStoreFactory
 import com.dev.network.game.current.api.GameApiService
 import com.dev.network.game.current.api.ws.GameSocketService
 import com.dev.network.game.current.dto.GameStateDto
@@ -136,6 +140,12 @@ class GameplayComponentImpl(
     // ── Инициализация WS (БЕЗ joinGame — его вызывает GameStore через JoinLobby) ──
 
     init {
+        lifecycle.doOnDestroy {
+            kotlinx.coroutines.GlobalScope.launch {
+                gameSocketService.unsubscribeFromGame(gameId)
+                gameSocketService.unsubscribeFromPersonal(myUserId)
+            }
+        }
         scope.launch { initializeWsSession() }
     }
 
@@ -143,7 +153,7 @@ class GameplayComponentImpl(
         // 1. Получить токены
         val tokenResult = gameApiService.getWsToken(gameId)
         val tokenDto = when (tokenResult) {
-            is com.dev.memebattle.core.network.call.NetworkResult.Success -> tokenResult.data
+            is NetworkResult.Success -> tokenResult.data
             else -> return
         }
 
@@ -154,7 +164,7 @@ class GameplayComponentImpl(
 
         // 3. Получить снимок (если игра уже в процессе — для reconnect)
         val snapshotResult = gameApiService.getGameState(gameId)
-        if (snapshotResult is com.dev.memebattle.core.network.call.NetworkResult.Success) {
+        if (snapshotResult is NetworkResult.Success) {
             cachedSnapshot = snapshotResult.data
         }
 
@@ -163,6 +173,8 @@ class GameplayComponentImpl(
         panelsValue.main.instance?.let { gameComponent ->
             gameComponent.onIntent(GameplayGameStore.Intent.Initialize(cachedSnapshot))
         }
+        panelsValue.details?.instance?.onIntent(GameplayInfoStore.Intent.Initialize(cachedSnapshot))
+        panelsValue.extra?.instance?.onIntent(GameplayPlayersStore.Intent.Initialize(cachedSnapshot))
 
         // 5. Запустить fan-out
         startFanOut()
@@ -197,15 +209,9 @@ class GameplayComponentImpl(
     // ── Голосование из PlayersScreen (через Effect маршрутизация) ────────────
 
     private fun handleVoteFromPlayers(submissionId: String) {
-        // Находим roundId из GameStore (нужен для API-вызова)
-        // GameStore управляет roundId сам — но Vote через PlayersScreen должен также работать.
-        // Передаём Intent.Vote в GameStore через panels — пока через GameComponent напрямую нельзя.
-        // TODO: передать gameComponent.onIntent(Vote(submissionId)) через ссылку на компонент.
+        // Vote через PlayersScreen
         scope.launch {
-            val gameState = gameApiService.getGameState(gameId)
-            val roundId = (gameState as? com.dev.memebattle.core.network.call.NetworkResult.Success)
-                ?.data?.round?.id ?: return@launch
-            gameApiService.voteCard(gameId, roundId, VoteRequest(submission_id = submissionId))
+            gameApiService.voteCard(gameId, VoteRequest(submission_id = submissionId))
         }
     }
 

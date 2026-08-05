@@ -5,9 +5,18 @@ kotlin {
         compileSdk = libs.versions.compileSdk.get().toInt()
         minSdk = libs.versions.minSdk.get().toInt()
     }
+    listOf(
+        iosArm64(),
+        iosSimulatorArm64()
+    ).forEach { iosTarget ->
+        iosTarget.binaries.framework {
+            baseName = "User_authCurrentNetwork"
+            isStatic = true
+        }
+    }
     sourceSets {
         commonMain.dependencies {
-            api(projects.network.userAuth.v1)
+            api(projects.network.userAuth.v2)
             implementation(projects.core.network)
             implementation(libs.koin.core)
         }

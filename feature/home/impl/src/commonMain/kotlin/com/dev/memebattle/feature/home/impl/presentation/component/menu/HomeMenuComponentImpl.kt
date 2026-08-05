@@ -12,23 +12,27 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import com.dev.memebattle.feature.home.impl.presentation.store.menu.HomeMenuStore
 import com.dev.memebattle.feature.home.impl.presentation.store.menu.HomeMenuStoreFactory
-
+import com.dev.network.game.current.api.GameApiService
 import com.dev.network.game.current.api.ws.GameSocketService
 
 class HomeMenuComponentImpl(
     componentContext: ComponentContext,
     private val storeFactory: StoreFactory,
     private val gameSocketService: GameSocketService,
+    private val gameApiService: GameApiService,
     private val onNavigateToCreateLobby: () -> Unit,
-    private val onNavigateToStore: () -> Unit
+    private val onNavigateToStore: () -> Unit,
+    private val onNavigateToGame: (String) -> Unit,
 ) : HomeMenuComponent, ComponentContext by componentContext {
     
     private val scope = coroutineScope()
     private val store = HomeMenuStoreFactory(
         storeFactory = storeFactory,
         gameSocketService = gameSocketService,
+        gameApiService = gameApiService,
         onNavigateToCreateLobby = onNavigateToCreateLobby,
-        onNavigateToStore = onNavigateToStore
+        onNavigateToStore = onNavigateToStore,
+        onNavigateToGame = onNavigateToGame,
     ).create()
 
     private val labelsFlow = store.labels.shareIn(scope, SharingStarted.Eagerly, replay = 0)

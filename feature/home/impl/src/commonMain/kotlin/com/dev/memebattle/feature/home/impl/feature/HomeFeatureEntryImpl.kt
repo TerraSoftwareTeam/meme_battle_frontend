@@ -20,7 +20,8 @@ class HomeFeatureEntryImpl : TypedFeatureEntry<HomeComponent, HomeRoute>(), Home
         return HomeComponentImpl(
             componentContext = componentContext,
             storeFactory = koin.get(),
-            gameSocketService = koin.get()
+            gameSocketService = koin.get(),
+            gameApiService = koin.get()
         )
     }
 

@@ -3,6 +3,8 @@ package com.dev.memebattle.feature.gameplay.impl.feature
 import androidx.compose.runtime.Composable
 import com.arkivanov.decompose.ComponentContext
 import com.dev.memebattle.core.navigation.entry.TypedFeatureEntry
+import com.dev.memebattle.core.network.auth.TokenStorage
+import com.dev.memebattle.core.network.auth.decodeJwtSub
 import com.dev.memebattle.feature.gameplay.api.entry.GameplayFeatureEntry
 import com.dev.memebattle.feature.gameplay.api.route.GameplayRoute
 import com.dev.memebattle.feature.gameplay.impl.presentation.component.GameplayComponent
@@ -19,9 +21,10 @@ class GameplayFeatureEntryImpl : TypedFeatureEntry<GameplayComponent, GameplayRo
 
     override fun createTyped(route: GameplayRoute, componentContext: ComponentContext): GameplayComponent {
         val koin = getKoin()
-        // myUserId — берём из профиля пользователя; пока заглушка
-        // TODO: получать из UserRepository / AuthStore
-        val myUserId = koin.getOrNull<String>(qualifier = org.koin.core.qualifier.named("myUserId")) ?: ""
+        // myUserId — декодируем sub-claim из JWT access-токена (не проверяем подпись,
+        // сервер всё равно валидирует токен самостоятельно на каждом запросе)
+        val tokenStorage = koin.get<TokenStorage>()
+        val myUserId = decodeJwtSub(tokenStorage.getAccessToken() ?: "") ?: ""
         return GameplayComponentImpl(
             componentContext = componentContext,
             storeFactory = koin.get(),

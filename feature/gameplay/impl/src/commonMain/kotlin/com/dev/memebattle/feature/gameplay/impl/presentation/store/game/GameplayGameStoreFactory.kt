@@ -1,5 +1,9 @@
 package com.dev.memebattle.feature.gameplay.impl.presentation.store.game
 
+import com.dev.network.game.current.dto.SituationGameCard
+import com.dev.network.game.current.dto.SituationCardData
+import com.dev.network.game.current.dto.MemeGameCard
+import com.dev.network.game.current.dto.MemeCardData
 import com.arkivanov.mvikotlin.core.store.Reducer
 import com.arkivanov.mvikotlin.core.store.Store
 import com.arkivanov.mvikotlin.core.store.StoreFactory
@@ -252,14 +256,13 @@ internal class GameplayGameStoreFactory(
             val card = st.selectedHandCard ?: return
             val roundId = st.roundId ?: return
             val cardId = when(card) {
-                is com.dev.network.game.current.dto.MemeGameCard -> card.data.id
-                is com.dev.network.game.current.dto.SituationGameCard -> card.data.id
+                is MemeGameCard -> card.data.id
+                is SituationGameCard -> card.data.id
             }
             dispatch(Msg.SubmittingStarted)
             scope.launch {
                 val result = gameApiService.submitCard(
                     id = gameId,
-                    round_id = roundId,
                     body = SubmitCardRequest(card_id = cardId)
                 )
                 when (result) {
@@ -282,7 +285,6 @@ internal class GameplayGameStoreFactory(
             scope.launch {
                 val result = gameApiService.voteCard(
                     id = gameId,
-                    round_id = roundId,
                     body = VoteRequest(submission_id = submissionId)
                 )
                 when (result) {
@@ -303,9 +305,9 @@ internal class GameplayGameStoreFactory(
                     is GameEvent.RoundStarted -> {
                         val promptCardId = "prompt_${event.roundId}"
                         val promptCard: GameCard = if (event.promptKind == "meme") {
-                            com.dev.network.game.current.dto.MemeGameCard(com.dev.network.game.current.dto.MemeCardData(promptCardId, event.promptContent))
+                            MemeGameCard(MemeCardData(promptCardId, event.promptContent))
                         } else {
-                            com.dev.network.game.current.dto.SituationGameCard(com.dev.network.game.current.dto.SituationCardData(promptCardId, event.promptContent))
+                            SituationGameCard(SituationCardData(promptCardId, event.promptContent))
                         }
                         // hand придёт через PersonalEvent.HandUpdated
                         dispatch(Msg.RoundStarted(event.roundId, promptCard, emptyList()))
@@ -459,9 +461,9 @@ internal class GameplayGameStoreFactory(
 private fun HandCard.toGameCard(): GameCard {
     val imgUrl = imageUrl
     return if (kind == "meme" && imgUrl != null) {
-        com.dev.network.game.current.dto.MemeGameCard(com.dev.network.game.current.dto.MemeCardData(id, imgUrl))
+        MemeGameCard(MemeCardData(id, imgUrl))
     } else {
-        com.dev.network.game.current.dto.SituationGameCard(com.dev.network.game.current.dto.SituationCardData(id, text ?: ""))
+        SituationGameCard(SituationCardData(id, text ?: ""))
     }
 }
 

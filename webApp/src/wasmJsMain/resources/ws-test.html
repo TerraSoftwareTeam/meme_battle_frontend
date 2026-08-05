@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head><title>WS Test</title></head>
+<body>
+<h1>WebSocket Test</h1>
+<div id="log"></div>
+<script>
+function log(msg) {
+    document.getElementById('log').innerHTML += msg + '<br>';
+    console.log(msg);
+}
+
+// Test 1: Direct connection
+log('Test 1: Direct wss connection');
+var ws1 = new WebSocket('wss://realtime.meme.skyfly.hackclub.app/connection/websocket');
+ws1.onopen = function() {
+    log('WS1 opened');
+    ws1.send(JSON.stringify({id: 1, connect: {token: null}}));
+};
+ws1.onmessage = function(e) { log('WS1 msg: ' + e.data); };
+ws1.onerror = function(e) { log('WS1 error'); };
+ws1.onclose = function(e) { log('WS1 closed: ' + e.code + ' ' + e.reason); };
+
+// Test 2: Via proxy
+setTimeout(function() {
+    log('Test 2: Via proxy');
+    var ws2 = new WebSocket('ws://localhost:8080/ws-proxy/connection/websocket');
+    ws2.onopen = function() {
+        log('WS2 opened');
+        ws2.send(JSON.stringify({id: 1, connect: {token: null}}));
+    };
+    ws2.onmessage = function(e) { log('WS2 msg: ' + e.data); };
+    ws2.onerror = function(e) { log('WS2 error'); };
+    ws2.onclose = function(e) { log('WS2 closed: ' + e.code + ' ' + e.reason); };
+}, 2000);
+</script>
+</body>
+</html>

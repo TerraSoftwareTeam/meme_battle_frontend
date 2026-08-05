@@ -1,5 +1,13 @@
 package com.dev.memebattle.core.data.game
 
+import com.dev.network.game.current.dto.SituationGameCard
+import com.dev.network.game.current.dto.ws.PersonalEvent
+import com.dev.network.game.current.dto.RoundDto
+import com.dev.network.game.current.dto.RoundPhase
+import com.dev.network.game.current.dto.GameStatus
+import com.dev.network.game.current.dto.SituationCardData
+import com.dev.network.game.current.dto.MemeGameCard
+import com.dev.network.game.current.dto.MemeCardData
 import com.dev.memebattle.core.domain.game.GameRepository
 import com.dev.memebattle.core.network.call.NetworkResult
 import com.dev.network.game.current.api.GameApiService
@@ -78,17 +86,17 @@ internal class GameRepositoryImpl(
         _gameState.value = null
     }
 
-    private fun reducePersonalEvent(state: GameStateDto, event: com.dev.network.game.current.dto.ws.PersonalEvent): GameStateDto {
+    private fun reducePersonalEvent(state: GameStateDto, event: PersonalEvent): GameStateDto {
         return when (event) {
-            is com.dev.network.game.current.dto.ws.PersonalEvent.HandUpdated -> {
+            is PersonalEvent.HandUpdated -> {
                 val newHand = event.cards.map { card ->
                     if (card.kind.equals("meme", ignoreCase = true)) {
-                        com.dev.network.game.current.dto.MemeGameCard(
-                            com.dev.network.game.current.dto.MemeCardData(id = card.id, mediaUrl = card.imageUrl ?: "")
+                        MemeGameCard(
+                            MemeCardData(id = card.id, mediaUrl = card.imageUrl ?: "")
                         )
                     } else {
-                        com.dev.network.game.current.dto.SituationGameCard(
-                            com.dev.network.game.current.dto.SituationCardData(id = card.id, promptText = card.text ?: "")
+                        SituationGameCard(
+                            SituationCardData(id = card.id, promptText = card.text ?: "")
                         )
                     }
                 }
@@ -103,33 +111,34 @@ internal class GameRepositoryImpl(
             is GameEvent.GameStarted -> state // We don't have max_rounds in GameDto anymore
             is GameEvent.RoundStarted -> {
                 val promptCard = if (event.promptKind.equals("meme", ignoreCase = true)) {
-                    com.dev.network.game.current.dto.MemeGameCard(
-                        com.dev.network.game.current.dto.MemeCardData(id = "", mediaUrl = event.promptContent)
+                    MemeGameCard(
+                        MemeCardData(id = "", mediaUrl = event.promptContent)
                     )
                 } else {
-                    com.dev.network.game.current.dto.SituationGameCard(
-                        com.dev.network.game.current.dto.SituationCardData(id = "", promptText = event.promptContent)
+                    SituationGameCard(
+                        SituationCardData(id = "", promptText = event.promptContent)
                     )
                 }
                 
                 val updatedRound = state.round?.copy(
                     id = event.roundId,
                     round_number = event.roundNumber,
-                    phase = com.dev.network.game.current.dto.RoundPhase.valueOf(event.phase.uppercase()),
+                    phase = RoundPhase.valueOf(event.phase.uppercase()),
                     prompt = promptCard,
                     phase_expires_at = event.phaseExpiresAt
-                ) ?: com.dev.network.game.current.dto.RoundDto(
+                ) ?: RoundDto(
                     id = event.roundId,
                     round_number = event.roundNumber,
-                    phase = com.dev.network.game.current.dto.RoundPhase.valueOf(event.phase.uppercase()),
+                    phase = RoundPhase.valueOf(event.phase.uppercase()),
                     prompt = promptCard,
-                    phase_expires_at = event.phaseExpiresAt
+                    phase_expires_at = event.phaseExpiresAt,
+                    has_voted = false
                 )
                 state.copy(round = updatedRound)
             }
             is GameEvent.RoundPhaseChanged -> {
                 val updatedRound = state.round?.copy(
-                    phase = com.dev.network.game.current.dto.RoundPhase.valueOf(event.phase.uppercase()),
+                    phase = RoundPhase.valueOf(event.phase.uppercase()),
                     phase_expires_at = event.phaseExpiresAt
                 )
                 state.copy(round = updatedRound)
@@ -141,7 +150,7 @@ internal class GameRepositoryImpl(
             is GameEvent.GameFinished -> {
                 state.copy(
                     game = state.game.copy(
-                        status = com.dev.network.game.current.dto.GameStatus.FINISHED
+                        status = GameStatus.FINISHED
                     )
                 )
             }

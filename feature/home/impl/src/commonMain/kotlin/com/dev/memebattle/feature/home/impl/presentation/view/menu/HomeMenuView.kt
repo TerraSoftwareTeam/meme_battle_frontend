@@ -123,11 +123,15 @@ fun HomeMenuView(
                                 modifier = Modifier.fillMaxSize()
                             )
                         } else {
-                            LobbiesWidget(
-                                state = state,
-                                onBack = { component.onIntent(HomeMenuStore.Intent.OnCloseLobbiesClicked) },
-                                onCreateLobby = { component.onIntent(HomeMenuStore.Intent.OnCreateLobbyClicked) }
-                            )
+                                LobbiesWidget(
+                                    state = state,
+                                    onBack = { component.onIntent(HomeMenuStore.Intent.OnCloseLobbiesClicked) },
+                                    onCreateLobby = { component.onIntent(HomeMenuStore.Intent.OnCreateLobbyClicked) },
+                                    onJoinLobby = { gameId -> component.onIntent(HomeMenuStore.Intent.OnJoinLobbyClicked(gameId)) },
+                                    onUpdateJoinHandle = { component.onIntent(HomeMenuStore.Intent.UpdateJoinHandleInput(it)) },
+                                    onConfirmJoin = { component.onIntent(HomeMenuStore.Intent.ConfirmJoin) },
+                                    onCancelJoin = { component.onIntent(HomeMenuStore.Intent.CancelJoin) }
+                                )
                         }
                     }
                 )
@@ -284,7 +288,11 @@ private fun MorphingPlayButton(
 fun LobbiesWidget(
     state: HomeMenuStore.State,
     onBack: () -> Unit,
-    onCreateLobby: () -> Unit
+    onCreateLobby: () -> Unit,
+    onJoinLobby: (String) -> Unit = {},
+    onUpdateJoinHandle: (String) -> Unit = {},
+    onConfirmJoin: () -> Unit = {},
+    onCancelJoin: () -> Unit = {}
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
         // Header
@@ -307,57 +315,95 @@ fun LobbiesWidget(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // Lobby list with staggered animation
+        // Lobby list
         Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
-            if (state.lobbies.isEmpty()) {
-                Text(
-                    text = "No active lobbies found.\nCreate one and invite friends!",
-                    color = Color(0xFFB0A2C7),
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.align(Alignment.Center)
-                )
-            } else {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    itemsIndexed(state.lobbies) { index, lobby ->
-                        androidx.compose.animation.AnimatedVisibility(
-                            visible = true,
-                            enter = fadeIn(
-                                animationSpec = tween(300, delayMillis = index * 60)
-                            ) + slideInVertically(
-                                animationSpec = tween(300, delayMillis = index * 60),
-                                initialOffsetY = { it / 3 }
-                            )
-                        ) {
-                            Card(
-                                modifier = Modifier.fillMaxWidth(),
-                                colors = CardDefaults.cardColors(containerColor = Color(0xFF2E2452)),
-                                shape = RoundedCornerShape(12.dp)
+            when {
+                state.isLoading -> {
+                    CircularProgressIndicator(
+                        modifier = Modifier.align(Alignment.Center),
+                        color = Color(0xFF7C5DFA)
+                    )
+                }
+                state.lobbies.isEmpty() -> {
+                    Text(
+                        text = "No active lobbies found.\nCreate one and invite friends!",
+                        color = Color(0xFFB0A2C7),
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                }
+                else -> {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        itemsIndexed(state.lobbies) { index, lobby ->
+                            androidx.compose.animation.AnimatedVisibility(
+                                visible = true,
+                                enter = fadeIn(
+                                    animationSpec = tween(300, delayMillis = index * 60)
+                                ) + slideInVertically(
+                                    animationSpec = tween(300, delayMillis = index * 60),
+                                    initialOffsetY = { it / 3 }
+                                )
                             ) {
-                                Column(modifier = Modifier.padding(14.dp)) {
-                                    Text(
-                                        text = "Lobby: ${lobby.id.take(8)}...",
-                                        color = Color.White,
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 15.sp
-                                    )
-                                    Spacer(modifier = Modifier.height(4.dp))
+                                Card(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    colors = CardDefaults.cardColors(containerColor = Color(0xFF2E2452)),
+                                    shape = RoundedCornerShape(12.dp)
+                                ) {
                                     Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.SpaceBetween
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(14.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
                                     ) {
-                                        Text(
-                                            text = "Mode: ${lobby.mode}",
-                                            color = Color(0xFFB0A2C7),
-                                            fontSize = 13.sp
-                                        )
-                                        Text(
-                                            text = "Players: ${lobby.playersCount}",
-                                            color = Color(0xFFB0A2C7),
-                                            fontSize = 13.sp
-                                        )
+                                        // Info block
+                                        Column(modifier = Modifier.weight(1f)) {
+                                            Text(
+                                                text = "Lobby: ${lobby.id.take(8)}…",
+                                                color = Color.White,
+                                                fontWeight = FontWeight.Bold,
+                                                fontSize = 15.sp
+                                            )
+                                            Spacer(modifier = Modifier.height(4.dp))
+                                            Text(
+                                                text = "Mode: ${lobby.mode}  •  Rounds: ${lobby.maxRounds}  •  Hand: ${lobby.handSize}",
+                                                color = Color(0xFFB0A2C7),
+                                                fontSize = 12.sp
+                                            )
+                                            Text(
+                                                text = "Players: ${lobby.playersCount}",
+                                                color = Color(0xFF7C5DFA),
+                                                fontSize = 12.sp,
+                                                fontWeight = FontWeight.SemiBold,
+                                                modifier = Modifier.padding(top = 2.dp)
+                                            )
+                                        }
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        // Join button
+                                        Button(
+                                            onClick = { onJoinLobby(lobby.id) },
+                                            colors = ButtonDefaults.buttonColors(
+                                                containerColor = Color(0xFF7C5DFA)
+                                            ),
+                                            shape = RoundedCornerShape(10.dp),
+                                            contentPadding = PaddingValues(horizontal = 14.dp, vertical = 8.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.PlayArrow,
+                                                contentDescription = null,
+                                                tint = Color.White,
+                                                modifier = Modifier.size(16.dp)
+                                            )
+                                            Spacer(modifier = Modifier.width(4.dp))
+                                            Text(
+                                                text = "Войти",
+                                                fontSize = 13.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color.White
+                                            )
+                                        }
                                     }
                                 }
                             }
@@ -366,7 +412,7 @@ fun LobbiesWidget(
                 }
             }
 
-            // FAB with simple fade-in animation (no spring/bouncy effect)
+            // FAB
             androidx.compose.animation.AnimatedVisibility(
                 visible = true,
                 enter = fadeIn(tween(300, delayMillis = 200)),
@@ -382,6 +428,84 @@ fun LobbiesWidget(
                     Icon(Icons.Default.Add, contentDescription = "Create Lobby")
                 }
             }
+        }
+        
+        if (state.joinGameId != null) {
+            AlertDialog(
+                onDismissRequest = onCancelJoin,
+                containerColor = Color(0xFF2E2452),
+                title = {
+                    Text(
+                        text = "Присоединиться к игре",
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 20.sp
+                    )
+                },
+                text = {
+                    Column {
+                        Text(
+                            text = "Введите ваш игровой Handle (никнейм):",
+                            color = Color(0xFFB0A2C7),
+                            fontSize = 14.sp,
+                            modifier = Modifier.padding(bottom = 12.dp)
+                        )
+                        OutlinedTextField(
+                            value = state.joinHandleInput,
+                            onValueChange = onUpdateJoinHandle,
+                            modifier = Modifier.fillMaxWidth(),
+                            label = { Text("Ваш Handle (необязательно)") },
+                            singleLine = true,
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = Color(0xFF7C5DFA),
+                                unfocusedBorderColor = Color(0xFF3B2F5E),
+                                focusedLabelColor = Color(0xFF7C5DFA),
+                                unfocusedLabelColor = Color(0xFF887A9E),
+                                focusedTextColor = Color.White,
+                                unfocusedTextColor = Color.White
+                            ),
+                            shape = RoundedCornerShape(12.dp)
+                        )
+                        if (state.joinError != null) {
+                            Text(
+                                text = state.joinError,
+                                color = Color(0xFFFF5252),
+                                fontSize = 12.sp,
+                                modifier = Modifier.padding(top = 8.dp)
+                            )
+                        }
+                    }
+                },
+                confirmButton = {
+                    Button(
+                        onClick = onConfirmJoin,
+                        enabled = !state.isJoining,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFF7C5DFA),
+                            disabledContainerColor = Color(0xFF3B2F5E)
+                        ),
+                        shape = RoundedCornerShape(10.dp)
+                    ) {
+                        if (state.isJoining) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(16.dp),
+                                color = Color.White,
+                                strokeWidth = 2.dp
+                            )
+                        } else {
+                            Text("Войти", color = Color.White, fontWeight = FontWeight.Bold)
+                        }
+                    }
+                },
+                dismissButton = {
+                    TextButton(
+                        onClick = onCancelJoin,
+                        enabled = !state.isJoining
+                    ) {
+                        Text("Отмена", color = Color(0xFFB0A2C7))
+                    }
+                }
+            )
         }
     }
 }

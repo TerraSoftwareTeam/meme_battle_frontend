@@ -38,6 +38,7 @@ interface GameplayPlayersStore : Store<GameplayPlayersStore.Intent, GameplayPlay
     )
 
     sealed interface Intent {
+        data class Initialize(val snapshot: com.dev.network.game.current.dto.GameStateDto?) : Intent
         data object Init : Intent
         /**
          * Пользователь нажал "👁 Карта" на карточке игрока — показать диалог с картой.

@@ -42,6 +42,7 @@ internal class GameplayPlayersStoreFactory(
 
     private sealed interface Msg {
         data class PlayersLoaded(val players: List<GameplayPlayersStore.PlayerUiModel>) : Msg
+        data class PlayerAdded(val player: GameplayPlayersStore.PlayerUiModel) : Msg
         data class PlayerReadyChanged(val userId: String, val isReady: Boolean) : Msg
         data class PlayerSubmitted(val userId: String) : Msg
         data class PlayerVoted(val userId: String) : Msg
@@ -66,6 +67,7 @@ internal class GameplayPlayersStoreFactory(
 
         override fun executeIntent(intent: GameplayPlayersStore.Intent) {
             when (intent) {
+                is GameplayPlayersStore.Intent.Initialize -> intent.snapshot?.let { hydrateFromSnapshot(it) }
                 is GameplayPlayersStore.Intent.Init -> Unit
                 is GameplayPlayersStore.Intent.ShowSubmissionPreview ->
                     dispatch(Msg.ShowPreview(intent.userId))
@@ -98,8 +100,20 @@ internal class GameplayPlayersStoreFactory(
             gameEvents.onEach { event ->
                 when (event) {
                     is GameEvent.PlayerJoined -> {
-                        // handle нового игрока не приходит в событии —
-                        // GameplayComponentImpl должен сделать refresh getGameState и перегидрировать
+                        // Добавляем нового игрока в список, если его ещё нет
+                        val existing = state().players.any { it.userId == event.userId }
+                        if (!existing) {
+                            dispatch(Msg.PlayerAdded(
+                                GameplayPlayersStore.PlayerUiModel(
+                                    userId = event.userId,
+                                    handle = event.handle.ifEmpty { event.userId.take(8) },
+                                    score = 0,
+                                    isReady = false,
+                                    hasSubmitted = false,
+                                    isMe = event.userId == myUserId,
+                                )
+                            ))
+                        }
                     }
                     is GameEvent.PlayerReadyChanged ->
                         dispatch(Msg.PlayerReadyChanged(event.userId, event.isReady))
@@ -135,6 +149,7 @@ internal class GameplayPlayersStoreFactory(
     private object ReducerImpl : Reducer<GameplayPlayersStore.State, Msg> {
         override fun GameplayPlayersStore.State.reduce(msg: Msg): GameplayPlayersStore.State = when (msg) {
             is Msg.PlayersLoaded -> copy(players = msg.players)
+            is Msg.PlayerAdded -> copy(players = players + msg.player)
             is Msg.PlayerReadyChanged -> copy(players = players.map {
                 if (it.userId == msg.userId) it.copy(isReady = msg.isReady) else it
             })

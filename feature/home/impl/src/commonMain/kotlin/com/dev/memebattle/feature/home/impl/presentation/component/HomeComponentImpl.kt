@@ -24,12 +24,14 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.serialization.Serializable
 
+import com.dev.network.game.current.api.GameApiService
 import com.dev.network.game.current.api.ws.GameSocketService
 
 class HomeComponentImpl(
     componentContext: ComponentContext,
     private val storeFactory: StoreFactory,
-    private val gameSocketService: GameSocketService
+    private val gameSocketService: GameSocketService,
+    private val gameApiService: GameApiService
 ) : HomeComponent, ComponentContext by componentContext {
 
     private val _output = MutableSharedFlow<NavigationOutput>(extraBufferCapacity = 64)
@@ -67,12 +69,16 @@ class HomeComponentImpl(
                         componentContext = context,
                         storeFactory = storeFactory,
                         gameSocketService = gameSocketService,
+                        gameApiService = gameApiService,
                         onNavigateToCreateLobby = {
                             panelsNavigation.activateDetails(DetailsConfig.CreateLobby)
                         },
                         onNavigateToStore = {
                             _output.tryEmit(NavigationOutput.NavigateTo(PacksRoute))
-                        }
+                        },
+                        onNavigateToGame = { gameId ->
+                            _output.tryEmit(NavigationOutput.NavigateTo(GameplayRoute(gameId = gameId)))
+                        },
                     )
                 }
             },

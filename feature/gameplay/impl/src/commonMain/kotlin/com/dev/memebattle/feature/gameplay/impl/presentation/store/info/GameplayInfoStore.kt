@@ -10,6 +10,7 @@ import com.dev.network.game.current.dto.RoundPhase
 interface GameplayInfoStore : Store<GameplayInfoStore.Intent, GameplayInfoStore.State, GameplayInfoStore.Effect> {
 
     sealed interface Intent {
+        data class Initialize(val snapshot: com.dev.network.game.current.dto.GameStateDto?) : Intent
         data object Init : Intent
         /** Хост нажал "Начать игру" (только в фазе Lobby). */
         data object StartGame : Intent

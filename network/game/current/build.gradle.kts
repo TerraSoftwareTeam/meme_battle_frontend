@@ -1,4 +1,7 @@
-plugins { id("kmp.dev.library") }
+plugins {
+    id("kmp.dev.library")
+    kotlin("plugin.serialization")
+}
 kotlin {
     androidLibrary {
         namespace = "com.dev.memebattle.network.game.current"
@@ -16,9 +19,14 @@ kotlin {
     }
     sourceSets {
         commonMain.dependencies {
-            api(projects.network.game.v2)
+            api(projects.network.game.v3)
             implementation(projects.core.network)
             implementation(libs.koin.core)
         }
+        val conventionalMain by creating {
+            dependsOn(commonMain.get())
+        }
+        androidMain.get().dependsOn(conventionalMain)
+        maybeCreate("iosMain").dependsOn(conventionalMain)
     }
 }

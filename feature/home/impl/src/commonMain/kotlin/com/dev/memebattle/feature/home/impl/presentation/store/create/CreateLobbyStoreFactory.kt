@@ -44,6 +44,7 @@ class CreateLobbyStoreFactory(
         data class SetMode(val mode: GameMode) : Msg
         data class SetMaxRounds(val rounds: Int) : Msg
         data class SetHandSize(val size: Int) : Msg
+        data class UpdateHandleInput(val handle: String) : Msg
     }
 
     private inner class ExecutorImpl : CoroutineExecutor<CreateLobbyStore.Intent, Unit, CreateLobbyStore.State, Msg, CreateLobbyStore.Label>() {
@@ -88,6 +89,7 @@ class CreateLobbyStoreFactory(
                 is CreateLobbyStore.Intent.SetMode -> dispatch(Msg.SetMode(intent.mode))
                 is CreateLobbyStore.Intent.SetMaxRounds -> dispatch(Msg.SetMaxRounds(intent.rounds))
                 is CreateLobbyStore.Intent.SetHandSize -> dispatch(Msg.SetHandSize(intent.size))
+                is CreateLobbyStore.Intent.UpdateHandleInput -> dispatch(Msg.UpdateHandleInput(intent.handle))
                 CreateLobbyStore.Intent.Create -> createGame(state())
             }
         }
@@ -101,6 +103,7 @@ class CreateLobbyStoreFactory(
 
                 val request = CreateGameRequest(
                     hand_size = state.handSize,
+                    handle = state.handleInput.trim().takeIf { it.isNotEmpty() },
                     max_rounds = state.maxRounds,
                     mode = state.mode,
                     selected_meme_pack_ids = state.selectedMemePackIds.toList(),
@@ -145,6 +148,7 @@ class CreateLobbyStoreFactory(
                 is Msg.SetMode -> copy(mode = msg.mode)
                 is Msg.SetMaxRounds -> copy(maxRounds = msg.rounds)
                 is Msg.SetHandSize -> copy(handSize = msg.size)
+                is Msg.UpdateHandleInput -> copy(handleInput = msg.handle)
             }
     }
 }
