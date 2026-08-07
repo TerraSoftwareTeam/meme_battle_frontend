@@ -115,13 +115,13 @@ fun RoundResultOverlay(
                                     )
                                     Surface(
                                         shape = RoundedCornerShape(8.dp),
-                                        color = Color(0xFF7C5DFA).copy(alpha = 0.2f),
+                                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
                                     ) {
                                         Text(
                                             text = "+${entry.score}",
                                             fontSize = 13.sp,
                                             fontWeight = FontWeight.Bold,
-                                            color = Color(0xFF7C5DFA),
+                                            color = MaterialTheme.colorScheme.primary,
                                             modifier = Modifier.padding(horizontal = 10.dp, vertical = 3.dp),
                                         )
                                     }

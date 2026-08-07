@@ -35,87 +35,112 @@ import com.dev.network.game.current.dto.RoundPhase
  * Боковая панель с информацией об игре.
  * Содержит только вёрстку — вся логика в [GameplayInfoStore].
  */
+import androidx.compose.foundation.background
+import androidx.compose.ui.graphics.Brush
+import com.dev.memebattle.feature.gameplay.impl.presentation.store.players.GameplayPlayersStore
+
 @Composable
 fun GameplayInfoScreen(
     component: GameplayInfoComponent,
+    lobbyPlayersState: GameplayPlayersStore.State?,
+    myUserId: String,
     modifier: Modifier = Modifier,
 ) {
     val state by component.state.collectAsState()
 
+    val playersCount = lobbyPlayersState?.players?.size ?: state.playerCount
+    val readyCount = lobbyPlayersState?.players?.count { it.isReady } ?: state.readyCount
+    val isHost = lobbyPlayersState?.players?.firstOrNull()?.userId == myUserId
+    val canStartGame = isHost && state.phase == RoundPhase.WAITING && playersCount >= 2 && readyCount == playersCount && !state.isStartingGame
+
+    val backgroundBrush = Brush.verticalGradient(
+        colors = listOf(
+            Color(0xFF1E1035),
+            Color(0xFF0F081D),
+            Color(0xFF08040F)
+        )
+    )
+
     if (state.isLoading) {
-        Box(modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Box(modifier.fillMaxSize().background(backgroundBrush), contentAlignment = Alignment.Center) {
             CircularProgressIndicator(color = Color(0xFF7C5DFA))
         }
         return
     }
 
-    Column(
+    Box(
         modifier = modifier
             .fillMaxSize()
-            .statusBarsPadding()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp),
+            .background(backgroundBrush),
     ) {
-        Text(
-            text = "🎮 Meme Battle",
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold,
-            color = Color.White,
-        )
-
-        HorizontalDivider(color = Color.White.copy(alpha = 0.12f))
-
-        InfoRow(label = "Режим", value = state.modeLabel)
-        InfoRow(label = "Фаза", value = state.phaseLabel)
-
-        if (state.roundNumber > 0) {
-            InfoRow(
-                label = "Раунд",
-                value = if (state.totalRounds > 0) "${state.roundNumber} / ${state.totalRounds}"
-                else "${state.roundNumber}",
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .statusBarsPadding()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Text(
+                text = "Meme Battle",
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+                color = Color.White,
             )
-        }
 
-        state.phaseExpiresAt?.let {
-            CountdownTimer(expiresAt = it)
-        }
+            HorizontalDivider(color = Color.White.copy(alpha = 0.12f))
 
-        HorizontalDivider(color = Color.White.copy(alpha = 0.12f))
+            InfoRow(label = "Режим", value = state.modeLabel)
+            InfoRow(label = "Фаза", value = state.phaseLabel)
 
-        InfoRow(label = "Игроков", value = "${state.playerCount}")
-        InfoRow(label = "Готовы", value = "${state.readyCount} / ${state.playerCount}")
+            if (state.roundNumber > 0) {
+                InfoRow(
+                    label = "Раунд",
+                    value = if (state.totalRounds > 0) "${state.roundNumber} / ${state.totalRounds}"
+                    else "${state.roundNumber}",
+                )
+            }
 
-        if (state.phase == RoundPhase.SUBMITTING) {
-            InfoRow(label = "Подали", value = "${state.submittedCount} / ${state.playerCount}")
-        }
-        if (state.phase == RoundPhase.VOTING) {
-            InfoRow(label = "Проголосовали", value = "${state.votedCount} / ${state.playerCount}")
-        }
+            state.phaseExpiresAt?.let {
+                CountdownTimer(expiresAt = it)
+            }
 
-        Spacer(Modifier.weight(1f))
+            HorizontalDivider(color = Color.White.copy(alpha = 0.12f))
 
-        // Кнопка "Начать игру" — только хост, только в лобби
-        if (state.isHost && state.phase == RoundPhase.WAITING) {
-            Button(
-                onClick = { component.onIntent(GameplayInfoStore.Intent.StartGame) },
-                enabled = state.canStartGame,
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF7C5DFA),
-                    disabledContainerColor = Color(0xFF2A1F44),
-                ),
-            ) {
-                if (state.isStartingGame) {
-                    CircularProgressIndicator(Modifier.size(18.dp), color = Color.White, strokeWidth = 2.dp)
-                } else {
-                    Text(
-                        text = if (state.readyCount < state.playerCount)
-                            "Ждём готовности (${state.readyCount}/${state.playerCount})"
-                        else "Начать игру",
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White,
-                    )
+            InfoRow(label = "Игроков", value = "$playersCount")
+            InfoRow(label = "Готовы", value = "$readyCount / $playersCount")
+
+            if (state.phase == RoundPhase.SUBMITTING) {
+                InfoRow(label = "Подали", value = "${state.submittedCount} / $playersCount")
+            }
+            if (state.phase == RoundPhase.VOTING) {
+                InfoRow(label = "Проголосовали", value = "${state.votedCount} / $playersCount")
+            }
+
+            Spacer(Modifier.weight(1f))
+
+            // Кнопка "Начать игру" — только хост, только в лобби
+            if (isHost && state.phase == RoundPhase.WAITING) {
+                Button(
+                    onClick = { component.onIntent(GameplayInfoStore.Intent.StartGame) },
+                    enabled = canStartGame,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF7C5DFA),
+                        disabledContainerColor = Color(0xFF2A1F44),
+                    ),
+                ) {
+                    if (state.isStartingGame) {
+                        CircularProgressIndicator(Modifier.size(18.dp), color = Color.White, strokeWidth = 2.dp)
+                    } else {
+                        Text(
+                            text = if (readyCount < playersCount)
+                                "Ждём готовности ($readyCount/$playersCount)"
+                            else "Начать игру",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White,
+                        )
+                    }
                 }
             }
         }

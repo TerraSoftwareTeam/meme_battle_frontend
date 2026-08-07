@@ -86,11 +86,11 @@ fun HandleInputContent(
             singleLine = true,
             shape = RoundedCornerShape(16.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = Color(0xFF7C5DFA),
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
                 unfocusedBorderColor = Color.White.copy(alpha = 0.2f),
                 focusedTextColor = Color.White,
                 unfocusedTextColor = Color.White,
-                cursorColor = Color(0xFF7C5DFA),
+                cursorColor = MaterialTheme.colorScheme.primary,
             ),
             enabled = !isJoining,
         )
@@ -103,7 +103,7 @@ fun HandleInputContent(
             enabled = !isJoining,
             shape = RoundedCornerShape(16.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF7C5DFA),
+                containerColor = MaterialTheme.colorScheme.primary,
                 disabledContainerColor = Color(0xFF2A1F44),
             ),
         ) {

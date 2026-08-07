@@ -56,7 +56,15 @@ fun GameplayView(
             }
         },
         infoContent = {
-            infoComponent?.let { GameplayInfoScreen(it) }
+            infoComponent?.let { infoCtx ->
+                val lobbyPlayersState = playersComponent?.state?.collectAsState()?.value
+                val myUserId = lobbyPlayersState?.players?.find { it.isMe }?.userId ?: ""
+                GameplayInfoScreen(
+                    component = infoCtx,
+                    lobbyPlayersState = lobbyPlayersState,
+                    myUserId = myUserId
+                )
+            }
         },
         playersContent = {
             playersComponent?.let { GameplayPlayersScreen(it) }

@@ -110,7 +110,7 @@ fun SubmissionPreviewDialog(
                         modifier = Modifier.weight(1f),
                         enabled = !hasAlreadyVoted && player.submissionId != null && !isVoting,
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF7C5DFA),
+                            containerColor = MaterialTheme.colorScheme.primary,
                             disabledContainerColor = Color(0xFF2A1F44),
                         ),
                     ) {

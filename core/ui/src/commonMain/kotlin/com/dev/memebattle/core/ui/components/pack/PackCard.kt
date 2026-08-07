@@ -98,19 +98,20 @@ fun PackCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
     ) {
         Column(
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxSize()
         ) {
 
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .weight(1f)
                     .background(fanBackdropGradient),
                 contentAlignment = Alignment.Center
             ) {
                 CardFan(
                     packId = id,
                     packType = packType,
-                    modifier = Modifier.padding(top = 28.dp, bottom = 16.dp)
+                    modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
                 )
                 
                 if (onEditClick != null) {
@@ -136,8 +137,8 @@ fun PackCard(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(76.dp)
-                    .padding(horizontal = 12.dp, vertical = 12.dp),
+                    .height(72.dp)
+                    .padding(horizontal = 10.dp, vertical = 8.dp),
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
 
@@ -154,18 +155,18 @@ fun PackCard(
                         text = displayName,
                         color = TextPrimary,
                         fontWeight = FontWeight.Bold,
-                        fontSize = 15.sp,
+                        fontSize = 14.sp,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.weight(1f)
                     )
-                    Spacer(Modifier.width(8.dp))
+                    Spacer(Modifier.width(6.dp))
 
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(6.dp))
                             .background(Color(0xFF2E2452))
-                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                            .padding(horizontal = 5.dp, vertical = 2.dp)
                     ) {
                         Text(
                             text = languageCode.uppercase(),
@@ -192,7 +193,7 @@ fun PackCard(
                         modifier = Modifier
                             .clip(RoundedCornerShape(6.dp))
                             .background(safetyBg)
-                            .padding(horizontal = 6.dp, vertical = 3.dp)
+                            .padding(horizontal = 5.dp, vertical = 2.dp)
                     ) {
                         Text(
                             text = safetyText,
@@ -207,7 +208,7 @@ fun PackCard(
                     Text(
                         text = formattedDate,
                         color = TextSecondary.copy(alpha = 0.7f),
-                        fontSize = 11.sp,
+                        fontSize = 10.sp,
                         fontWeight = FontWeight.Normal
                     )
                 }
@@ -225,7 +226,7 @@ private fun CardFan(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .height(100.dp),
+            .height(90.dp),
         contentAlignment = Alignment.Center
     ) {
 
@@ -272,12 +273,12 @@ private fun CardFan(
             val translationY = abs(distanceFromMiddle) * (maxTransY.value / (if (middleIndex == 0f) 1f else middleIndex))
 
 
-            val cardZIndex = (count - abs(distanceFromMiddle)).toFloat()
+            val cardZIndex = count - abs(distanceFromMiddle)
 
             if (packType == PackCardKind.MEME) {
                 Card(
                     modifier = Modifier
-                        .size(width = 72.dp, height = 98.dp)
+                        .size(width = 64.dp, height = 88.dp)
                         .zIndex(cardZIndex)
                         .graphicsLayer {
                             this.rotationZ = rotation
@@ -314,7 +315,7 @@ private fun MiniSituationCard(
     modifier: Modifier = Modifier,
 ) {
     Card(
-        modifier = modifier.size(width = 72.dp, height = 98.dp),
+        modifier = modifier.size(width = 64.dp, height = 88.dp),
         shape = RoundedCornerShape(10.dp),
         border = BorderStroke(1.dp, accentColor.copy(alpha = 0.4f)),
         colors = CardDefaults.cardColors(containerColor = Color(0xFF0F0B1E)),

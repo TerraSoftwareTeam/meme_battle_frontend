@@ -28,6 +28,9 @@ kotlin {
             implementation(project(":core:navigation"))
             implementation(project(":network:game:current"))
             
+            implementation(libs.coil.compose)
+            implementation(libs.coil.network.ktor)
+
             implementation(libs.koin.compose)
             implementation(libs.koin.compose.viewmodel)
 

@@ -5,18 +5,19 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import com.dev.memebattle.feature.gameplay.impl.presentation.component.game.GameplayGameComponent
 import com.dev.memebattle.feature.gameplay.impl.presentation.store.game.GameplayGameStore
 import com.dev.memebattle.feature.gameplay.impl.presentation.view.game.widgets.GameFinishedContent
-import com.dev.memebattle.feature.gameplay.impl.presentation.view.game.widgets.HandleInputContent
+
 import com.dev.memebattle.feature.gameplay.impl.presentation.view.game.widgets.LobbyContent
 import com.dev.memebattle.feature.gameplay.impl.presentation.view.game.widgets.RoundResultOverlay
 import com.dev.memebattle.feature.gameplay.impl.presentation.view.game.widgets.SubmittingContent
@@ -42,12 +43,18 @@ fun GameplayGameScreen(
 ) {
     val state by component.state.collectAsState()
 
-    // ExitGame effect → обрабатывается в ComponentImpl, здесь не нужен
+    val backgroundBrush = Brush.verticalGradient(
+        colors = listOf(
+            Color(0xFF1E1035),
+            Color(0xFF0F081D),
+            Color(0xFF08040F)
+        )
+    )
 
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFF13102A)),
+            .background(backgroundBrush),
     ) {
         if (state.isLoading) {
             CircularProgressIndicator(
@@ -63,12 +70,7 @@ fun GameplayGameScreen(
             label = "uiPhase",
         ) { phase ->
             when (phase) {
-                GameplayGameStore.UiPhase.HandleInput -> HandleInputContent(
-                    handleValue = state.handleInput,
-                    isJoining = state.isJoining,
-                    onHandleChange = { component.onIntent(GameplayGameStore.Intent.TypeHandle(it)) },
-                    onJoin = { component.onIntent(GameplayGameStore.Intent.JoinLobby(state.handleInput)) },
-                )
+
 
                 GameplayGameStore.UiPhase.Lobby -> LobbyContent(
                     players = lobbyPlayersState?.players ?: emptyList(),
@@ -103,7 +105,7 @@ fun GameplayGameScreen(
                     winnerUserId = state.gameWinnerUserId,
                     finalScoreboard = state.finalScoreboard,
                     myUserId = myUserId,
-                    onExit = { component.onIntent(GameplayGameStore.Intent.Vote("")) }, // TODO: ExitGame intent
+                    onExit = { component.onIntent(GameplayGameStore.Intent.ExitGame) },
                 )
             }
         }

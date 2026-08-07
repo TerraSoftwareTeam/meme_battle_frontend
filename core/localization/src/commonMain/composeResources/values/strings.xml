@@ -56,4 +56,36 @@
     <string name="lobby_create_rounds_label">Rounds</string>
     <string name="lobby_create_hand_size_label">Hand Size</string>
     <string name="lobby_create_submit">Create and Play</string>
+
+    <!-- Gameplay Info -->
+    <string name="gameplay_info_title">Meme Battle</string>
+    <string name="gameplay_info_mode">Mode</string>
+    <string name="gameplay_info_phase">Phase</string>
+    <string name="gameplay_info_round">Round</string>
+    <string name="gameplay_info_players">Players</string>
+    <string name="gameplay_info_ready">Ready</string>
+    <string name="gameplay_info_submitted">Submitted</string>
+    <string name="gameplay_info_voted">Voted</string>
+    <string name="gameplay_info_wait_ready">Waiting for ready (%1$d/%2$d)</string>
+    <string name="gameplay_info_start_game">Start Game</string>
+
+    <!-- Gameplay Players -->
+    <string name="gameplay_players_title">Players (%1$d)</string>
+    <string name="gameplay_players_score">Score: %1$d</string>
+    <string name="gameplay_players_me_badge">me</string>
+    <string name="gameplay_players_status_ready">Ready</string>
+    <string name="gameplay_players_status_not_ready">Not ready</string>
+    <string name="gameplay_players_status_submitted">Submitted</string>
+    <string name="gameplay_players_status_voted">Voted</string>
+
+    <!-- Gameplay Lobby -->
+    <string name="gameplay_lobby_ready_count">%1$d of %2$d ready</string>
+    <string name="gameplay_lobby_btn_ready">Ready</string>
+    <string name="gameplay_lobby_btn_already_ready">You are ready</string>
+
+    <!-- Gameplay Results -->
+    <string name="gameplay_results_win">You won!</string>
+    <string name="gameplay_results_game_over">Game Over</string>
+    <string name="gameplay_results_winner">Winner: %1$s</string>
+    <string name="gameplay_results_exit">Return to main menu</string>
 </resources>

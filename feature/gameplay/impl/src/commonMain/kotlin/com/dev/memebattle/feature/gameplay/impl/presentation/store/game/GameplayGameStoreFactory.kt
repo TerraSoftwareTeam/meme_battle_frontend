@@ -22,6 +22,7 @@ import com.dev.network.game.current.dto.ws.GameEvent
 import com.dev.network.game.current.dto.ws.HandCard
 import com.dev.network.game.current.dto.ws.PersonalEvent
 import com.dev.network.game.current.dto.ws.ScoreboardEntry
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.launchIn
@@ -54,42 +55,22 @@ internal class GameplayGameStoreFactory(
         
         // Snapshot ещё не загружен - показываем загрузку
         if (snapshot == null) {
-            return GameplayGameStore.State(isLoading = true, uiPhase = GameplayGameStore.UiPhase.HandleInput)
+            return GameplayGameStore.State(isLoading = true, uiPhase = GameplayGameStore.UiPhase.Lobby)
         }
         
-        // Проверяем, есть ли текущий пользователь в игре
-        val myPlayer = snapshot.players.find { it.user_id == myUserId }
-        
-        // Пользователь не в игре - показываем экран ввода handle
-        if (myPlayer == null) {
-            return GameplayGameStore.State(
-                isLoading = false, 
-                uiPhase = GameplayGameStore.UiPhase.HandleInput,
-                isJoining = false,
-            )
-        }
-        
-        // Пользователь уже в игре - заполняем его handle и показываем Lobby
-        // (handle уже присвоен сервером при создании лобби или предыдущем join)
         return when (snapshot.game.status) {
             GameStatus.LOBBY -> GameplayGameStore.State(
                 isLoading = false, 
                 uiPhase = GameplayGameStore.UiPhase.Lobby,
-                handleInput = myPlayer.handle, // Показываем текущий handle
-                isJoining = false,
             )
             GameStatus.PLAYING -> GameplayGameStore.State(
                 isLoading = false,
                 uiPhase = GameplayGameStore.UiPhase.Lobby, // WebSocket события переключат фазу
-                handleInput = myPlayer.handle,
                 handCards = snapshot.my_hand,
-                isJoining = false,
             )
             GameStatus.FINISHED -> GameplayGameStore.State(
                 isLoading = false,
                 uiPhase = GameplayGameStore.UiPhase.GameFinished,
-                handleInput = myPlayer.handle,
-                isJoining = false,
             )
         }
     }
@@ -105,16 +86,9 @@ internal class GameplayGameStoreFactory(
     private sealed interface Msg {
         // Initialization
         data class Initialized(
-            val isPlayerInGame: Boolean,
-            val handle: String,
             val gameStatus: GameStatus?,
             val hand: List<GameCard>,
         ) : Msg
-
-        // HandleInput
-        data class HandleInputChanged(val text: String) : Msg
-        data object JoiningStarted : Msg
-        data object JoiningFailed : Msg
 
         // Lobby
         data object EnteredLobby : Msg
@@ -163,6 +137,9 @@ internal class GameplayGameStoreFactory(
     private inner class ExecutorImpl :
         CoroutineExecutor<GameplayGameStore.Intent, Action, GameplayGameStore.State, Msg, GameplayGameStore.Effect>() {
 
+        /** Job авто-dismiss результата раунда. Отменяется при получении RoundStarted, чтобы избежать гонки. */
+        private var dismissJob: Job? = null
+
         override fun executeAction(action: Action) {
             when (action) {
                 Action.ObserveEvents -> observeEvents()
@@ -171,13 +148,15 @@ internal class GameplayGameStoreFactory(
 
         override fun executeIntent(intent: GameplayGameStore.Intent) {
             when (intent) {
-                is GameplayGameStore.Intent.Initialize -> initialize(intent.snapshot)
-                is GameplayGameStore.Intent.TypeHandle -> dispatch(Msg.HandleInputChanged(intent.text))
-                is GameplayGameStore.Intent.JoinLobby -> joinLobby(intent.handle)
-                is GameplayGameStore.Intent.SelectCard -> selectCard(intent.index)
-                is GameplayGameStore.Intent.Submit -> submitCard()
-                is GameplayGameStore.Intent.Vote -> vote(intent.submissionId)
+                is GameplayGameStore.Intent.Initialize      -> initialize(intent.snapshot)
+                is GameplayGameStore.Intent.SelectCard      -> selectCard(intent.index)
+                is GameplayGameStore.Intent.Submit          -> submitCard()
+                is GameplayGameStore.Intent.Vote            -> vote(intent.submissionId)
                 is GameplayGameStore.Intent.TogglePromptVisible -> dispatch(Msg.TogglePrompt)
+                is GameplayGameStore.Intent.LoadSubmissions -> dispatch(
+                    Msg.SubmissionsLoaded(intent.cards, intent.ids)
+                )
+                is GameplayGameStore.Intent.ExitGame        -> publish(GameplayGameStore.Effect.ExitGame)
             }
         }
 
@@ -185,57 +164,17 @@ internal class GameplayGameStoreFactory(
 
         private fun initialize(snapshot: GameStateDto?) {
             if (snapshot == null) {
-                // Нет snapshot - показываем экран ввода handle
                 dispatch(Msg.Initialized(
-                    isPlayerInGame = false,
-                    handle = "",
                     gameStatus = null,
                     hand = emptyList(),
                 ))
                 return
             }
 
-            val myPlayer = snapshot.players.find { it.user_id == myUserId }
-            
-            if (myPlayer == null) {
-                // Пользователь не в игре - показываем экран ввода handle
-                dispatch(Msg.Initialized(
-                    isPlayerInGame = false,
-                    handle = "",
-                    gameStatus = snapshot.game.status,
-                    hand = emptyList(),
-                ))
-            } else {
-                // Пользователь уже в игре - переходим сразу в Lobby
-                dispatch(Msg.Initialized(
-                    isPlayerInGame = true,
-                    handle = myPlayer.handle,
-                    gameStatus = snapshot.game.status,
-                    hand = snapshot.my_hand,
-                ))
-            }
-        }
-
-        // ── HandleInput ────────────────────────────────────────────────────
-
-        private fun joinLobby(handle: String?) {
-            if (state().isJoining) return
-            dispatch(Msg.JoiningStarted)
-            scope.launch {
-                val result = gameApiService.joinGame(
-                    id = gameId,
-                    body = JoinGameRequest(handle = handle?.trim()?.takeIf { it.isNotEmpty() })
-                )
-                when (result) {
-                    is NetworkResult.Success -> dispatch(Msg.EnteredLobby)
-                    is NetworkResult.Error -> {
-                        dispatch(Msg.JoiningFailed)
-                        publish(GameplayGameStore.Effect.ShowError(
-                            result.error.userMessage()
-                        ))
-                    }
-                }
-            }
+            dispatch(Msg.Initialized(
+                gameStatus = snapshot.game.status,
+                hand = snapshot.my_hand,
+            ))
         }
 
         // ── Submitting ─────────────────────────────────────────────────────
@@ -303,6 +242,9 @@ internal class GameplayGameStoreFactory(
             gameEvents.onEach { event ->
                 when (event) {
                     is GameEvent.RoundStarted -> {
+                        // Отменяем отложенный dismiss предыдущего раунда — новый раунд уже пришёл
+                        dismissJob?.cancel()
+                        dismissJob = null
                         val promptCardId = "prompt_${event.roundId}"
                         val promptCard: GameCard = if (event.promptKind == "meme") {
                             MemeGameCard(MemeCardData(promptCardId, event.promptContent))
@@ -326,11 +268,16 @@ internal class GameplayGameStoreFactory(
                             roundScoreboard = event.roundScoreboard,
                         )
                         dispatch(Msg.RoundResultReceived(result))
-                        // Авто-dismiss через 3 сек
-                        scope.launch {
+                        // Авто-dismiss через 3 сек. Сохраняем job чтобы отменить при приходе RoundStarted
+                        dismissJob?.cancel()
+                        dismissJob = scope.launch {
                             delay(3000)
-                            dispatch(Msg.RoundResultDismissed)
-                            publish(GameplayGameStore.Effect.RoundResultDismissed)
+                            // Гонка уже разрешена: если RoundStarted пришёл раньше, этот job уже отменён
+                            if (state().uiPhase == GameplayGameStore.UiPhase.RoundResult) {
+                                dispatch(Msg.RoundResultDismissed)
+                                publish(GameplayGameStore.Effect.RoundResultDismissed)
+                            }
+                            dismissJob = null
                         }
                     }
                     is GameEvent.GameFinished -> {
@@ -355,85 +302,48 @@ internal class GameplayGameStoreFactory(
 
     private object ReducerImpl : Reducer<GameplayGameStore.State, Msg> {
         override fun GameplayGameStore.State.reduce(msg: Msg): GameplayGameStore.State = when (msg) {
-            // Initialization
-            is Msg.Initialized -> {
-                if (msg.isPlayerInGame) {
-                    // Пользователь уже в игре - показываем Lobby или другую фазу
-                    when (msg.gameStatus) {
-                        GameStatus.LOBBY -> copy(
-                            isLoading = false,
-                            uiPhase = GameplayGameStore.UiPhase.Lobby,
-                            handleInput = msg.handle,
-                            isJoining = false,
-                        )
-                        GameStatus.PLAYING -> copy(
-                            isLoading = false,
-                            uiPhase = GameplayGameStore.UiPhase.Lobby, // WebSocket переключит
-                            handleInput = msg.handle,
-                            handCards = msg.hand,
-                            isJoining = false,
-                        )
-                        GameStatus.FINISHED -> copy(
-                            isLoading = false,
-                            uiPhase = GameplayGameStore.UiPhase.GameFinished,
-                            handleInput = msg.handle,
-                            isJoining = false,
-                        )
-                        null -> copy(isLoading = false, uiPhase = GameplayGameStore.UiPhase.HandleInput)
-                    }
-                } else {
-                    // Пользователь не в игре - показываем экран ввода handle
-                    copy(
-                        isLoading = false,
-                        uiPhase = GameplayGameStore.UiPhase.HandleInput,
-                        handleInput = "",
-                        isJoining = false,
-                    )
-                }
-            }
+            is Msg.Initialized -> copy(
+                isLoading = false,
+                uiPhase = when (msg.gameStatus) {
+                    null, GameStatus.LOBBY -> GameplayGameStore.UiPhase.Lobby
+                    GameStatus.PLAYING -> GameplayGameStore.UiPhase.Lobby
+                    GameStatus.FINISHED -> GameplayGameStore.UiPhase.GameFinished
+                },
+                handCards = msg.hand,
+            )
+            is Msg.EnteredLobby -> copy(uiPhase = GameplayGameStore.UiPhase.Lobby)
 
-            // HandleInput
-            is Msg.HandleInputChanged -> copy(handleInput = msg.text)
-            is Msg.JoiningStarted -> copy(isJoining = true)
-            is Msg.JoiningFailed -> copy(isJoining = false)
-            is Msg.EnteredLobby -> copy(isJoining = false, uiPhase = GameplayGameStore.UiPhase.Lobby)
-
-            // Round
             is Msg.RoundStarted -> copy(
                 uiPhase = GameplayGameStore.UiPhase.Submitting,
                 roundId = msg.roundId,
                 promptCard = msg.promptCard,
                 handCards = msg.hand,
                 selectedCardIndex = 0,
-                mySubmissionCard = null,
-                hasVoted = false,
+                selectedSubmissionIndex = 0,
                 submissionCards = emptyList(),
                 submissionIds = emptyList(),
+                hasVoted = false,
+                mySubmissionCard = null,
+                isSubmitting = false,
+                isVoting = false,
             )
-            is Msg.PhaseChangedToVoting -> copy(
-                uiPhase = GameplayGameStore.UiPhase.Voting,
-                selectedSubmissionIndex = 0,
-            )
+            is Msg.PhaseChangedToVoting -> copy(uiPhase = GameplayGameStore.UiPhase.Voting)
             is Msg.SubmissionsLoaded -> copy(
                 submissionCards = msg.cards,
                 submissionIds = msg.ids,
-                selectedSubmissionIndex = 0,
             )
 
-            // Submitting
-            is Msg.HandUpdated -> copy(handCards = msg.cards, selectedCardIndex = 0)
+            is Msg.HandUpdated -> copy(handCards = msg.cards)
             is Msg.CardIndexChanged -> copy(selectedCardIndex = msg.index)
             is Msg.SubmittingStarted -> copy(isSubmitting = true)
             is Msg.SubmittingFinished -> copy(isSubmitting = false)
             is Msg.MySubmissionConfirmed -> copy(mySubmissionCard = msg.card)
 
-            // Voting
             is Msg.SubmissionIndexChanged -> copy(selectedSubmissionIndex = msg.index)
             is Msg.VotingStarted -> copy(isVoting = true)
             is Msg.VotingFinished -> copy(isVoting = false)
             is Msg.VotedConfirmed -> copy(hasVoted = true)
 
-            // Toggle
             is Msg.TogglePrompt -> copy(showPrompt = !showPrompt)
 
             // RoundResult

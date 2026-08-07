@@ -73,7 +73,7 @@ fun LobbyContent(
         Text(
             text = "${players.count { it.isReady }} из ${players.size} готовы",
             style = MaterialTheme.typography.bodyMedium,
-            color = Color(0xFF7C5DFA),
+            color = MaterialTheme.colorScheme.primary,
             modifier = Modifier.padding(top = 2.dp),
         )
 
@@ -101,7 +101,7 @@ fun LobbyContent(
                 enabled = false,
                 shape = RoundedCornerShape(16.dp),
             ) {
-                Text("✓ Вы готовы", fontWeight = FontWeight.Bold, color = Color(0xFF00C853))
+                Text("Вы готовы", fontWeight = FontWeight.Bold, color = Color(0xFF00C853))
             }
         } else {
             Button(
@@ -109,7 +109,7 @@ fun LobbyContent(
                 modifier = Modifier.fillMaxWidth().height(52.dp),
                 enabled = !isSettingReady,
                 shape = RoundedCornerShape(16.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF7C5DFA)),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
             ) {
                 if (isSettingReady) {
                     CircularProgressIndicator(Modifier.size(18.dp), color = Color.White, strokeWidth = 2.dp)
@@ -148,7 +148,7 @@ private fun LobbyPlayerRow(
         Text(
             text = player.handle + if (player.isMe) " (я)" else "",
             style = MaterialTheme.typography.bodyMedium,
-            color = if (player.isMe) Color(0xFF7C5DFA) else Color.White,
+            color = if (player.isMe) MaterialTheme.colorScheme.primary else Color.White,
             fontWeight = if (player.isMe) FontWeight.Bold else FontWeight.Normal,
             modifier = Modifier.weight(1f),
         )

@@ -56,4 +56,36 @@
     <string name="lobby_create_rounds_label">Раундов</string>
     <string name="lobby_create_hand_size_label">Карт в руке</string>
     <string name="lobby_create_submit">Создать и играть</string>
+
+    <!-- Gameplay Info -->
+    <string name="gameplay_info_title">Битва Мемов</string>
+    <string name="gameplay_info_mode">Режим</string>
+    <string name="gameplay_info_phase">Фаза</string>
+    <string name="gameplay_info_round">Раунд</string>
+    <string name="gameplay_info_players">Игроков</string>
+    <string name="gameplay_info_ready">Готовы</string>
+    <string name="gameplay_info_submitted">Подали</string>
+    <string name="gameplay_info_voted">Проголосовали</string>
+    <string name="gameplay_info_wait_ready">Ждём готовности (%1$d/%2$d)</string>
+    <string name="gameplay_info_start_game">Начать игру</string>
+
+    <!-- Gameplay Players -->
+    <string name="gameplay_players_title">Игроки (%1$d)</string>
+    <string name="gameplay_players_score">Очки: %1$d</string>
+    <string name="gameplay_players_me_badge">я</string>
+    <string name="gameplay_players_status_ready">Готов</string>
+    <string name="gameplay_players_status_not_ready">Не готов</string>
+    <string name="gameplay_players_status_submitted">Подал</string>
+    <string name="gameplay_players_status_voted">Проголосовал</string>
+
+    <!-- Gameplay Lobby -->
+    <string name="gameplay_lobby_ready_count">%1$d из %2$d готовы</string>
+    <string name="gameplay_lobby_btn_ready">Готов</string>
+    <string name="gameplay_lobby_btn_already_ready">Вы готовы</string>
+
+    <!-- Gameplay Results -->
+    <string name="gameplay_results_win">Вы победили!</string>
+    <string name="gameplay_results_game_over">Игра завершена</string>
+    <string name="gameplay_results_winner">Победитель: %1$s</string>
+    <string name="gameplay_results_exit">Выйти в главное меню</string>
 </resources>

@@ -51,6 +51,7 @@ internal class GameplayInfoStoreFactory(
         data class TotalRoundsSet(val count: Int) : Msg
         data class PlayerCountChanged(val count: Int) : Msg
         data class ReadyCountChanged(val count: Int) : Msg
+        data class SubmittedCountChanged(val count: Int) : Msg
         data class VotedCountChanged(val count: Int) : Msg
         data class IsHostSet(val isHost: Boolean) : Msg
         data class AmIReadyChanged(val isReady: Boolean) : Msg
@@ -96,6 +97,9 @@ internal class GameplayInfoStoreFactory(
             }
             // isHost — тот кто создал игру; пока нет в DTO, определяем первым игроком
             // TODO: добавить host_user_id в GameDto когда бэк добавит
+            val isHost = snapshot.players.firstOrNull()?.user_id == myUserId
+            dispatch(Msg.IsHostSet(isHost))
+            
             dispatch(Msg.LoadingFinished)
         }
 
@@ -116,15 +120,21 @@ internal class GameplayInfoStoreFactory(
                         dispatch(Msg.PhaseChanged(RoundPhase.WAITING))
                     }
                     is GameEvent.RoundStarted -> {
+                        // Новый раунд — сбрасываем счётчики
                         dispatch(Msg.PhaseChanged(RoundPhase.SUBMITTING))
                         dispatch(Msg.RoundUpdated(event.roundNumber, event.phaseExpiresAt))
+                        dispatch(Msg.SubmittedCountChanged(0))
+                        dispatch(Msg.VotedCountChanged(0))
+                    }
+                    is GameEvent.SubmissionReceived -> {
+                        dispatch(Msg.SubmittedCountChanged(state().submittedCount + 1))
                     }
                     is GameEvent.RoundPhaseChanged -> {
                         val phase = when (event.phase) {
                             "submitting" -> RoundPhase.SUBMITTING
-                            "voting" -> RoundPhase.VOTING
-                            "finished" -> RoundPhase.FINISHED
-                            else -> RoundPhase.WAITING
+                            "voting"     -> RoundPhase.VOTING
+                            "finished"   -> RoundPhase.FINISHED
+                            else         -> RoundPhase.WAITING
                         }
                         dispatch(Msg.PhaseChanged(phase))
                         dispatch(Msg.RoundUpdated(state().roundNumber, event.phaseExpiresAt))
@@ -170,19 +180,20 @@ internal class GameplayInfoStoreFactory(
 
     private object ReducerImpl : Reducer<GameplayInfoStore.State, Msg> {
         override fun GameplayInfoStore.State.reduce(msg: Msg): GameplayInfoStore.State = when (msg) {
-            is Msg.PhaseChanged -> copy(phase = msg.phase)
-            is Msg.ModeSet -> copy(mode = msg.mode)
-            is Msg.RoundUpdated -> copy(roundNumber = msg.number, phaseExpiresAt = msg.expiresAt)
-            is Msg.TotalRoundsSet -> copy(totalRounds = msg.count)
-            is Msg.PlayerCountChanged -> copy(playerCount = msg.count)
-            is Msg.ReadyCountChanged -> copy(readyCount = msg.count)
-            is Msg.VotedCountChanged -> copy(votedCount = msg.count)
-            is Msg.IsHostSet -> copy(isHost = msg.isHost)
-            is Msg.AmIReadyChanged -> copy(amIReady = msg.isReady)
-            is Msg.IsSettingReadyChanged -> copy(isSettingReady = msg.isSettingReady)
-            is Msg.StartingGame -> copy(isStartingGame = true)
-            is Msg.StartingGameFinished -> copy(isStartingGame = false)
-            is Msg.LoadingFinished -> copy(isLoading = false)
+            is Msg.PhaseChanged           -> copy(phase = msg.phase)
+            is Msg.ModeSet                -> copy(mode = msg.mode)
+            is Msg.RoundUpdated           -> copy(roundNumber = msg.number, phaseExpiresAt = msg.expiresAt)
+            is Msg.TotalRoundsSet         -> copy(totalRounds = msg.count)
+            is Msg.PlayerCountChanged     -> copy(playerCount = msg.count)
+            is Msg.ReadyCountChanged      -> copy(readyCount = msg.count)
+            is Msg.SubmittedCountChanged  -> copy(submittedCount = msg.count)
+            is Msg.VotedCountChanged      -> copy(votedCount = msg.count)
+            is Msg.IsHostSet              -> copy(isHost = msg.isHost)
+            is Msg.AmIReadyChanged        -> copy(amIReady = msg.isReady)
+            is Msg.IsSettingReadyChanged  -> copy(isSettingReady = msg.isSettingReady)
+            is Msg.StartingGame           -> copy(isStartingGame = true)
+            is Msg.StartingGameFinished   -> copy(isStartingGame = false)
+            is Msg.LoadingFinished        -> copy(isLoading = false)
         }
     }
 }

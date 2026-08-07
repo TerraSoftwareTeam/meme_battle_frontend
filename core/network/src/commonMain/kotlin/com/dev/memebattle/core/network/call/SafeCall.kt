@@ -19,8 +19,12 @@ inline suspend fun <T> safeCall(block: suspend () -> T): NetworkResult<T> {
         val status = e.response.status.value
         val message = try {
             val text = e.response.bodyAsText()
+            println("[SafeCall] ClientRequestException status: $status, body: $text")
             val json = Json.parseToJsonElement(text).jsonObject
             json["message"]?.jsonPrimitive?.content
+                ?: json["error"]?.jsonPrimitive?.content
+                ?: json["detail"]?.jsonPrimitive?.content
+                ?: text
         } catch (ex: Exception) {
             null
         }

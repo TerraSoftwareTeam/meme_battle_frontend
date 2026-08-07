@@ -41,7 +41,7 @@ fun PlayerCard(
     Surface(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(18.dp),
-        color = if (player.isMe) Color(0xFF7C5DFA).copy(alpha = 0.18f) else Color(0xFF2A1F44),
+        color = if (player.isMe) MaterialTheme.colorScheme.primary.copy(alpha = 0.18f) else Color(0xFF2A1F44),
         tonalElevation = if (player.isMe) 6.dp else 2.dp,
     ) {
         Row(
@@ -63,13 +63,13 @@ fun PlayerCard(
                     )
                     if (player.isMe) {
                         Spacer(Modifier.width(6.dp))
-                        Badge(containerColor = Color(0xFF7C5DFA)) {
+                        Badge(containerColor = MaterialTheme.colorScheme.primary) {
                             Text("я", style = MaterialTheme.typography.labelSmall, color = Color.White)
                         }
                     }
                 }
                 Text(
-                    text = "⭐ ${player.score}",
+                    text = "Очки: ${player.score}",
                     style = MaterialTheme.typography.bodySmall,
                     color = Color.White.copy(alpha = 0.55f),
                 )
@@ -81,14 +81,14 @@ fun PlayerCard(
                 verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
                 PlayerStatusBadge(
-                    label = if (player.isReady) "Готов ✓" else "Не готов",
+                    label = if (player.isReady) "Готов" else "Не готов",
                     color = if (player.isReady) Color(0xFF00C853) else Color.White.copy(alpha = 0.4f),
                 )
                 if (player.hasSubmitted) {
-                    PlayerStatusBadge(label = "Подал ✓", color = Color(0xFF00B0FF))
+                    PlayerStatusBadge(label = "Подал", color = Color(0xFF00B0FF))
                 }
                 if (player.hasVoted) {
-                    PlayerStatusBadge(label = "Голос ✓", color = Color(0xFF7C5DFA))
+                    PlayerStatusBadge(label = "Проголосовал", color = MaterialTheme.colorScheme.primary)
                 }
             }
 
@@ -99,7 +99,7 @@ fun PlayerCard(
                     Icon(
                         imageVector = Icons.Default.Search,
                         contentDescription = "Посмотреть карту ${player.handle}",
-                        tint = Color(0xFF7C5DFA),
+                        tint = MaterialTheme.colorScheme.primary,
                     )
                 }
             }

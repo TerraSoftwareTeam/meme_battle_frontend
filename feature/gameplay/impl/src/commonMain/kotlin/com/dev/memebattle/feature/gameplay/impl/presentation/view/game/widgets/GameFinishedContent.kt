@@ -30,8 +30,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.dev.network.game.current.dto.ws.ScoreboardEntry
 
-private val MedalEmoji = listOf("🥇", "🥈", "🥉")
-
 /**
  * Финальный полноэкранный оверлей с пьедесталом победителей.
  * Показывается когда [GameplayGameStore.UiPhase] == GameFinished.
@@ -60,9 +58,6 @@ fun GameFinishedContent(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Spacer(Modifier.height(32.dp))
-
-            Text(text = "🎉", fontSize = 64.sp)
-            Spacer(Modifier.height(12.dp))
 
             val isWinner = winnerUserId == myUserId
             Text(
@@ -107,7 +102,7 @@ fun GameFinishedContent(
                 onClick = onExit,
                 modifier = Modifier.fillMaxWidth().height(56.dp),
                 shape = RoundedCornerShape(16.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF7C5DFA)),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
             ) {
                 Text("Выйти в главное меню", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
             }
@@ -127,7 +122,7 @@ private fun LeaderboardRow(
     Surface(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(14.dp),
-        color = if (isMe) Color(0xFF7C5DFA).copy(alpha = 0.2f) else Color(0xFF2A1F44),
+        color = if (isMe) MaterialTheme.colorScheme.primary.copy(alpha = 0.2f) else MaterialTheme.colorScheme.surfaceVariant,
         tonalElevation = if (isMe) 4.dp else 0.dp,
     ) {
         Row(
@@ -136,8 +131,9 @@ private fun LeaderboardRow(
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Text(
-                text = MedalEmoji.getOrElse(position - 1) { "$position." },
+                text = "$position.",
                 style = MaterialTheme.typography.titleMedium,
+                color = Color.White,
             )
             Text(
                 text = (entry.handle ?: entry.userId.take(8)) + if (isMe) " (я)" else "",
@@ -147,9 +143,9 @@ private fun LeaderboardRow(
                 modifier = Modifier.weight(1f),
             )
             Text(
-                text = "${entry.score} ⭐",
+                text = "Очки: ${entry.score}",
                 style = MaterialTheme.typography.bodyMedium,
-                color = Color(0xFF7C5DFA),
+                color = MaterialTheme.colorScheme.primary,
                 fontWeight = FontWeight.Bold,
             )
         }

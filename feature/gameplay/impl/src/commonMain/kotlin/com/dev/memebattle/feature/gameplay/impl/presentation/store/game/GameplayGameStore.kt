@@ -18,8 +18,6 @@ interface GameplayGameStore : Store<GameplayGameStore.Intent, GameplayGameStore.
      * Не совпадает один-в-один с [RoundPhase] — включает специфические UI-состояния.
      */
     enum class UiPhase {
-        /** Ввод ника игрока ДО вызова joinGame(). */
-        HandleInput,
         /** Ожидание в лобби: список игроков, кнопка "Готов". */
         Lobby,
         /** Выбор карты из руки для текущего раунда. */
@@ -44,10 +42,6 @@ interface GameplayGameStore : Store<GameplayGameStore.Intent, GameplayGameStore.
     sealed interface Intent {
         /** Инициализация с snapshot - вызывается после загрузки данных игры. */
         data class Initialize(val snapshot: com.dev.network.game.current.dto.GameStateDto?) : Intent
-        /** Пользователь вводит ник. */
-        data class TypeHandle(val text: String) : Intent
-        /** Пользователь нажал "Войти в лобби" (handle = null → дефолтный ник). */
-        data class JoinLobby(val handle: String?) : Intent
         /** Листать карты в руке / submission-ы стрелками. */
         data class SelectCard(val index: Int) : Intent
         /** Подать выбранную карту (фаза Submitting). */
@@ -56,15 +50,15 @@ interface GameplayGameStore : Store<GameplayGameStore.Intent, GameplayGameStore.
         data class Vote(val submissionId: String) : Intent
         /** Small-экран: переключить между промтом и картой из руки. */
         data object TogglePromptVisible : Intent
+        /** Загрузить карты для голосования (вызывается ComponentImpl при переходе в Voting). */
+        data class LoadSubmissions(val cards: List<com.dev.network.game.current.dto.GameCard>, val ids: List<String>) : Intent
+        /** Пользователь нажал "Выйти" на экране GameFinished. */
+        data object ExitGame : Intent
     }
 
     data class State(
         // ── Фаза UI ─────────────────────────────────────────────────────────
-        val uiPhase: UiPhase = UiPhase.HandleInput,
-
-        // ── HandleInput ──────────────────────────────────────────────────────
-        val handleInput: String = "",
-        val isJoining: Boolean = false,
+        val uiPhase: UiPhase = UiPhase.Lobby,
 
         // ── Общие игровые данные ─────────────────────────────────────────────
         val isLoading: Boolean = true,

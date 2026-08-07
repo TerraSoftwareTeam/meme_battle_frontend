@@ -30,11 +30,11 @@ fun InfoRow(
         Text(
             text = label,
             style = MaterialTheme.typography.bodyMedium,
-            color = Color.White.copy(alpha = 0.55f),
+            color = Color.White.copy(alpha = 0.6f),
         )
         Surface(
             shape = RoundedCornerShape(8.dp),
-            color = Color(0xFF7C5DFA).copy(alpha = 0.18f),
+            color = Color(0xFF7C5DFA).copy(alpha = 0.2f),
         ) {
             Text(
                 text = value,

@@ -22,6 +22,7 @@ import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -62,8 +63,8 @@ fun CardActionBar(
             enabled = canNavigatePrev,
             shape = CircleShape,
             colors = IconButtonDefaults.filledIconButtonColors(
-                containerColor = Color(0xFF2A1F44),
-                contentColor = Color(0xFF7C5DFA),
+                containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                contentColor = MaterialTheme.colorScheme.primary,
                 disabledContainerColor = Color(0xFF1A1030),
                 disabledContentColor = Color.White.copy(alpha = 0.2f),
             ),
@@ -79,8 +80,8 @@ fun CardActionBar(
             enabled = actionEnabled && !isActionLoading,
             modifier = Modifier.width(180.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF7C5DFA),
-                disabledContainerColor = Color(0xFF2A1F44),
+                containerColor = MaterialTheme.colorScheme.primary,
+                disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
             ),
         ) {
             AnimatedContent(
@@ -112,8 +113,8 @@ fun CardActionBar(
             enabled = canNavigateNext,
             shape = CircleShape,
             colors = IconButtonDefaults.filledIconButtonColors(
-                containerColor = Color(0xFF2A1F44),
-                contentColor = Color(0xFF7C5DFA),
+                containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                contentColor = MaterialTheme.colorScheme.primary,
                 disabledContainerColor = Color(0xFF1A1030),
                 disabledContentColor = Color.White.copy(alpha = 0.2f),
             ),

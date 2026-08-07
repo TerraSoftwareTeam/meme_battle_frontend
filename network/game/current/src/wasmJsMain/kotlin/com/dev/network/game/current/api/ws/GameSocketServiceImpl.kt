@@ -76,47 +76,80 @@ internal class GameSocketServiceImpl(
     private var commandId = 0
     private val json = kotlinx.serialization.json.Json { ignoreUnknownKeys = true }
 
+    // Состояние активных подписок — для восстановления после реконнекта
+    private var activeGameSub: Pair<String, String>? = null
+    private var activePersonalSub: Pair<String, String>? = null
+    private var isLobbiesSubscribed = false
+    private var reconnectDelayMs = 2000L
+
     override suspend fun connect() {
         if (connectionJob?.isActive == true) {
             println("[WS] Already connected")
             return
         }
-        
         connectionJob = scope.launch {
-            try {
-                connectionLoop()
-            } catch (e: CancellationException) {
-                println("[WS] Connection cancelled")
-                throw e
-            } catch (e: Exception) {
-                println("[WS] Connection error: ${e.message}")
-            }
+            connectionLoop()
         }
     }
 
     private suspend fun connectionLoop() {
         println("[WS] Connection loop started")
-        
-        // Получаем токен
-        val token = fetchConnectionToken()
-        if (token == null) {
-            println("[WS] Cannot get token, stopping")
-            return
+        while (true) {
+            try {
+                val token = fetchConnectionToken()
+                if (token == null) {
+                    println("[WS] Cannot get token, retrying in ${reconnectDelayMs}ms")
+                    delay(reconnectDelayMs.toLong())
+                    reconnectDelayMs = (reconnectDelayMs * 2).coerceAtMost(30_000L)
+                    continue
+                }
+                connectionToken = token
+                reconnectDelayMs = 2000L // сброс backoff при успехе
+
+                val wsUrl = "$wsBaseUrl/connection/websocket"
+                println("[WS] Connecting to: $wsUrl")
+                val connected = connectWebSocket(wsUrl, token)
+
+                if (connected) {
+                    // Восстанавливаем подписки после реконнекта
+                    restoreSubscriptions()
+                }
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                println("[WS] Connection loop cancelled")
+                throw e
+            } catch (e: Exception) {
+                println("[WS] Error in connection loop: ${e.message}")
+            }
+            // Ждём перед следующей попыткой
+            println("[WS] Reconnecting in ${reconnectDelayMs}ms...")
+            delay(reconnectDelayMs.toLong())
+            reconnectDelayMs = (reconnectDelayMs * 2).coerceAtMost(30_000L)
         }
-        
-        connectionToken = token
-        println("[WS] Token received: ${token.take(20)}...")
-        
-        // Формируем URL для WebSocket
-        val wsUrl = "$wsBaseUrl/connection/websocket"
-        println("[WS] Connecting to: $wsUrl")
-        
-        // Подключаемся к WebSocket
-        connectWebSocket(wsUrl, token)
     }
 
-    private suspend fun connectWebSocket(url: String, token: String) {
-        println("[WS] Creating WebSocket...")
+    private fun restoreSubscriptions() {
+        val socket = ws ?: return
+        if (socket.readyState != WebSocket.OPEN) return
+
+        activeGameSub?.let { (gameId, token) ->
+            println("[WS] Restoring game subscription: $gameId")
+            commandId++
+            socket.send("""{"id":$commandId,"subscribe":{"channel":"game:$gameId","token":"$token"}}""")
+        }
+        activePersonalSub?.let { (userId, token) ->
+            println("[WS] Restoring personal subscription: $userId")
+            commandId++
+            socket.send("""{"id":$commandId,"subscribe":{"channel":"personal:#$userId","token":"$token"}}""")
+        }
+        if (isLobbiesSubscribed) {
+            subscribeToLobbiesIfConnected(socket)
+        }
+    }
+
+    /**
+     * Подключается к WebSocket, возвращает true если соединение было открыто успешно.
+     */
+    private suspend fun connectWebSocket(url: String, token: String): Boolean {
         
         val socket = WebSocket(url)
         ws = socket
@@ -152,7 +185,7 @@ internal class GameSocketServiceImpl(
         
         if (socket.readyState != WebSocket.OPEN) {
             println("[WS] Failed to open WebSocket")
-            return
+            return false
         }
         
         // Отправляем команду connect
@@ -166,16 +199,12 @@ internal class GameSocketServiceImpl(
             val data = event.data
             println("[WS] Received: $data")
             
-            // Обрабатываем ping/pong
             if (data == "{}") {
-                // Centrifugo прислал ping, отвечаем pong
                 println("[WS] Received ping, sending pong")
                 socket.send("{}")
             } else if (data.contains(""""id":1,"connect""")) {
-                // Ответ на connect
                 connected = true
                 println("[WS] Connected to Centrifugo!")
-                // Подписываемся на lobbies
                 subscribeToLobbiesIfConnected(socket)
             } else if (data.contains(""""push"""")) {
                 try {
@@ -208,6 +237,7 @@ internal class GameSocketServiceImpl(
         }
         
         println("[WS] Connection ended")
+        return connected
     }
 
     private fun subscribeToLobbiesIfConnected(socket: WebSocket) {
@@ -252,10 +282,15 @@ internal class GameSocketServiceImpl(
         connectionJob = null
         connectionToken = null
         lobbiesSubscriptionToken = null
+        activeGameSub = null
+        activePersonalSub = null
+        isLobbiesSubscribed = false
+        reconnectDelayMs = 2000L
     }
 
     override suspend fun subscribeToGame(gameId: String, token: String) {
         println("[WS] Subscribe to game: $gameId")
+        activeGameSub = gameId to token  // сохраняем для реконнекта
         val socket = ws
         if (socket != null && socket.readyState == WebSocket.OPEN) {
             commandId++
@@ -278,6 +313,7 @@ internal class GameSocketServiceImpl(
 
     override suspend fun subscribeToPersonal(userId: String, token: String) {
         println("[WS] Subscribe to personal: $userId")
+        activePersonalSub = userId to token  // сохраняем для реконнекта
         val socket = ws
         if (socket != null && socket.readyState == WebSocket.OPEN) {
             commandId++

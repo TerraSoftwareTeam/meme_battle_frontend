@@ -141,9 +141,12 @@ class GameplayComponentImpl(
 
     init {
         lifecycle.doOnDestroy {
-            kotlinx.coroutines.GlobalScope.launch {
-                gameSocketService.unsubscribeFromGame(gameId)
-                gameSocketService.unsubscribeFromPersonal(myUserId)
+            // Отменяем корутину WS через отмену scope, не GlobalScope
+            scope.launch {
+                try {
+                    gameSocketService.unsubscribeFromGame(gameId)
+                    gameSocketService.unsubscribeFromPersonal(myUserId)
+                } catch (_: Exception) {}
             }
         }
         scope.launch { initializeWsSession() }
@@ -184,15 +187,28 @@ class GameplayComponentImpl(
         gameSocketService.gameEvents.onEach { event ->
             when (event) {
                 is GameEvent.RoundStarted,
-                is GameEvent.RoundPhaseChanged,
                 is GameEvent.RoundFinished,
                 is GameEvent.GameFinished -> {
                     _gameEventsForGame.emit(event)
                     _gameEventsForInfo.emit(event)
+                    _gameEventsForPlayers.emit(event)
+                }
+                is GameEvent.RoundPhaseChanged -> {
+                    _gameEventsForGame.emit(event)
+                    _gameEventsForInfo.emit(event)
+                    // При переходе в Voting — загружаем submission-карты для голосования
+                    if ((event as GameEvent.RoundPhaseChanged).phase == "voting") {
+                        loadSubmissionsForVoting()
+                    }
                 }
                 is GameEvent.GameStarted,
                 is GameEvent.VoteReceived -> _gameEventsForInfo.emit(event)
-                is GameEvent.SubmissionReceived -> _gameEventsForPlayers.emit(event)
+                is GameEvent.SubmissionReceived -> {
+                    // PlayersStore: отмечаем игрока как подавшего
+                    _gameEventsForPlayers.emit(event)
+                    // InfoStore: инкрементируем submittedCount
+                    _gameEventsForInfo.emit(event)
+                }
                 is GameEvent.PlayerJoined,
                 is GameEvent.PlayerReadyChanged -> {
                     _gameEventsForInfo.emit(event)
@@ -204,6 +220,27 @@ class GameplayComponentImpl(
         gameSocketService.personalEvents.onEach { event ->
             _personalEventsForGame.emit(event)
         }.launchIn(scope)
+    }
+
+    /** Загружаем submission-карты с бэкенда при переходе фазы в Voting */
+    private fun loadSubmissionsForVoting() {
+        scope.launch {
+            val result = gameApiService.getGameState(gameId)
+            if (result is NetworkResult.Success) {
+                val snapshot = result.data
+                val round = snapshot.round ?: return@launch
+                val submissions = round.submissions ?: return@launch
+                if (submissions.isEmpty()) return@launch
+
+                // card уже является GameCard (sealed interface) — берём напрямую
+                val cards = submissions.map { it.card }
+                val ids   = submissions.map { it.id }
+
+                panels.value.main.instance?.onIntent(
+                    GameplayGameStore.Intent.LoadSubmissions(cards, ids)
+                )
+            }
+        }
     }
 
     // ── Голосование из PlayersScreen (через Effect маршрутизация) ────────────

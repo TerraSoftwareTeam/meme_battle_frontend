@@ -16,8 +16,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.foundation.background
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -45,8 +47,16 @@ fun GameplayPlayersScreen(
 ) {
     val state by component.state.collectAsState()
 
+    val backgroundBrush = Brush.verticalGradient(
+        colors = listOf(
+            Color(0xFF1E1035),
+            Color(0xFF0F081D),
+            Color(0xFF08040F)
+        )
+    )
+
     if (state.isLoading) {
-        Box(modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Box(modifier.fillMaxSize().background(backgroundBrush), contentAlignment = Alignment.Center) {
             CircularProgressIndicator(color = Color(0xFF7C5DFA))
         }
         return
@@ -55,6 +65,7 @@ fun GameplayPlayersScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
+            .background(backgroundBrush)
             .statusBarsPadding()
             .padding(top = 16.dp, start = 12.dp, end = 12.dp),
     ) {

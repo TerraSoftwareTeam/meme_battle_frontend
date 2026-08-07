@@ -20,6 +20,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -27,6 +29,8 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.TabRowDefaults
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 
 enum class SideDrawerTab(val label: String) {
     PLAYERS("Игроки"),
@@ -34,7 +38,7 @@ enum class SideDrawerTab(val label: String) {
 }
 
 /**
- * Кнопка-шторка для medium-режима — вверху по центру GameScreen.
+ * Кнопки для переключения между панелями Игроки/Инфо (для планшетов/medium).
  */
 @Composable
 fun GameplayPanelToggleButton(
@@ -43,16 +47,14 @@ fun GameplayPanelToggleButton(
     modifier: Modifier = Modifier,
 ) {
     Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .statusBarsPadding()
-            .padding(top = 8.dp),
+        modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.Center,
     ) {
         IconButton(onClick = onToggle) {
             Icon(
                 imageVector = if (isOpen) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
                 contentDescription = if (isOpen) "Скрыть панели" else "Показать панели",
+                tint = Color.White,
             )
         }
     }
@@ -76,10 +78,10 @@ fun GameplaySmallTopBar(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         IconButton(onClick = onOpenPlayers) {
-            Icon(Icons.Default.Person, contentDescription = "Игроки")
+            Icon(Icons.Default.Person, contentDescription = "Игроки", tint = Color.White)
         }
         IconButton(onClick = onOpenInfo) {
-            Icon(Icons.Default.Info, contentDescription = "Инфо")
+            Icon(Icons.Default.Info, contentDescription = "Инфо", tint = Color.White)
         }
     }
 }
@@ -96,11 +98,19 @@ fun GameplaySideDrawer(
     infoContent: @Composable () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val backgroundBrush = Brush.verticalGradient(
+        colors = listOf(
+            Color(0xFF1E1035),
+            Color(0xFF0F081D),
+            Color(0xFF08040F)
+        )
+    )
+
     Column(
         modifier = modifier
             .fillMaxHeight()
             .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.surface),
+            .background(backgroundBrush),
     ) {
         // Заголовок с табами и кнопкой закрытия
         Row(
@@ -113,17 +123,19 @@ fun GameplaySideDrawer(
             TabRow(
                 selectedTabIndex = SideDrawerTab.entries.indexOf(activeTab),
                 modifier = Modifier.weight(1f),
+                containerColor = Color.Transparent,
+                contentColor = Color.White,
             ) {
                 SideDrawerTab.entries.forEach { tab ->
                     Tab(
                         selected = activeTab == tab,
                         onClick = { onTabChange(tab) },
-                        text = { Text(tab.label) },
+                        text = { Text(tab.label, color = Color.White) },
                     )
                 }
             }
             IconButton(onClick = onClose) {
-                Icon(Icons.Default.Close, contentDescription = "Закрыть")
+                Icon(Icons.Default.Close, contentDescription = "Закрыть", tint = Color.White)
             }
         }
 
