@@ -37,6 +37,8 @@ internal class GameplayGameStoreFactory(
     private val gameEvents: Flow<GameEvent>,
     private val personalEvents: Flow<PersonalEvent>,
     private val initialSnapshot: GameStateDto? = null,
+    /** Резолвит handle игрока по userId из PlayersStore (живые данные) */
+    private val getPlayerHandle: (userId: String) -> String? = { null },
 ) {
     @OptIn(ExperimentalMviKotlinApi::class)
     fun create(): GameplayGameStore = object : GameplayGameStore,
@@ -242,17 +244,32 @@ internal class GameplayGameStoreFactory(
             gameEvents.onEach { event ->
                 when (event) {
                     is GameEvent.RoundStarted -> {
-                        // Отменяем отложенный dismiss предыдущего раунда — новый раунд уже пришёл
-                        dismissJob?.cancel()
-                        dismissJob = null
                         val promptCardId = "prompt_${event.roundId}"
                         val promptCard: GameCard = if (event.promptKind == "meme") {
                             MemeGameCard(MemeCardData(promptCardId, event.promptContent))
                         } else {
                             SituationGameCard(SituationCardData(promptCardId, event.promptContent))
                         }
-                        // hand придёт через PersonalEvent.HandUpdated
-                        dispatch(Msg.RoundStarted(event.roundId, promptCard, emptyList()))
+                        if (state().uiPhase == GameplayGameStore.UiPhase.RoundResult) {
+                            // Бэк прислал round_started почти сразу после round_finished.
+                            // Отменяем предыдущий dismissJob и запускаем новый,
+                            // чтобы показать результаты минимум 5 секунд
+                            dismissJob?.cancel()
+                            dismissJob = scope.launch {
+                                delay(5000)
+                                if (state().uiPhase == GameplayGameStore.UiPhase.RoundResult) {
+                                    dispatch(Msg.RoundResultDismissed)
+                                    publish(GameplayGameStore.Effect.RoundResultDismissed)
+                                }
+                                dispatch(Msg.RoundStarted(event.roundId, promptCard, emptyList()))
+                                dismissJob = null
+                            }
+                        } else {
+                            // Нормальный случай: сразу переходим
+                            dismissJob?.cancel()
+                            dismissJob = null
+                            dispatch(Msg.RoundStarted(event.roundId, promptCard, emptyList()))
+                        }
                     }
                     is GameEvent.RoundPhaseChanged -> {
                         if (event.phase == "voting") {
@@ -261,18 +278,26 @@ internal class GameplayGameStoreFactory(
                         }
                     }
                     is GameEvent.RoundFinished -> {
+                        // Резолвим handles из PlayersStore (живые данные)
+                        val enrichedScoreboard = event.roundScoreboard.map { entry ->
+                            if (entry.handle != null) entry
+                            else entry.copy(handle = getPlayerHandle(entry.userId))
+                        }
+                        val winnerHandle = event.winnerUserId?.let { uid ->
+                            getPlayerHandle(uid) ?: enrichedScoreboard
+                                .firstOrNull { it.userId == uid }?.handle
+                        }
                         val result = GameplayGameStore.RoundResultData(
                             roundNumber = event.roundNumber,
                             winnerUserId = event.winnerUserId,
-                            winnerHandle = null, // handle придёт из PlayersStore
-                            roundScoreboard = event.roundScoreboard,
+                            winnerHandle = winnerHandle,
+                            roundScoreboard = enrichedScoreboard,
                         )
                         dispatch(Msg.RoundResultReceived(result))
-                        // Авто-dismiss через 3 сек. Сохраняем job чтобы отменить при приходе RoundStarted
+                        // Авто-dismiss через 5 сек (достаточно чтобы успеть прочитать)
                         dismissJob?.cancel()
                         dismissJob = scope.launch {
-                            delay(3000)
-                            // Гонка уже разрешена: если RoundStarted пришёл раньше, этот job уже отменён
+                            delay(5000)
                             if (state().uiPhase == GameplayGameStore.UiPhase.RoundResult) {
                                 dispatch(Msg.RoundResultDismissed)
                                 publish(GameplayGameStore.Effect.RoundResultDismissed)
@@ -317,7 +342,9 @@ internal class GameplayGameStoreFactory(
                 uiPhase = GameplayGameStore.UiPhase.Submitting,
                 roundId = msg.roundId,
                 promptCard = msg.promptCard,
-                handCards = msg.hand,
+                // Бэк присылает hand_updated одновременно с round_finished до round_started.
+                // Если карты уже пришли — сохраняем их, не сбрасываем.
+                handCards = if (msg.hand.isNotEmpty()) msg.hand else handCards,
                 selectedCardIndex = 0,
                 selectedSubmissionIndex = 0,
                 submissionCards = emptyList(),

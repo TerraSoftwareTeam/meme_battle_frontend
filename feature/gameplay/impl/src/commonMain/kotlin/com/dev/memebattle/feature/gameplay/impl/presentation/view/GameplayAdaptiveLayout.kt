@@ -9,18 +9,13 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.arkivanov.decompose.ExperimentalDecomposeApi
-import com.arkivanov.decompose.extensions.compose.subscribeAsState
-import com.dev.memebattle.feature.gameplay.impl.presentation.component.GameplayComponent
-import com.dev.memebattle.feature.gameplay.impl.presentation.view.game.GameplayGameScreen
-import com.dev.memebattle.feature.gameplay.impl.presentation.view.info.GameplayInfoScreen
-import com.dev.memebattle.feature.gameplay.impl.presentation.view.players.GameplayPlayersScreen
 
 private val SIDE_PANEL_WIDTH = 280.dp
 private val PLAYERS_PANEL_WIDTH = 260.dp
@@ -33,10 +28,8 @@ private val PLAYERS_PANEL_WIDTH = 260.dp
  * - Medium (≥ 600dp) : GameScreen по центру + шторки Info/Players по краям
  * - Small  (< 600dp) : только GameScreen; боковая панель выезжает из-за правого края
  *
- * @param gameContent    слот для GameScreen
- * @param infoContent    слот для InfoScreen
- * @param playersContent слот для PlayersScreen
- * @param windowWidthClass пиксельная ширина контейнера (передаётся из WindowSizeClass)
+ * [closePanelsSignal] — целое число, инкрементируется при событии GameStarted.
+ * При изменении — закрывает все открытые боковые панели.
  */
 @Composable
 fun GameplayAdaptiveLayout(
@@ -44,6 +37,7 @@ fun GameplayAdaptiveLayout(
     infoContent: @Composable () -> Unit,
     playersContent: @Composable () -> Unit,
     windowWidthClass: WindowWidthClass,
+    closePanelsSignal: Int = 0,
     modifier: Modifier = Modifier,
 ) {
     when (windowWidthClass) {
@@ -57,12 +51,14 @@ fun GameplayAdaptiveLayout(
             gameContent = gameContent,
             infoContent = infoContent,
             playersContent = playersContent,
+            closePanelsSignal = closePanelsSignal,
             modifier = modifier,
         )
         WindowWidthClass.SMALL -> GameplayLayoutSmall(
             gameContent = gameContent,
             infoContent = infoContent,
             playersContent = playersContent,
+            closePanelsSignal = closePanelsSignal,
             modifier = modifier,
         )
     }
@@ -79,6 +75,7 @@ private fun GameplayLayoutLarge(
     playersContent: @Composable () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    // На большом экране панели всегда открыты — сигнал не нужен
     Row(modifier.fillMaxSize()) {
         Box(Modifier.width(PLAYERS_PANEL_WIDTH).fillMaxHeight()) { playersContent() }
         Box(Modifier.weight(1f).fillMaxHeight()) { gameContent() }
@@ -93,9 +90,15 @@ private fun GameplayLayoutMedium(
     gameContent: @Composable () -> Unit,
     infoContent: @Composable () -> Unit,
     playersContent: @Composable () -> Unit,
+    closePanelsSignal: Int,
     modifier: Modifier = Modifier,
 ) {
     var sidePanelsVisible by remember { mutableStateOf(false) }
+
+    // Закрыть панели при GameStarted
+    LaunchedEffect(closePanelsSignal) {
+        if (closePanelsSignal > 0) sidePanelsVisible = false
+    }
 
     Box(modifier.fillMaxSize()) {
         Row(Modifier.fillMaxSize()) {
@@ -108,10 +111,9 @@ private fun GameplayLayoutMedium(
                 Box(Modifier.width(PLAYERS_PANEL_WIDTH).fillMaxHeight()) { playersContent() }
             }
 
-            // Центр — Game (занимает всё оставшееся)
+            // Центр — Game
             Box(Modifier.weight(1f).fillMaxHeight()) {
                 gameContent()
-                // Кнопка toggle шторок — вверху по центру
                 GameplayPanelToggleButton(
                     isOpen = sidePanelsVisible,
                     onToggle = { sidePanelsVisible = !sidePanelsVisible },
@@ -137,10 +139,16 @@ private fun GameplayLayoutSmall(
     gameContent: @Composable () -> Unit,
     infoContent: @Composable () -> Unit,
     playersContent: @Composable () -> Unit,
+    closePanelsSignal: Int,
     modifier: Modifier = Modifier,
 ) {
     var drawerVisible by remember { mutableStateOf(false) }
     var drawerTab by remember { mutableStateOf(SideDrawerTab.PLAYERS) }
+
+    // Закрыть drawer при GameStarted
+    LaunchedEffect(closePanelsSignal) {
+        if (closePanelsSignal > 0) drawerVisible = false
+    }
 
     Box(modifier.fillMaxSize()) {
         // Основной экран

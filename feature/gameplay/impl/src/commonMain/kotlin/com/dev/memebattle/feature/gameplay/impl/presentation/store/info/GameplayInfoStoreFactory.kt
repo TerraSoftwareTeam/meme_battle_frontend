@@ -114,6 +114,10 @@ internal class GameplayInfoStoreFactory(
                             dispatch(Msg.AmIReadyChanged(event.isReady))
                             dispatch(Msg.IsSettingReadyChanged(false))
                         }
+                        // Пересчитываем readyCount по delta (не знаем предыдущее состояние игрока,
+                        // поэтому инкрементируем/декрементируем)
+                        val delta = if (event.isReady) 1 else -1
+                        dispatch(Msg.ReadyCountChanged((state().readyCount + delta).coerceAtLeast(0)))
                     }
                     is GameEvent.GameStarted -> {
                         dispatch(Msg.TotalRoundsSet(event.roundsCount))

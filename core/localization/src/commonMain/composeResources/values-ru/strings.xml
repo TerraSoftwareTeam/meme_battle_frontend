@@ -4,20 +4,34 @@
     <string name="welcome">Добро пожаловать в Битву Мемов!</string>
     <string name="play">Играть</string>
     <string name="store">Магазин</string>
+
+    <!-- Packs -->
     <string name="packs_title">Паки</string>
     <string name="packs_create">Создать</string>
     <string name="packs_type_memes">Мемы</string>
     <string name="packs_type_situations">Ситуации</string>
     <string name="packs_filter_all">Все</string>
     <string name="packs_filter_personal">Мои</string>
+    <string name="packs_filter_liked">Избранное</string>
     <string name="packs_no_memes">Пока нет паков с мемами</string>
     <string name="packs_no_situations">Пока нет паков с ситуациями</string>
-    <string name="packs_details_title">Детали пака</string>
-    <string name="packs_details_coming_soon">Детали скоро появятся</string>
-    <string name="packs_create_title">Создать Пак</string>
-    <string name="packs_create_coming_soon">Поля формы скоро появятся</string>
+    <string name="packs_like">В избранное</string>
+    <string name="packs_unlike">Убрать</string>
     <string name="packs_select_pack">Выберите пак для просмотра деталей</string>
     <string name="packs_cards_count">%d карточек</string>
+    <string name="packs_details_title">Детали пака</string>
+    <string name="packs_details_coming_soon">Детали скоро появятся</string>
+    <string name="packs_details_author">ID автора</string>
+    <string name="packs_details_language">Язык</string>
+    <string name="packs_details_created">Создан</string>
+    <string name="packs_details_public">Публичный</string>
+    <string name="packs_details_private">Приватный</string>
+    <string name="packs_details_cards">Карточки</string>
+    <string name="packs_details_no_description">Без описания</string>
+    <string name="packs_details_loading">Загрузка...</string>
+    <string name="packs_details_empty_cards">Карточек пока нет</string>
+    <string name="packs_create_title">Создать Пак</string>
+    <string name="packs_create_coming_soon">Поля формы скоро появятся</string>
     <string name="packs_type_selector_label">Тип Пака</string>
     <string name="packs_create_name_label">Название</string>
     <string name="packs_create_description_label">Описание (необязательно)</string>
@@ -31,18 +45,6 @@
     <string name="packs_create_situation_prompt">Ситуация / Текст</string>
     <string name="packs_create_submit">Создать пак</string>
     <string name="packs_create_success">Пак успешно создан!</string>
-    <string name="packs_details_author">ID автора</string>
-    <string name="packs_details_language">Язык</string>
-    <string name="packs_details_created">Создан</string>
-    <string name="packs_details_public">Публичный</string>
-    <string name="packs_details_private">Приватный</string>
-    <string name="packs_details_cards">Карточки</string>
-    <string name="packs_details_no_description">Без описания</string>
-    <string name="packs_details_loading">Загрузка...</string>
-    <string name="packs_details_empty_cards">Карточек пока нет</string>
-    <string name="packs_filter_liked">Избранное</string>
-    <string name="packs_like">В избранное</string>
-    <string name="packs_unlike">Убрать</string>
 
     <!-- Create Lobby -->
     <string name="lobby_create_title">Создать лобби</string>
@@ -57,7 +59,7 @@
     <string name="lobby_create_hand_size_label">Карт в руке</string>
     <string name="lobby_create_submit">Создать и играть</string>
 
-    <!-- Gameplay Info -->
+    <!-- Gameplay Info panel -->
     <string name="gameplay_info_title">Битва Мемов</string>
     <string name="gameplay_info_mode">Режим</string>
     <string name="gameplay_info_phase">Фаза</string>
@@ -68,24 +70,63 @@
     <string name="gameplay_info_voted">Проголосовали</string>
     <string name="gameplay_info_wait_ready">Ждём готовности (%1$d/%2$d)</string>
     <string name="gameplay_info_start_game">Начать игру</string>
+    <string name="gameplay_info_timer">Таймер</string>
 
-    <!-- Gameplay Players -->
+    <!-- Gameplay Players panel -->
     <string name="gameplay_players_title">Игроки (%1$d)</string>
-    <string name="gameplay_players_score">Очки: %1$d</string>
+    <string name="gameplay_players_score">%1$d очков</string>
     <string name="gameplay_players_me_badge">я</string>
     <string name="gameplay_players_status_ready">Готов</string>
     <string name="gameplay_players_status_not_ready">Не готов</string>
     <string name="gameplay_players_status_submitted">Подал</string>
     <string name="gameplay_players_status_voted">Проголосовал</string>
 
-    <!-- Gameplay Lobby -->
+    <!-- Gameplay Lobby phase -->
+    <string name="gameplay_lobby_title">Лобби</string>
+    <string name="gameplay_lobby_subtitle">Ожидание игроков...</string>
     <string name="gameplay_lobby_ready_count">%1$d из %2$d готовы</string>
-    <string name="gameplay_lobby_btn_ready">Готов</string>
+    <string name="gameplay_lobby_btn_ready">Я готов!</string>
     <string name="gameplay_lobby_btn_already_ready">Вы готовы</string>
+    <string name="gameplay_lobby_waiting">Ждём остальных...</string>
+    <string name="gameplay_lobby_all_ready">Игра начнётся!</string>
 
-    <!-- Gameplay Results -->
+    <!-- Gameplay Submitting phase -->
+    <string name="gameplay_submitting_title">Выберите карту</string>
+    <string name="gameplay_submitting_subtitle">%1$d карт в руке</string>
+    <string name="gameplay_submitting_submitted">Карта подана — ждём остальных</string>
+    <string name="gameplay_submitting_btn_submit">Подать карту</string>
+    <string name="gameplay_submitting_btn_submitted">Подано</string>
+    <string name="gameplay_submitting_prompt_label">Промт раунда</string>
+    <string name="gameplay_submitting_hand_label">Ваша рука</string>
+
+    <!-- Gameplay Voting phase -->
+    <string name="gameplay_voting_title">Голосование</string>
+    <string name="gameplay_voting_voted">Вы проголосовали</string>
+    <string name="gameplay_voting_subtitle">%1$d вариантов — выберите лучший</string>
+    <string name="gameplay_voting_btn_vote">Голосовать</string>
+    <string name="gameplay_voting_btn_voted">Проголосовано</string>
+    <string name="gameplay_voting_prompt_label">Промт раунда</string>
+    <string name="gameplay_voting_submissions_label">Варианты</string>
+
+    <!-- Gameplay Round Result overlay -->
+    <string name="gameplay_round_result_title">Итоги раунда %1$d</string>
+    <string name="gameplay_round_result_winner">Победитель: %1$s</string>
+    <string name="gameplay_round_result_no_winner">Ничья — никто не проголосовал</string>
+    <string name="gameplay_round_result_scoreboard">Таблица очков</string>
+    <string name="gameplay_round_result_points">%1$d оч.</string>
+
+    <!-- Gameplay Finished screen -->
     <string name="gameplay_results_win">Вы победили!</string>
     <string name="gameplay_results_game_over">Игра завершена</string>
     <string name="gameplay_results_winner">Победитель: %1$s</string>
     <string name="gameplay_results_exit">Выйти в главное меню</string>
+    <string name="gameplay_results_final_table">Итоговая таблица</string>
+    <string name="gameplay_results_scores">очков</string>
+
+    <!-- Gameplay side panels -->
+    <string name="gameplay_panel_players">Игроки</string>
+    <string name="gameplay_panel_info">Инфо</string>
+    <string name="gameplay_panel_close">Закрыть</string>
+    <string name="gameplay_panel_show">Показать панели</string>
+    <string name="gameplay_panel_hide">Скрыть панели</string>
 </resources>

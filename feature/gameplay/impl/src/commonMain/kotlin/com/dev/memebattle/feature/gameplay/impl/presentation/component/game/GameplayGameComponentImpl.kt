@@ -27,6 +27,8 @@ class GameplayGameComponentImpl(
     gameEvents: Flow<GameEvent>,
     personalEvents: Flow<PersonalEvent>,
     initialSnapshot: GameStateDto?,
+    /** Резолвит handle игрока по userId — приходит из PlayersStore через лямбду */
+    getPlayerHandle: (userId: String) -> String? = { null },
 ) : GameplayGameComponent, ComponentContext by componentContext {
 
     private val scope = coroutineScope()
@@ -39,6 +41,7 @@ class GameplayGameComponentImpl(
         gameEvents = gameEvents,
         personalEvents = personalEvents,
         initialSnapshot = initialSnapshot,
+        getPlayerHandle = getPlayerHandle,
     ).create()
 
     @OptIn(ExperimentalCoroutinesApi::class)

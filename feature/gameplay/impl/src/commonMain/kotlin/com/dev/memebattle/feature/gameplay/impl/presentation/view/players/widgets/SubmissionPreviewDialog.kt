@@ -118,7 +118,7 @@ fun SubmissionPreviewDialog(
                             CircularProgressIndicator(Modifier.size(18.dp), color = Color.White, strokeWidth = 2.dp)
                         } else {
                             Text(
-                                text = if (hasAlreadyVoted) "Проголосовано ✓" else "Голосовать",
+                                text = if (hasAlreadyVoted) "Проголосовано" else "Голосовать",
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color.White,

@@ -84,13 +84,32 @@ fun RoundResultOverlay(
                             fontWeight = FontWeight.Bold,
                         )
 
-                        data.winnerHandle?.let { handle ->
+                        // Победитель раунда — тот, у кого наибольший score в round_scoreboard
+                        val roundWinner = data.roundScoreboard
+                            .filter { it.score > 0 }
+                            .maxByOrNull { it.score }
+                        if (roundWinner != null) {
                             Spacer(Modifier.height(4.dp))
                             Text(
-                                text = "🏆  Победитель: $handle",
+                                text = "Победитель: ${roundWinner.handle ?: roundWinner.userId.take(8)}",
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = Color(0xFFFFD700),
                                 fontWeight = FontWeight.SemiBold,
+                            )
+                        } else if (data.winnerUserId != null && data.winnerUserId != "00000000-0000-0000-0000-000000000000") {
+                            Spacer(Modifier.height(4.dp))
+                            Text(
+                                text = "Победитель: ${data.winnerHandle ?: data.winnerUserId.take(8)}",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = Color(0xFFFFD700),
+                                fontWeight = FontWeight.SemiBold,
+                            )
+                        } else {
+                            Spacer(Modifier.height(4.dp))
+                            Text(
+                                text = "Ничья — никто не проголосовал",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = Color.White.copy(alpha = 0.5f),
                             )
                         }
 

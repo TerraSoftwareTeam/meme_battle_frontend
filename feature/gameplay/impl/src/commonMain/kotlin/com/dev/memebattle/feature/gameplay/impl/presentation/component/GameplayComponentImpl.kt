@@ -67,6 +67,25 @@ class GameplayComponentImpl(
     /** Снимок состояния — загружается после WS-подключения (до создания дочерних компонентов). */
     private var cachedSnapshot: GameStateDto? = null
 
+    /**
+     * Кеш userId → handle. Заполняется из snapshot и обновляется при PlayerJoined.
+     * Используется для обогащения WS-событий, которые не содержат handle.
+     * Internal — доступен из GameplayView через safe cast.
+     */
+    internal val playerHandleCache = mutableMapOf<String, String>()
+
+    /**
+     * Сигнал для UI — закрыть все боковые панели.
+     * Публикуется при получении GameStarted.
+     */
+    val closePanelsSignal = MutableStateFlow(0)
+
+    /**
+     * Прямая ссылка на PlayersComponent — нужна для обогащения handles в GameStore.
+     * Заполняется при создании PlayersComponent через extraFactory.
+     */
+    private var playersComponentRef: GameplayPlayersComponent? = null
+
     // ── Конфигурации панелей ─────────────────────────────────────────────────
 
     @Serializable sealed interface MainConfig    { @Serializable data object Game    : MainConfig    }
@@ -100,6 +119,14 @@ class GameplayComponentImpl(
             gameEvents = _gameEventsForGame,
             personalEvents = _personalEventsForGame,
             initialSnapshot = cachedSnapshot,
+            // Резолвим handle из кеша или из живого PlayersStore
+            getPlayerHandle = { userId ->
+                playerHandleCache[userId]
+                    ?: playersComponentRef?.state?.value?.players
+                        ?.firstOrNull { it.userId == userId }
+                        ?.handle
+                        ?.takeIf { it.isNotBlank() }
+            },
         )
         // Слушаем ExitGame Effect — перенаправляем в навигацию
         component.effects.onEach { effect ->
@@ -128,6 +155,8 @@ class GameplayComponentImpl(
             gameEvents = _gameEventsForPlayers,
             initialSnapshot = cachedSnapshot,
         )
+        // Сохраняем ссылку — через неё GameStore будет резолвить handles
+        playersComponentRef = component
         // Ловим VoteRequested из PlayersStore → вызываем API vote здесь
         component.effects.onEach { effect ->
             when (effect) {
@@ -169,6 +198,12 @@ class GameplayComponentImpl(
         val snapshotResult = gameApiService.getGameState(gameId)
         if (snapshotResult is NetworkResult.Success) {
             cachedSnapshot = snapshotResult.data
+            // Заполняем кеш handles из snapshot
+            cachedSnapshot?.players?.forEach { player ->
+                if (player.handle.isNotBlank()) {
+                    playerHandleCache[player.user_id] = player.handle
+                }
+            }
         }
 
         // 4. Инициализировать GameStore с snapshot
@@ -186,6 +221,11 @@ class GameplayComponentImpl(
     private fun startFanOut() {
         gameSocketService.gameEvents.onEach { event ->
             when (event) {
+                is GameEvent.GameStarted -> {
+                    // Закрываем все боковые панели — игра началась!
+                    closePanelsSignal.value += 1
+                    _gameEventsForInfo.emit(event)
+                }
                 is GameEvent.RoundStarted,
                 is GameEvent.RoundFinished,
                 is GameEvent.GameFinished -> {
@@ -201,7 +241,6 @@ class GameplayComponentImpl(
                         loadSubmissionsForVoting()
                     }
                 }
-                is GameEvent.GameStarted,
                 is GameEvent.VoteReceived -> _gameEventsForInfo.emit(event)
                 is GameEvent.SubmissionReceived -> {
                     // PlayersStore: отмечаем игрока как подавшего
@@ -209,7 +248,14 @@ class GameplayComponentImpl(
                     // InfoStore: инкрементируем submittedCount
                     _gameEventsForInfo.emit(event)
                 }
-                is GameEvent.PlayerJoined,
+                is GameEvent.PlayerJoined -> {
+                    // Кешируем handle если пришёл
+                    if (event.handle.isNotBlank()) {
+                        playerHandleCache[event.userId] = event.handle
+                    }
+                    _gameEventsForInfo.emit(event)
+                    _gameEventsForPlayers.emit(event)
+                }
                 is GameEvent.PlayerReadyChanged -> {
                     _gameEventsForInfo.emit(event)
                     _gameEventsForPlayers.emit(event)

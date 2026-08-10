@@ -1,7 +1,9 @@
 package com.dev.memebattle.feature.gameplay.impl.presentation.view
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -10,35 +12,32 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material3.TabRowDefaults
-import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
+import androidx.compose.ui.unit.sp
 
 enum class SideDrawerTab(val label: String) {
     PLAYERS("Игроки"),
     INFO("Инфо"),
 }
 
+// ── Кнопка переключения панелей (Medium layout) ──────────────────────────────
+
 /**
- * Кнопки для переключения между панелями Игроки/Инфо (для планшетов/medium).
+ * Компактная кнопка в верхней части GameScreen для Medium-режима.
+ * Показывает/прячет боковые панели.
  */
 @Composable
 fun GameplayPanelToggleButton(
@@ -46,22 +45,35 @@ fun GameplayPanelToggleButton(
     onToggle: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.Center,
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .statusBarsPadding()
+            .padding(horizontal = 12.dp, vertical = 6.dp),
+        contentAlignment = Alignment.CenterEnd,
     ) {
-        IconButton(onClick = onToggle) {
-            Icon(
-                imageVector = if (isOpen) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
-                contentDescription = if (isOpen) "Скрыть панели" else "Показать панели",
-                tint = Color.White,
+        Box(
+            modifier = Modifier
+                .clip(RoundedCornerShape(20.dp))
+                .background(Color.White.copy(alpha = 0.1f))
+                .clickable(onClick = onToggle)
+                .padding(horizontal = 14.dp, vertical = 7.dp),
+        ) {
+            Text(
+                text = if (isOpen) "Свернуть" else "Панели",
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Medium,
+                color = Color.White.copy(alpha = 0.85f),
             )
         }
     }
 }
 
+// ── Топ-бар для Small layout ──────────────────────────────────────────────────
+
 /**
- * Кнопки верхнего бара для small-режима (открыть игроков / инфо).
+ * Две компактные кнопки «Игроки» / «Инфо» поверх GameScreen.
+ * Расположены по краям экрана — не перекрывают центральный контент.
  */
 @Composable
 fun GameplaySmallTopBar(
@@ -73,21 +85,41 @@ fun GameplaySmallTopBar(
         modifier = modifier
             .fillMaxWidth()
             .statusBarsPadding()
-            .padding(horizontal = 8.dp, vertical = 4.dp),
+            .padding(horizontal = 10.dp, vertical = 6.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        IconButton(onClick = onOpenPlayers) {
-            Icon(Icons.Default.Person, contentDescription = "Игроки", tint = Color.White)
-        }
-        IconButton(onClick = onOpenInfo) {
-            Icon(Icons.Default.Info, contentDescription = "Инфо", tint = Color.White)
-        }
+        SmallTabButton(label = "Игроки", onClick = onOpenPlayers)
+        SmallTabButton(label = "Инфо", onClick = onOpenInfo)
     }
 }
 
+@Composable
+private fun SmallTabButton(
+    label: String,
+    onClick: () -> Unit,
+) {
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(20.dp))
+            .background(Color(0xFF1A0F38).copy(alpha = 0.75f))
+            .clickable(onClick = onClick)
+            .padding(horizontal = 14.dp, vertical = 7.dp),
+    ) {
+        Text(
+            text = label,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = Color.White.copy(alpha = 0.9f),
+        )
+    }
+}
+
+// ── Боковой drawer для Small layout ──────────────────────────────────────────
+
 /**
- * Боковая панель для small-режима — выезжает справа, содержит TabRow для переключения.
+ * Полноширинная боковая панель (Small-режим).
+ * Содержит TabRow для переключения между Игроки / Инфо.
  */
 @Composable
 fun GameplaySideDrawer(
@@ -98,53 +130,76 @@ fun GameplaySideDrawer(
     infoContent: @Composable () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val backgroundBrush = Brush.verticalGradient(
-        colors = listOf(
-            Color(0xFF1E1035),
-            Color(0xFF0F081D),
-            Color(0xFF08040F)
-        )
-    )
-
     Column(
         modifier = modifier
             .fillMaxHeight()
             .fillMaxWidth()
-            .background(backgroundBrush),
+            .background(
+                Brush.verticalGradient(
+                    listOf(Color(0xFF1A0F38), Color(0xFF100820), Color(0xFF080412))
+                )
+            ),
     ) {
-        // Заголовок с табами и кнопкой закрытия
+        // ── Шапка с табами ────────────────────────────────────────────────────
         Row(
-            Modifier
+            modifier = Modifier
                 .fillMaxWidth()
                 .statusBarsPadding()
-                .padding(horizontal = 4.dp),
+                .padding(horizontal = 12.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            TabRow(
-                selectedTabIndex = SideDrawerTab.entries.indexOf(activeTab),
+            // Tab Pills
+            Row(
                 modifier = Modifier.weight(1f),
-                containerColor = Color.Transparent,
-                contentColor = Color.White,
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
             ) {
                 SideDrawerTab.entries.forEach { tab ->
-                    Tab(
-                        selected = activeTab == tab,
-                        onClick = { onTabChange(tab) },
-                        text = { Text(tab.label, color = Color.White) },
-                    )
+                    val selected = tab == activeTab
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(20.dp))
+                            .background(
+                                if (selected) Color(0xFF7C5DFA)
+                                else Color.White.copy(alpha = 0.08f)
+                            )
+                            .clickable { onTabChange(tab) }
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(
+                            text = tab.label,
+                            fontSize = 13.sp,
+                            fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
+                            color = if (selected) Color.White else Color.White.copy(alpha = 0.6f),
+                        )
+                    }
                 }
             }
-            IconButton(onClick = onClose) {
-                Icon(Icons.Default.Close, contentDescription = "Закрыть", tint = Color.White)
+
+            // Кнопка закрытия
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(Color.White.copy(alpha = 0.08f))
+                    .clickable(onClick = onClose)
+                    .padding(horizontal = 14.dp, vertical = 8.dp),
+            ) {
+                Text(
+                    text = "✕",
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White.copy(alpha = 0.7f),
+                )
             }
         }
 
-        Spacer(Modifier.height(8.dp))
-
-        // Контент активного таба
-        when (activeTab) {
-            SideDrawerTab.PLAYERS -> playersContent()
-            SideDrawerTab.INFO -> infoContent()
+        // ── Контент ───────────────────────────────────────────────────────────
+        Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
+            when (activeTab) {
+                SideDrawerTab.PLAYERS -> playersContent()
+                SideDrawerTab.INFO -> infoContent()
+            }
         }
     }
 }
