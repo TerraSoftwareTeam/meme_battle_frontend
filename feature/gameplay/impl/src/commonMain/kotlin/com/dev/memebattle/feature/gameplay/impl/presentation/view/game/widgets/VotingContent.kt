@@ -1,5 +1,10 @@
 package com.dev.memebattle.feature.gameplay.impl.presentation.view.game.widgets
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -14,18 +19,24 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.dev.memebattle.feature.gameplay.impl.presentation.store.game.GameplayGameStore
 import com.dev.network.game.current.dto.MemeGameCard
 import com.dev.network.game.current.dto.SituationGameCard
 
 /**
- * Фаза Voting — промт карта + веер submission-карт для голосования.
- * Тапнуть по карте в веере = выбрать её, затем нажать «Голосовать».
+ * Фаза Voting — карта ситуации + веер вариантов для голосования.
  */
 @Composable
 fun VotingContent(
@@ -34,6 +45,10 @@ fun VotingContent(
     onVote: (submissionId: String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    // Проверка голосования за собственную карту
+    val selectedCard = state.selectedSubmissionCard
+    val isMyCard = state.mySubmissionCard != null && selectedCard != null && isSameCard(selectedCard, state.mySubmissionCard)
+
     BoxWithConstraints(
         modifier = modifier
             .fillMaxSize()
@@ -41,10 +56,18 @@ fun VotingContent(
             .navigationBarsPadding(),
     ) {
         if (maxWidth > 600.dp) {
-            VotingWideLayout(state, onSelectSubmission, onVote)
+            VotingWideLayout(state, isMyCard, onSelectSubmission, onVote)
         } else {
-            VotingNarrowLayout(state, onSelectSubmission, onVote)
+            VotingNarrowLayout(state, isMyCard, onSelectSubmission, onVote)
         }
+    }
+}
+
+private fun isSameCard(a: com.dev.network.game.current.dto.GameCard, b: com.dev.network.game.current.dto.GameCard): Boolean {
+    return when {
+        a is MemeGameCard && b is MemeGameCard -> a.data.id == b.data.id || a.data.mediaUrl == b.data.mediaUrl
+        a is SituationGameCard && b is SituationGameCard -> a.data.id == b.data.id || a.data.promptText == b.data.promptText
+        else -> false
     }
 }
 
@@ -53,6 +76,7 @@ fun VotingContent(
 @Composable
 private fun VotingNarrowLayout(
     state: GameplayGameStore.State,
+    isMyCard: Boolean,
     onSelectSubmission: (Int) -> Unit,
     onVote: (String) -> Unit,
 ) {
@@ -67,25 +91,50 @@ private fun VotingNarrowLayout(
         PhaseHeader(
             title = "Голосование",
             subtitle = if (state.hasVoted) "Вы проголосовали"
-                       else "${state.submissionCards.size} вариантов · выберите лучший",
+                       else if (isMyCard) "Это ваша карта"
+                       else "Выберите лучший ответ",
             subtitleColor = if (state.hasVoted) Color(0xFF00C853)
+                            else if (isMyCard) Color(0xFFFFAB00)
                             else Color.White.copy(alpha = 0.5f),
         )
 
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(12.dp))
 
-        // Промт-карта (40% высоты)
+        // Предупреждающий баннер при выборе своей карты
+        AnimatedVisibility(visible = isMyCard && !state.hasVoted, enter = fadeIn(), exit = fadeOut()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(Color(0xFFFFAB00).copy(alpha = 0.15f))
+                    .border(1.dp, Color(0xFFFFAB00).copy(alpha = 0.4f), RoundedCornerShape(10.dp))
+                    .padding(horizontal = 12.dp, vertical = 6.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    text = "Нельзя голосовать за свой выбор",
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFFFFAB00),
+                    textAlign = TextAlign.Center,
+                )
+            }
+        }
+
+        Spacer(Modifier.height(8.dp))
+
+        // Карта ситуации
         Box(modifier = Modifier.weight(0.38f).fillMaxWidth(), contentAlignment = Alignment.Center) {
             GameCardWidget(
                 card = state.promptCard,
-                label = "Промт",
+                label = "Ситуация",
                 modifier = Modifier.fillMaxSize(0.7f),
             )
         }
 
         Spacer(Modifier.height(8.dp))
 
-        // Веер submission-карт (55% высоты)
+        // Веер вариантов
         Box(modifier = Modifier.weight(0.62f).fillMaxWidth()) {
             val submissionCards = state.submissionCards.mapIndexed { i, card ->
                 when (card) {
@@ -103,8 +152,12 @@ private fun VotingNarrowLayout(
         }
 
         GameActionButton(
-            label = if (state.hasVoted) "Проголосовано" else "Голосовать",
-            enabled = state.canVote,
+            label = when {
+                state.hasVoted -> "Проголосовано"
+                isMyCard -> "Ваша карта"
+                else -> "Голосовать"
+            },
+            enabled = state.canVote && !isMyCard,
             isLoading = state.isVoting,
             onClick = { state.selectedSubmissionId?.let { onVote(it) } },
             modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
@@ -117,6 +170,7 @@ private fun VotingNarrowLayout(
 @Composable
 private fun VotingWideLayout(
     state: GameplayGameStore.State,
+    isMyCard: Boolean,
     onSelectSubmission: (Int) -> Unit,
     onVote: (String) -> Unit,
 ) {
@@ -126,21 +180,21 @@ private fun VotingWideLayout(
             .padding(horizontal = 24.dp, vertical = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(24.dp),
     ) {
-        // Промт
+        // Ситуация
         Column(
             modifier = Modifier.weight(1f).fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
         ) {
             PhaseHeader(
-                title = "Промт раунда",
+                title = "Ситуация раунда",
                 subtitle = "Выберите лучший ответ",
                 subtitleColor = Color.White.copy(alpha = 0.5f),
             )
             Spacer(Modifier.height(16.dp))
             GameCardWidget(
                 card = state.promptCard,
-                label = "Промт",
+                label = "Ситуация",
                 modifier = Modifier.widthIn(max = 260.dp).aspectRatio(0.68f),
             )
         }
@@ -154,11 +208,37 @@ private fun VotingWideLayout(
             PhaseHeader(
                 title = "Варианты",
                 subtitle = if (state.hasVoted) "Вы проголосовали"
-                           else "${state.submissionCards.size} submission-карт",
+                           else if (isMyCard) "Это ваша карта"
+                           else "Выберите лучший ответ",
                 subtitleColor = if (state.hasVoted) Color(0xFF00C853)
+                                else if (isMyCard) Color(0xFFFFAB00)
                                 else Color.White.copy(alpha = 0.5f),
             )
-            Spacer(Modifier.height(16.dp))
+
+            Spacer(Modifier.height(8.dp))
+
+            AnimatedVisibility(visible = isMyCard && !state.hasVoted, enter = fadeIn(), exit = fadeOut()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(0.8f)
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(Color(0xFFFFAB00).copy(alpha = 0.15f))
+                        .border(1.dp, Color(0xFFFFAB00).copy(alpha = 0.4f), RoundedCornerShape(10.dp))
+                        .padding(horizontal = 12.dp, vertical = 6.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = "Нельзя голосовать за свой выбор",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFFFFAB00),
+                        textAlign = TextAlign.Center,
+                    )
+                }
+            }
+
+            Spacer(Modifier.height(8.dp))
+
             val submissionCards = state.submissionCards.mapIndexed { i, card ->
                 when (card) {
                     is MemeGameCard    -> HandCardData.Meme(card.data.id, card.data.mediaUrl)
@@ -176,8 +256,12 @@ private fun VotingWideLayout(
             }
             Spacer(Modifier.height(12.dp))
             GameActionButton(
-                label = if (state.hasVoted) "Проголосовано" else "Голосовать",
-                enabled = state.canVote,
+                label = when {
+                    state.hasVoted -> "Проголосовано"
+                    isMyCard -> "Ваша карта"
+                    else -> "Голосовать"
+                },
+                enabled = state.canVote && !isMyCard,
                 isLoading = state.isVoting,
                 onClick = { state.selectedSubmissionId?.let { onVote(it) } },
                 modifier = Modifier.fillMaxWidth(),

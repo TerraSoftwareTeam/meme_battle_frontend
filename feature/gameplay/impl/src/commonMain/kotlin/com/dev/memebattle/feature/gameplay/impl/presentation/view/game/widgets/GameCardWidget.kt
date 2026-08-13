@@ -50,7 +50,6 @@ import com.dev.network.game.current.dto.MemeGameCard
 import com.dev.network.game.current.dto.SituationGameCard
 
 private val MAX_CARD_WIDTH = 300.dp
-private val MAX_CARD_HEIGHT = 400.dp
 
 private val SituationAccents = listOf(
     Color(0xFFFF6B6B), Color(0xFF4ECDC4), Color(0xFFFFE66D),
@@ -67,6 +66,10 @@ fun GameCardWidget(
     isSubmitted: Boolean = false,
     cornerRadius: Dp = 18.dp,
 ) {
+    // Безопасный лейбл — убираем термин "промт"
+    val safeLabel = if (label.equals("Промт", ignoreCase = true)) "Ситуация" else label
+    val safeEmptyLabel = if (emptyLabel.contains("Промт", ignoreCase = true)) "Загрузка…" else emptyLabel
+
     BoxWithConstraints(
         modifier = modifier,
         contentAlignment = Alignment.Center,
@@ -114,22 +117,22 @@ fun GameCardWidget(
             contentAlignment = Alignment.Center,
         ) {
             when {
-                card == null -> EmptyCardContent(emptyLabel, shape)
+                card == null -> EmptyCardContent(safeEmptyLabel, shape)
 
                 card is MemeGameCard -> MemeCardContent(
                     imageUrl = card.data.mediaUrl,
-                    label = label,
+                    label = safeLabel,
                     shape = shape,
                 )
 
                 card is SituationGameCard -> SituationCardContent(
                     text = card.data.promptText,
-                    label = label,
+                    label = safeLabel,
                     cardId = card.data.id,
                     shape = shape,
                 )
 
-                else -> EmptyCardContent(emptyLabel, shape)
+                else -> EmptyCardContent(safeEmptyLabel, shape)
             }
         }
     }
@@ -162,10 +165,8 @@ private fun MemeCardContent(
                     contentAlignment = Alignment.Center,
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("🖼️", fontSize = 32.sp)
-                        Spacer(Modifier.height(8.dp))
                         Text(
-                            text = "Не удалось загрузить",
+                            text = "Картинка недоступна",
                             style = MaterialTheme.typography.labelSmall,
                             color = Color.White.copy(alpha = 0.4f),
                             textAlign = TextAlign.Center,
@@ -176,7 +177,7 @@ private fun MemeCardContent(
             },
         )
 
-        // Тип-лейбл снизу с blur-эффектом
+        // Тип-лейбл снизу
         Box(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
@@ -244,6 +245,9 @@ private fun SituationCardContent(
     val accentIndex = (cardId.hashCode() and 0x7FFFFFFF) % SituationAccents.size
     val accent = SituationAccents[accentIndex]
 
+    // Заменяем термин "Промт" на "Ситуация"
+    val displayLabel = if (label.equals("Промт", ignoreCase = true)) "СИТУАЦИЯ" else label.uppercase()
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -254,7 +258,7 @@ private fun SituationCardContent(
                 shape = shape,
             ),
     ) {
-        // Угловой декор — светящийся круг
+        // Угловой декор — свечение
         Box(
             modifier = Modifier
                 .size(120.dp)
@@ -262,17 +266,6 @@ private fun SituationCardContent(
                 .background(
                     Brush.radialGradient(
                         listOf(accent.copy(alpha = 0.15f), Color.Transparent)
-                    ),
-                    CircleShape,
-                ),
-        )
-        Box(
-            modifier = Modifier
-                .size(80.dp)
-                .align(Alignment.BottomStart)
-                .background(
-                    Brush.radialGradient(
-                        listOf(accent.copy(alpha = 0.10f), Color.Transparent)
                     ),
                     CircleShape,
                 ),
@@ -294,9 +287,9 @@ private fun SituationCardContent(
                 },
         )
 
-        // Тип-лейбл сверху
+        // Тип-лейбл сверху ("СИТУАЦИЯ")
         Text(
-            text = label.uppercase(),
+            text = displayLabel,
             style = MaterialTheme.typography.labelSmall,
             color = accent,
             fontWeight = FontWeight.Bold,
@@ -317,18 +310,7 @@ private fun SituationCardContent(
             lineHeight = 22.sp,
             modifier = Modifier
                 .align(Alignment.Center)
-                .padding(horizontal = 16.dp, vertical = 40.dp),
-        )
-
-        // Декоративные кавычки
-        Text(
-            text = "❝",
-            fontSize = 48.sp,
-            color = accent.copy(alpha = 0.12f),
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier
-                .align(Alignment.TopStart)
-                .padding(start = 10.dp, top = 28.dp),
+                .padding(horizontal = 16.dp, vertical = 32.dp),
         )
     }
 }
@@ -352,16 +334,16 @@ private fun EmptyCardContent(
         contentAlignment = Alignment.Center,
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(
-                text = "✦",
-                fontSize = 24.sp,
-                color = Color.White.copy(alpha = 0.2f),
+            CircularProgressIndicator(
+                modifier = Modifier.size(24.dp),
+                color = Color(0xFF7C5DFA).copy(alpha = 0.5f),
+                strokeWidth = 2.dp,
             )
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(10.dp))
             Text(
                 text = label,
                 style = MaterialTheme.typography.bodySmall,
-                color = Color.White.copy(alpha = 0.3f),
+                color = Color.White.copy(alpha = 0.4f),
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(horizontal = 16.dp),
             )

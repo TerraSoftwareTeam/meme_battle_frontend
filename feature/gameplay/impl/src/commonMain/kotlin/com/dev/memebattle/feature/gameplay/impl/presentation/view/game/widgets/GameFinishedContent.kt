@@ -19,8 +19,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -45,7 +43,6 @@ fun GameFinishedContent(
     onExit: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    // Обогащаем handles перед отображением
     val sorted = finalScoreboard
         .map { entry ->
             if (!entry.handle.isNullOrBlank()) entry
@@ -53,10 +50,6 @@ fun GameFinishedContent(
         }
         .sortedByDescending { it.score }
     val isWinner = winnerUserId == myUserId
-    val winnerHandle = winnerUserId?.let { uid ->
-        sorted.firstOrNull { it.userId == uid }?.handle
-            ?: getPlayerHandle(uid)
-    }
 
     Box(
         modifier = modifier
@@ -73,10 +66,10 @@ fun GameFinishedContent(
         ) {
             Spacer(Modifier.height(32.dp))
 
-            // ── Иконка ──────────────────────────────────────────────────
+            // ── Иконка замененная на верстку без артефактов шрифтов ───────────────
             Box(
                 modifier = Modifier
-                    .size(80.dp)
+                    .size(76.dp)
                     .clip(CircleShape)
                     .background(
                         Brush.radialGradient(
@@ -85,20 +78,27 @@ fun GameFinishedContent(
                             else
                                 listOf(Color(0x407C5DFA), Color(0x107C5DFA))
                         )
+                    )
+                    .border(
+                        2.dp,
+                        if (isWinner) Color(0xFFFFD700).copy(alpha = 0.6f)
+                        else Color(0xFF7C5DFA).copy(alpha = 0.4f),
+                        CircleShape,
                     ),
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
-                    text = if (isWinner) "★" else "✶",
-                    fontSize = 40.sp,
+                    text = if (isWinner) "1" else "#",
+                    fontSize = 28.sp,
                     color = if (isWinner) Color(0xFFFFD700) else Color(0xFF7C5DFA),
+                    fontWeight = FontWeight.Black,
                 )
             }
 
             Spacer(Modifier.height(16.dp))
 
             Text(
-                text = if (isWinner) "Вы победили!" else "Игра завершена",
+                text = if (isWinner) "Победа!" else "Игра завершена",
                 style = MaterialTheme.typography.headlineMedium,
                 color = if (isWinner) Color(0xFFFFD700) else Color.White,
                 fontWeight = FontWeight.ExtraBold,
@@ -114,21 +114,21 @@ fun GameFinishedContent(
                 Text(
                     text = "Победитель: $displayName",
                     style = MaterialTheme.typography.bodyLarge,
-                    color = Color(0xFFFFD700).copy(alpha = 0.8f),
+                    color = Color(0xFFFFD700).copy(alpha = 0.9f),
                     fontWeight = FontWeight.SemiBold,
                     textAlign = TextAlign.Center,
                 )
             }
 
-            Spacer(Modifier.height(32.dp))
+            Spacer(Modifier.height(28.dp))
             HorizontalDivider(
                 color = Color.White.copy(alpha = 0.08f),
                 modifier = Modifier.widthIn(max = 480.dp).fillMaxWidth(),
             )
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(12.dp))
 
             Text(
-                text = "Итоговая таблица",
+                text = "Итоговые результаты",
                 style = MaterialTheme.typography.titleSmall,
                 color = Color.White.copy(alpha = 0.5f),
                 fontWeight = FontWeight.SemiBold,
@@ -138,7 +138,7 @@ fun GameFinishedContent(
 
             Spacer(Modifier.height(12.dp))
 
-            // ── Leaderboard ────────────────────────────────────────────────────
+            // ── Таблица результатов ─────────────────────────────────────────────
             LazyColumn(
                 modifier = Modifier
                     .weight(1f)
@@ -151,7 +151,6 @@ fun GameFinishedContent(
                         position = index + 1,
                         entry = entry,
                         isMe = entry.userId == myUserId,
-                        isTopPlace = index < 3,
                     )
                 }
             }
@@ -177,16 +176,14 @@ private fun LeaderboardRow(
     position: Int,
     entry: ScoreboardEntry,
     isMe: Boolean,
-    isTopPlace: Boolean,
     modifier: Modifier = Modifier,
 ) {
     val medalColor = when (position) {
-        1 -> Color(0xFFFFD700) // gold
-        2 -> Color(0xFFB0BEC5) // silver
-        3 -> Color(0xFFBF8B60) // bronze
+        1 -> Color(0xFFFFD700)
+        2 -> Color(0xFFB0BEC5)
+        3 -> Color(0xFFBF8B60)
         else -> null
     }
-    val posLabel = "$position."
 
     val bgBrush = when {
         isMe && position == 1 -> Brush.horizontalGradient(listOf(Color(0x33FFD700), Color(0x1AFFD700)))
@@ -216,33 +213,28 @@ private fun LeaderboardRow(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            // Позиция / медаль — цветной кружок с номером
+            // Кружок номера позиции
             Box(
-                modifier = Modifier.size(36.dp),
+                modifier = Modifier
+                    .size(30.dp)
+                    .clip(CircleShape)
+                    .background(
+                        medalColor?.copy(alpha = 0.25f)
+                            ?: Color.White.copy(alpha = 0.08f)
+                    ),
                 contentAlignment = Alignment.Center,
             ) {
-                Box(
-                    modifier = Modifier
-                        .size(28.dp)
-                        .clip(CircleShape)
-                        .background(
-                            medalColor?.copy(alpha = 0.25f)
-                                ?: Color.White.copy(alpha = 0.08f)
-                        ),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text(
-                        posLabel,
-                        style = MaterialTheme.typography.labelMedium,
-                        color = medalColor ?: Color.White.copy(alpha = 0.6f),
-                        fontWeight = FontWeight.Bold,
-                    )
-                }
+                Text(
+                    text = "$position",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = medalColor ?: Color.White.copy(alpha = 0.6f),
+                    fontWeight = FontWeight.Bold,
+                )
             }
 
             // Ник
             Text(
-                text = (entry.handle ?: entry.userId.take(8)) + if (isMe) " (я)" else "",
+                text = (entry.handle ?: entry.userId.take(8)) + if (isMe) " (вы)" else "",
                 style = MaterialTheme.typography.bodyMedium,
                 color = if (isMe) Color(0xFFB39DDB) else Color.White,
                 fontWeight = if (isMe || position == 1) FontWeight.Bold else FontWeight.Normal,

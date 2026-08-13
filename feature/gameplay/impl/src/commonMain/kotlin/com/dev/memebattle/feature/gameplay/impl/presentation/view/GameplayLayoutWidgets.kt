@@ -1,6 +1,7 @@
 package com.dev.memebattle.feature.gameplay.impl.presentation.view
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -8,7 +9,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -37,7 +36,6 @@ enum class SideDrawerTab(val label: String) {
 
 /**
  * Компактная кнопка в верхней части GameScreen для Medium-режима.
- * Показывает/прячет боковые панели.
  */
 @Composable
 fun GameplayPanelToggleButton(
@@ -55,15 +53,16 @@ fun GameplayPanelToggleButton(
         Box(
             modifier = Modifier
                 .clip(RoundedCornerShape(20.dp))
-                .background(Color.White.copy(alpha = 0.1f))
+                .background(Color(0xFF1F1243).copy(alpha = 0.85f))
+                .border(1.dp, Color.White.copy(alpha = 0.12f), RoundedCornerShape(20.dp))
                 .clickable(onClick = onToggle)
                 .padding(horizontal = 14.dp, vertical = 7.dp),
         ) {
             Text(
                 text = if (isOpen) "Свернуть" else "Панели",
                 fontSize = 12.sp,
-                fontWeight = FontWeight.Medium,
-                color = Color.White.copy(alpha = 0.85f),
+                fontWeight = FontWeight.SemiBold,
+                color = Color.White.copy(alpha = 0.9f),
             )
         }
     }
@@ -72,8 +71,7 @@ fun GameplayPanelToggleButton(
 // ── Топ-бар для Small layout ──────────────────────────────────────────────────
 
 /**
- * Две компактные кнопки «Игроки» / «Инфо» поверх GameScreen.
- * Расположены по краям экрана — не перекрывают центральный контент.
+ * Компактные кнопки «Игроки» / «Инфо» поверх GameScreen на мобильных экранах.
  */
 @Composable
 fun GameplaySmallTopBar(
@@ -85,7 +83,7 @@ fun GameplaySmallTopBar(
         modifier = modifier
             .fillMaxWidth()
             .statusBarsPadding()
-            .padding(horizontal = 10.dp, vertical = 6.dp),
+            .padding(horizontal = 12.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -102,24 +100,24 @@ private fun SmallTabButton(
     Box(
         modifier = Modifier
             .clip(RoundedCornerShape(20.dp))
-            .background(Color(0xFF1A0F38).copy(alpha = 0.75f))
+            .background(Color(0xFF160C33).copy(alpha = 0.85f))
+            .border(1.dp, Color.White.copy(alpha = 0.15f), RoundedCornerShape(20.dp))
             .clickable(onClick = onClick)
-            .padding(horizontal = 14.dp, vertical = 7.dp),
+            .padding(horizontal = 16.dp, vertical = 7.dp),
     ) {
         Text(
             text = label,
             fontSize = 12.sp,
-            fontWeight = FontWeight.SemiBold,
-            color = Color.White.copy(alpha = 0.9f),
+            fontWeight = FontWeight.Bold,
+            color = Color.White,
         )
     }
 }
 
-// ── Боковой drawer для Small layout ──────────────────────────────────────────
+// ── Bottom Sheet Drawer для Small layout ─────────────────────────────────────
 
 /**
- * Полноширинная боковая панель (Small-режим).
- * Содержит TabRow для переключения между Игроки / Инфо.
+ * Выезжающий снизу Modal Sheet для мобильных устройств.
  */
 @Composable
 fun GameplaySideDrawer(
@@ -132,27 +130,44 @@ fun GameplaySideDrawer(
 ) {
     Column(
         modifier = modifier
-            .fillMaxHeight()
             .fillMaxWidth()
+            .fillMaxHeight(0.75f)
+            .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
             .background(
                 Brush.verticalGradient(
-                    listOf(Color(0xFF1A0F38), Color(0xFF100820), Color(0xFF080412))
+                    listOf(Color(0xFF1E1045), Color(0xFF120829))
                 )
+            )
+            .border(
+                width = 1.dp,
+                brush = Brush.verticalGradient(
+                    listOf(Color.White.copy(alpha = 0.2f), Color.Transparent)
+                ),
+                shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
             ),
     ) {
-        // ── Шапка с табами ────────────────────────────────────────────────────
+        // Drag indicator handle
+        Box(
+            modifier = Modifier
+                .padding(top = 10.dp)
+                .width(40.dp)
+                .height(4.dp)
+                .clip(RoundedCornerShape(2.dp))
+                .background(Color.White.copy(alpha = 0.25f))
+                .align(Alignment.CenterHorizontally)
+        )
+
+        // ── Шапка с табами и кнопкой закрытия ──────────────────────────────────
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .statusBarsPadding()
-                .padding(horizontal = 12.dp, vertical = 8.dp),
+                .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             // Tab Pills
             Row(
-                modifier = Modifier.weight(1f),
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 SideDrawerTab.entries.forEach { tab ->
                     val selected = tab == activeTab
@@ -170,31 +185,31 @@ fun GameplaySideDrawer(
                         Text(
                             text = tab.label,
                             fontSize = 13.sp,
-                            fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
-                            color = if (selected) Color.White else Color.White.copy(alpha = 0.6f),
+                            fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
+                            color = if (selected) Color.White else Color.White.copy(alpha = 0.7f),
                         )
                     }
                 }
             }
 
-            // Кнопка закрытия
+            // Close button
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(20.dp))
-                    .background(Color.White.copy(alpha = 0.08f))
+                    .background(Color.White.copy(alpha = 0.1f))
                     .clickable(onClick = onClose)
-                    .padding(horizontal = 14.dp, vertical = 8.dp),
+                    .padding(horizontal = 12.dp, vertical = 6.dp),
             ) {
                 Text(
                     text = "✕",
-                    fontSize = 13.sp,
+                    fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White.copy(alpha = 0.7f),
+                    color = Color.White.copy(alpha = 0.8f),
                 )
             }
         }
 
-        // ── Контент ───────────────────────────────────────────────────────────
+        // ── Контент выбранного таба ───────────────────────────────────────────
         Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
             when (activeTab) {
                 SideDrawerTab.PLAYERS -> playersContent()

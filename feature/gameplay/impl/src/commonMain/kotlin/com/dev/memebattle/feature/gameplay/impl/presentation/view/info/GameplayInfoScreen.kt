@@ -50,14 +50,14 @@ fun GameplayInfoScreen(
     val readyCount = lobbyPlayersState?.players?.count { it.isReady } ?: state.readyCount
     val isHost = lobbyPlayersState?.players?.firstOrNull()?.userId == myUserId
     val canStartGame = isHost && state.phase == RoundPhase.WAITING
-            && playersCount >= 2 && readyCount == playersCount && !state.isStartingGame
+            && playersCount >= 3 && readyCount == playersCount && !state.isStartingGame
 
     Box(
         modifier = modifier
             .fillMaxSize()
             .background(
                 Brush.verticalGradient(
-                    listOf(Color(0xFF1A0F38), Color(0xFF100820), Color(0xFF080412))
+                    listOf(Color(0xFF1E1035), Color(0xFF0F081D), Color(0xFF08040F))
                 )
             ),
     ) {
@@ -131,7 +131,7 @@ fun GameplayInfoScreen(
 
             Spacer(Modifier.weight(1f))
 
-            // ── Кнопка Start (только хост, только в лобби) ────────────────────
+            // ── Кнопка Start (только хост, только в лобби, мин 3 игрока) ──────
             if (isHost && state.phase == RoundPhase.WAITING) {
                 Button(
                     onClick = { component.onIntent(GameplayInfoStore.Intent.StartGame) },
@@ -153,10 +153,12 @@ fun GameplayInfoScreen(
                         )
                     } else {
                         Text(
-                            text = if (readyCount < playersCount)
-                                "Ждём ($readyCount/$playersCount)"
-                            else "Начать игру",
-                            fontSize = 14.sp,
+                            text = when {
+                                playersCount < 3 -> "Мин. 3 игрока ($playersCount/3)"
+                                readyCount < playersCount -> "Ждём готовность ($readyCount/$playersCount)"
+                                else -> "Начать игру"
+                            },
+                            fontSize = 13.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color.White,
                         )

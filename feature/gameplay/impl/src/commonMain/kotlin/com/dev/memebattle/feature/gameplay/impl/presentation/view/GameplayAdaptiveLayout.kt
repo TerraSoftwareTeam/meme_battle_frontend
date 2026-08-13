@@ -1,8 +1,15 @@
 package com.dev.memebattle.feature.gameplay.impl.presentation.view
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -14,22 +21,21 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
-private val SIDE_PANEL_WIDTH = 280.dp
-private val PLAYERS_PANEL_WIDTH = 260.dp
+private val SIDE_PANEL_WIDTH = 300.dp
+private val PLAYERS_PANEL_WIDTH = 280.dp
 
 /**
  * Адаптивный Layout для игрового экрана.
  *
- * Три режима задаются через [windowWidthClass]:
- * - Large  (≥ 1200dp): все три панели одновременно
- * - Medium (≥ 600dp) : GameScreen по центру + шторки Info/Players по краям
- * - Small  (< 600dp) : только GameScreen; боковая панель выезжает из-за правого края
- *
- * [closePanelsSignal] — целое число, инкрементируется при событии GameStarted.
- * При изменении — закрывает все открытые боковые панели.
+ * Три режима:
+ * - Large  (≥ 1100dp): 3-колоночный интерфейс — Игроки слева, Игра по центру, Инфо справа (всегда открыты на веб/десктоп).
+ * - Medium (700..1099dp): Игра по центру, панели выезжают по нажатию на кнопки сверху.
+ * - Small  (< 700dp) : Игра на весь экран; нижняя выезжающая шторка для карточек Инфо/Игроки.
  */
 @Composable
 fun GameplayAdaptiveLayout(
@@ -66,7 +72,7 @@ fun GameplayAdaptiveLayout(
 
 enum class WindowWidthClass { SMALL, MEDIUM, LARGE }
 
-// ── Large ────────────────────────────────────────────────────────────────────
+// ── Large (Desktop / Web ≥ 1100dp) ──────────────────────────────────────────
 
 @Composable
 private fun GameplayLayoutLarge(
@@ -75,15 +81,42 @@ private fun GameplayLayoutLarge(
     playersContent: @Composable () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    // На большом экране панели всегда открыты — сигнал не нужен
-    Row(modifier.fillMaxSize()) {
-        Box(Modifier.width(PLAYERS_PANEL_WIDTH).fillMaxHeight()) { playersContent() }
-        Box(Modifier.weight(1f).fillMaxHeight()) { gameContent() }
-        Box(Modifier.width(SIDE_PANEL_WIDTH).fillMaxHeight()) { infoContent() }
+    // На большом экране боковые панели Игроки и Инфо расположены с двух сторон постоянным HUD
+    Row(modifier = modifier.fillMaxSize()) {
+        // Левая панель — Игроки
+        Box(
+            modifier = Modifier
+                .width(PLAYERS_PANEL_WIDTH)
+                .fillMaxHeight()
+                .background(Color(0xFF140B2E))
+                .border(width = 1.dp, color = Color.White.copy(alpha = 0.08f)),
+        ) {
+            playersContent()
+        }
+
+        // Центр — Игровой стол
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxHeight(),
+        ) {
+            gameContent()
+        }
+
+        // Правая панель — Информация
+        Box(
+            modifier = Modifier
+                .width(SIDE_PANEL_WIDTH)
+                .fillMaxHeight()
+                .background(Color(0xFF140B2E))
+                .border(width = 1.dp, color = Color.White.copy(alpha = 0.08f)),
+        ) {
+            infoContent()
+        }
     }
 }
 
-// ── Medium ───────────────────────────────────────────────────────────────────
+// ── Medium (Планшеты / Небольшие окна 700..1099dp) ──────────────────────────
 
 @Composable
 private fun GameplayLayoutMedium(
@@ -93,46 +126,82 @@ private fun GameplayLayoutMedium(
     closePanelsSignal: Int,
     modifier: Modifier = Modifier,
 ) {
-    var sidePanelsVisible by remember { mutableStateOf(false) }
+    var showPlayers by remember { mutableStateOf(false) }
+    var showInfo by remember { mutableStateOf(false) }
 
-    // Закрыть панели при GameStarted
     LaunchedEffect(closePanelsSignal) {
-        if (closePanelsSignal > 0) sidePanelsVisible = false
+        if (closePanelsSignal > 0) {
+            showPlayers = false
+            showInfo = false
+        }
     }
 
-    Box(modifier.fillMaxSize()) {
-        Row(Modifier.fillMaxSize()) {
-            // Левая шторка — Players
-            AnimatedVisibility(
-                visible = sidePanelsVisible,
-                enter = slideInHorizontally { -it },
-                exit = slideOutHorizontally { -it },
-            ) {
-                Box(Modifier.width(PLAYERS_PANEL_WIDTH).fillMaxHeight()) { playersContent() }
-            }
+    Box(modifier = modifier.fillMaxSize()) {
+        gameContent()
 
-            // Центр — Game
-            Box(Modifier.weight(1f).fillMaxHeight()) {
-                gameContent()
-                GameplayPanelToggleButton(
-                    isOpen = sidePanelsVisible,
-                    onToggle = { sidePanelsVisible = !sidePanelsVisible },
-                )
-            }
+        GameplaySmallTopBar(
+            onOpenPlayers = {
+                showPlayers = !showPlayers
+                showInfo = false
+            },
+            onOpenInfo = {
+                showInfo = !showInfo
+                showPlayers = false
+            },
+        )
 
-            // Правая шторка — Info
-            AnimatedVisibility(
-                visible = sidePanelsVisible,
-                enter = slideInHorizontally { it },
-                exit = slideOutHorizontally { it },
+        // Затеменение под панелями при открытии
+        if (showPlayers || showInfo) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.4f))
+                    .clickable {
+                        showPlayers = false
+                        showInfo = false
+                    },
+            )
+        }
+
+        // Выезжающая панель игроков слева
+        AnimatedVisibility(
+            visible = showPlayers,
+            enter = slideInHorizontally { -it } + fadeIn(),
+            exit = slideOutHorizontally { -it } + fadeOut(),
+            modifier = Modifier.align(Alignment.CenterStart),
+        ) {
+            Box(
+                modifier = Modifier
+                    .width(PLAYERS_PANEL_WIDTH)
+                    .fillMaxHeight()
+                    .background(Color(0xFF160C33))
+                    .border(width = 1.dp, color = Color.White.copy(alpha = 0.1f)),
             ) {
-                Box(Modifier.width(SIDE_PANEL_WIDTH).fillMaxHeight()) { infoContent() }
+                playersContent()
+            }
+        }
+
+        // Выезжающая панель инфо справа
+        AnimatedVisibility(
+            visible = showInfo,
+            enter = slideInHorizontally { it } + fadeIn(),
+            exit = slideOutHorizontally { it } + fadeOut(),
+            modifier = Modifier.align(Alignment.CenterEnd),
+        ) {
+            Box(
+                modifier = Modifier
+                    .width(SIDE_PANEL_WIDTH)
+                    .fillMaxHeight()
+                    .background(Color(0xFF160C33))
+                    .border(width = 1.dp, color = Color.White.copy(alpha = 0.1f)),
+            ) {
+                infoContent()
             }
         }
     }
 }
 
-// ── Small ────────────────────────────────────────────────────────────────────
+// ── Small (Мобильные экраны < 700dp) ────────────────────────────────────────
 
 @Composable
 private fun GameplayLayoutSmall(
@@ -145,13 +214,11 @@ private fun GameplayLayoutSmall(
     var drawerVisible by remember { mutableStateOf(false) }
     var drawerTab by remember { mutableStateOf(SideDrawerTab.PLAYERS) }
 
-    // Закрыть drawer при GameStarted
     LaunchedEffect(closePanelsSignal) {
         if (closePanelsSignal > 0) drawerVisible = false
     }
 
-    Box(modifier.fillMaxSize()) {
-        // Основной экран
+    Box(modifier = modifier.fillMaxSize()) {
         Box(Modifier.fillMaxSize()) {
             gameContent()
             GameplaySmallTopBar(
@@ -160,11 +227,22 @@ private fun GameplayLayoutSmall(
             )
         }
 
-        // Боковая панель — выезжает поверх с правой стороны
+        // Шторка с затеменением
+        if (drawerVisible) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.5f))
+                    .clickable { drawerVisible = false },
+            )
+        }
+
+        // Нижниe/боковые выезжающие панели для мобильных
         AnimatedVisibility(
             visible = drawerVisible,
-            enter = slideInHorizontally { it },
-            exit = slideOutHorizontally { it },
+            enter = slideInVertically { it } + fadeIn(),
+            exit = slideOutVertically { it } + fadeOut(),
+            modifier = Modifier.align(Alignment.BottomCenter),
         ) {
             GameplaySideDrawer(
                 activeTab = drawerTab,

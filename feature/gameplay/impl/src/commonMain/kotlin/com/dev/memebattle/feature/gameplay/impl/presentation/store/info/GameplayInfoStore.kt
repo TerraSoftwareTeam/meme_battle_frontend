@@ -40,18 +40,18 @@ interface GameplayInfoStore : Store<GameplayInfoStore.Intent, GameplayInfoStore.
         /** Текущий статус готовности «я». */
         val amIReady: Boolean = false,
     ) {
-        /** Кнопка "Начать игру" доступна: хост, все готовы, минимум 2 игрока. */
+        /** Кнопка "Начать игру" доступна: хост, все готовы, минимум 3 игрока. */
         val canStartGame: Boolean
             get() = isHost
                 && phase == RoundPhase.WAITING
-                && playerCount >= 2
+                && playerCount >= 3
                 && readyCount == playerCount
                 && !isStartingGame
 
         val modeLabel: String
             get() = when (mode) {
-                GameMode.SITUATION_TO_MEME -> "Ситуация → Мем"
-                GameMode.MEME_TO_SITUATION -> "Мем → Ситуация"
+                GameMode.SITUATION_TO_MEME -> "Ситуация - Мем"
+                GameMode.MEME_TO_SITUATION -> "Мем - Ситуация"
                 null -> "—"
             }
 

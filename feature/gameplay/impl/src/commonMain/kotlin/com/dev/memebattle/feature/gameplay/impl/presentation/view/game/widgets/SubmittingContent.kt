@@ -48,11 +48,9 @@ import com.dev.memebattle.feature.gameplay.impl.presentation.store.game.Gameplay
 import com.dev.network.game.current.dto.MemeGameCard
 import com.dev.network.game.current.dto.SituationGameCard
 import kotlin.math.abs
-import kotlin.math.absoluteValue
 
 /**
- * Фаза Submitting — промт-карта сверху, веер из руки снизу с анимацией выбора.
- * На широких экранах промт + выбранная карта идут рядом, веер — ниже.
+ * Фаза Submitting — ситуация сверху, веер карт из руки снизу.
  */
 @Composable
 fun SubmittingContent(
@@ -77,7 +75,7 @@ fun SubmittingContent(
     }
 }
 
-// ── Узкий (телефон / маленький браузер) ────────────────────────────────────────
+// ── Узкий (телефон / небольшой просмотр) ──────────────────────────────────────
 
 @Composable
 private fun SubmittingNarrowLayout(
@@ -93,7 +91,6 @@ private fun SubmittingNarrowLayout(
     ) {
         Spacer(Modifier.height(12.dp))
 
-        // Статус-заголовок
         PhaseHeader(
             title = "Выберите карту",
             subtitle = if (state.mySubmissionCard != null) "Карта подана — ждём остальных"
@@ -104,12 +101,12 @@ private fun SubmittingNarrowLayout(
 
         Spacer(Modifier.height(16.dp))
 
-        // Промт-карта (50% высоты)
+        // Карта ситуации (45% высоты)
         Box(modifier = Modifier.weight(0.45f).fillMaxWidth(), contentAlignment = Alignment.Center) {
             GameCardWidget(
                 card = state.promptCard,
-                label = "Промт",
-                emptyLabel = "Промт загружается…",
+                label = "Ситуация",
+                emptyLabel = "Ситуация загружается…",
                 modifier = Modifier.fillMaxSize(0.75f),
             )
         }
@@ -133,7 +130,6 @@ private fun SubmittingNarrowLayout(
             )
         }
 
-        // Action кнопка
         GameActionButton(
             label = if (state.mySubmissionCard != null) "Подано" else "Подать",
             enabled = state.canSubmit,
@@ -144,7 +140,7 @@ private fun SubmittingNarrowLayout(
     }
 }
 
-// ── Широкий (планшет / браузер) ────────────────────────────────────────────────
+// ── Широкий (планшет / десктоп) ────────────────────────────────────────────────
 
 @Composable
 private fun SubmittingWideLayout(
@@ -158,26 +154,26 @@ private fun SubmittingWideLayout(
             .padding(horizontal = 24.dp, vertical = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(24.dp),
     ) {
-        // Левая колонка — промт
+        // Левая колонка — Ситуация
         Column(
             modifier = Modifier.weight(1f).fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
         ) {
             PhaseHeader(
-                title = "Промт",
+                title = "Ситуация раунда",
                 subtitle = "Выберите подходящий мем",
                 subtitleColor = Color.White.copy(alpha = 0.5f),
             )
             Spacer(Modifier.height(16.dp))
             GameCardWidget(
                 card = state.promptCard,
-                label = "Промт",
+                label = "Ситуация",
                 modifier = Modifier.widthIn(max = 260.dp).aspectRatio(0.68f),
             )
         }
 
-        // Правая колонка — веер + кнопка
+        // Правая колонка — Рука + Подача
         Column(
             modifier = Modifier.weight(1f).fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -185,7 +181,7 @@ private fun SubmittingWideLayout(
         ) {
             PhaseHeader(
                 title = "Ваша рука",
-                subtitle = if (state.mySubmissionCard != null) "Карта подана" else "${state.handCards.size} карт",
+                subtitle = if (state.mySubmissionCard != null) "Карта подана" else "${state.handCards.size} карт в руке",
                 subtitleColor = if (state.mySubmissionCard != null) Color(0xFF00C853)
                                 else Color.White.copy(alpha = 0.5f),
             )
@@ -237,24 +233,18 @@ fun HandCardsFan(
 ) {
     if (cards.isEmpty()) {
         Box(modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text("🃏", fontSize = 40.sp)
-                Spacer(Modifier.height(8.dp))
-                Text(
-                    "Нет карт в руке",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color.White.copy(alpha = 0.4f),
-                )
-            }
+            Text(
+                "Нет карт в руке",
+                style = MaterialTheme.typography.bodyMedium,
+                color = Color.White.copy(alpha = 0.4f),
+            )
         }
         return
     }
 
     BoxWithConstraints(modifier = modifier, contentAlignment = Alignment.Center) {
         val containerW = maxWidth
-        val containerH = maxHeight
 
-        // Карточка занимает 45% ширины контейнера (но не больше 200dp)
         val cardW: Dp = (containerW * 0.45f).coerceAtMost(200.dp)
         val cardH: Dp = cardW / cardAspect
 
@@ -266,7 +256,7 @@ fun HandCardsFan(
         }
         val maxTransX = when (count) {
             1 -> 0f; 2 -> 0.18f; 3 -> 0.25f; 4 -> 0.30f; 5 -> 0.34f; else -> 0.38f
-        } * containerW.value  // в dp
+        } * containerW.value
 
         cards.forEachIndexed { i, card ->
             val dist = i - mid
@@ -277,7 +267,6 @@ fun HandCardsFan(
             val isSelected = i == selectedIndex
             val isSubmitted = card.id == submittedCardId
 
-            // Анимированное поднятие при выделении
             val liftY by animateFloatAsState(
                 targetValue = if (isSelected) -cardH.value * 0.12f else 0f,
                 animationSpec = spring(stiffness = 280f, dampingRatio = 0.7f),
@@ -359,7 +348,14 @@ private fun FanCardItem(
                     Box(
                         Modifier.fillMaxSize().background(Color(0xFF1A1035)),
                         contentAlignment = Alignment.Center,
-                    ) { Text("🖼️", fontSize = 28.sp) }
+                    ) {
+                        Text(
+                            "Ошибка загрузки",
+                            fontSize = 11.sp,
+                            color = Color.White.copy(alpha = 0.4f),
+                            textAlign = TextAlign.Center,
+                        )
+                    }
                 },
             )
 
@@ -374,15 +370,13 @@ private fun FanCardItem(
                         ),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Text("❝", fontSize = 36.sp, color = accent.copy(alpha = 0.15f),
-                        modifier = Modifier.align(Alignment.TopStart).padding(8.dp))
                     Text(
                         text = card.text,
                         style = MaterialTheme.typography.labelSmall,
                         color = Color.White.copy(alpha = 0.9f),
                         textAlign = TextAlign.Center,
                         lineHeight = 16.sp,
-                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 20.dp),
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 14.dp),
                     )
                 }
             }
@@ -393,17 +387,17 @@ private fun FanCardItem(
             ) { Text("?", fontSize = 28.sp, color = Color.White.copy(alpha = 0.3f)) }
         }
 
-        // Бейдж "Подано" если эта карта подана
+        // Бейдж "Подано"
         if (isSubmitted) {
             Box(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
                     .padding(6.dp)
                     .background(Color(0xFF00C853), CircleShape)
-                    .size(18.dp),
+                    .size(16.dp),
                 contentAlignment = Alignment.Center,
             ) {
-                Text("·", fontSize = 10.sp, color = Color.White, fontWeight = FontWeight.Bold)
+                Text("v", fontSize = 10.sp, color = Color.White, fontWeight = FontWeight.Bold)
             }
         }
     }
@@ -439,7 +433,7 @@ fun PhaseHeader(
     subtitleColor: Color,
     modifier: Modifier = Modifier,
 ) {
-    Column(modifier = modifier) {
+    Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
             text = title,
             style = MaterialTheme.typography.titleMedium,
