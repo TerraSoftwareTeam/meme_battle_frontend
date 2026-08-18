@@ -47,6 +47,18 @@ import coil3.compose.SubcomposeAsyncImage
 import com.dev.memebattle.feature.gameplay.impl.presentation.store.game.GameplayGameStore
 import com.dev.network.game.current.dto.MemeGameCard
 import com.dev.network.game.current.dto.SituationGameCard
+import com.dev.memebattle.core.localization.Res
+import com.dev.memebattle.core.localization.gameplay_submitting_btn_submit
+import com.dev.memebattle.core.localization.gameplay_submitting_btn_submitted
+import com.dev.memebattle.core.localization.gameplay_submitting_empty_hand
+import com.dev.memebattle.core.localization.gameplay_submitting_hand_label
+import com.dev.memebattle.core.localization.gameplay_submitting_hint
+import com.dev.memebattle.core.localization.gameplay_submitting_prompt_label
+import com.dev.memebattle.core.localization.gameplay_submitting_prompt_loading
+import com.dev.memebattle.core.localization.gameplay_submitting_submitted
+import com.dev.memebattle.core.localization.gameplay_submitting_subtitle
+import com.dev.memebattle.core.localization.gameplay_submitting_title
+import org.jetbrains.compose.resources.stringResource
 import kotlin.math.abs
 
 /**
@@ -89,12 +101,12 @@ private fun SubmittingNarrowLayout(
             .padding(horizontal = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(44.dp))
 
         PhaseHeader(
-            title = "Выберите карту",
-            subtitle = if (state.mySubmissionCard != null) "Карта подана — ждём остальных"
-                       else "Выберите подходящий мем для ситуации",
+            title = stringResource(Res.string.gameplay_submitting_title),
+            subtitle = if (state.mySubmissionCard != null) stringResource(Res.string.gameplay_submitting_submitted)
+                       else stringResource(Res.string.gameplay_submitting_hint),
             subtitleColor = if (state.mySubmissionCard != null) Color(0xFF00C853)
                             else Color.White.copy(alpha = 0.5f),
         )
@@ -105,8 +117,8 @@ private fun SubmittingNarrowLayout(
         Box(modifier = Modifier.weight(0.45f).fillMaxWidth(), contentAlignment = Alignment.Center) {
             GameCardWidget(
                 card = state.promptCard,
-                label = "Ситуация",
-                emptyLabel = "Ситуация загружается…",
+                label = stringResource(Res.string.gameplay_submitting_prompt_label),
+                emptyLabel = stringResource(Res.string.gameplay_submitting_prompt_loading),
                 modifier = Modifier.fillMaxSize(0.75f),
             )
         }
@@ -131,7 +143,7 @@ private fun SubmittingNarrowLayout(
         }
 
         GameActionButton(
-            label = if (state.mySubmissionCard != null) "Подано" else "Подать",
+            label = if (state.mySubmissionCard != null) stringResource(Res.string.gameplay_submitting_btn_submitted) else stringResource(Res.string.gameplay_submitting_btn_submit),
             enabled = state.canSubmit,
             isLoading = state.isSubmitting,
             onClick = onSubmit,
@@ -151,7 +163,7 @@ private fun SubmittingWideLayout(
     Row(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = 24.dp, vertical = 16.dp),
+            .padding(start = 24.dp, end = 24.dp, top = 44.dp, bottom = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(24.dp),
     ) {
         // Левая колонка — Ситуация
@@ -161,14 +173,14 @@ private fun SubmittingWideLayout(
             verticalArrangement = Arrangement.Center,
         ) {
             PhaseHeader(
-                title = "Ситуация раунда",
-                subtitle = "Выберите подходящий мем",
+                title = stringResource(Res.string.gameplay_submitting_prompt_label),
+                subtitle = stringResource(Res.string.gameplay_submitting_hint),
                 subtitleColor = Color.White.copy(alpha = 0.5f),
             )
             Spacer(Modifier.height(16.dp))
             GameCardWidget(
                 card = state.promptCard,
-                label = "Ситуация",
+                label = stringResource(Res.string.gameplay_submitting_prompt_label),
                 modifier = Modifier.widthIn(max = 260.dp).aspectRatio(0.68f),
             )
         }
@@ -180,8 +192,8 @@ private fun SubmittingWideLayout(
             verticalArrangement = Arrangement.Center,
         ) {
             PhaseHeader(
-                title = "Ваша рука",
-                subtitle = if (state.mySubmissionCard != null) "Карта подана" else "${state.handCards.size} карт в руке",
+                title = stringResource(Res.string.gameplay_submitting_hand_label),
+                subtitle = if (state.mySubmissionCard != null) stringResource(Res.string.gameplay_submitting_submitted) else stringResource(Res.string.gameplay_submitting_subtitle, state.handCards.size),
                 subtitleColor = if (state.mySubmissionCard != null) Color(0xFF00C853)
                                 else Color.White.copy(alpha = 0.5f),
             )
@@ -203,7 +215,7 @@ private fun SubmittingWideLayout(
             }
             Spacer(Modifier.height(12.dp))
             GameActionButton(
-                label = if (state.mySubmissionCard != null) "Подано" else "Подать",
+                label = if (state.mySubmissionCard != null) stringResource(Res.string.gameplay_submitting_btn_submitted) else stringResource(Res.string.gameplay_submitting_btn_submit),
                 enabled = state.canSubmit,
                 isLoading = state.isSubmitting,
                 onClick = onSubmit,
@@ -234,7 +246,7 @@ fun HandCardsFan(
     if (cards.isEmpty()) {
         Box(modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Text(
-                "Нет карт в руке",
+                stringResource(Res.string.gameplay_submitting_empty_hand),
                 style = MaterialTheme.typography.bodyMedium,
                 color = Color.White.copy(alpha = 0.4f),
             )

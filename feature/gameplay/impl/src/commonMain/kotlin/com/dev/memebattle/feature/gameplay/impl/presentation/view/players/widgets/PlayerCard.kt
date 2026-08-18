@@ -22,6 +22,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import org.jetbrains.compose.resources.stringResource
+import com.dev.memebattle.core.localization.Res
+import com.dev.memebattle.core.localization.gameplay_players_me_badge
+import com.dev.memebattle.core.localization.gameplay_players_score
+import com.dev.memebattle.core.localization.gameplay_players_status_ready
+import com.dev.memebattle.core.localization.gameplay_players_status_not_ready
+import com.dev.memebattle.core.localization.gameplay_players_status_submitted
+import com.dev.memebattle.core.localization.gameplay_players_status_voted
 import com.dev.memebattle.feature.gameplay.impl.presentation.store.game.GameplayGameStore
 import com.dev.memebattle.feature.gameplay.impl.presentation.store.players.GameplayPlayersStore
 
@@ -64,12 +72,12 @@ fun PlayerCard(
                     if (player.isMe) {
                         Spacer(Modifier.width(6.dp))
                         Badge(containerColor = MaterialTheme.colorScheme.primary) {
-                            Text("я", style = MaterialTheme.typography.labelSmall, color = Color.White)
+                            Text(stringResource(Res.string.gameplay_players_me_badge), style = MaterialTheme.typography.labelSmall, color = Color.White)
                         }
                     }
                 }
                 Text(
-                    text = "Очки: ${player.score}",
+                    text = stringResource(Res.string.gameplay_players_score, player.score),
                     style = MaterialTheme.typography.bodySmall,
                     color = Color.White.copy(alpha = 0.55f),
                 )
@@ -81,14 +89,14 @@ fun PlayerCard(
                 verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
                 PlayerStatusBadge(
-                    label = if (player.isReady) "Готов" else "Не готов",
+                    label = if (player.isReady) stringResource(Res.string.gameplay_players_status_ready) else stringResource(Res.string.gameplay_players_status_not_ready),
                     color = if (player.isReady) Color(0xFF00C853) else Color.White.copy(alpha = 0.4f),
                 )
                 if (player.hasSubmitted) {
-                    PlayerStatusBadge(label = "Подал", color = Color(0xFF00B0FF))
+                    PlayerStatusBadge(label = stringResource(Res.string.gameplay_players_status_submitted), color = Color(0xFF00B0FF))
                 }
                 if (player.hasVoted) {
-                    PlayerStatusBadge(label = "Проголосовал", color = MaterialTheme.colorScheme.primary)
+                    PlayerStatusBadge(label = stringResource(Res.string.gameplay_players_status_voted), color = MaterialTheme.colorScheme.primary)
                 }
             }
 
@@ -98,7 +106,7 @@ fun PlayerCard(
                 IconButton(onClick = onShowCard) {
                     Icon(
                         imageVector = Icons.Default.Search,
-                        contentDescription = "Посмотреть карту ${player.handle}",
+                        contentDescription = null,
                         tint = MaterialTheme.colorScheme.primary,
                     )
                 }

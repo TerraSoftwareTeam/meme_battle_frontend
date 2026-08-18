@@ -34,8 +34,28 @@ import androidx.compose.ui.unit.sp
 import com.dev.memebattle.feature.gameplay.impl.presentation.component.info.GameplayInfoComponent
 import com.dev.memebattle.feature.gameplay.impl.presentation.store.info.GameplayInfoStore
 import com.dev.memebattle.feature.gameplay.impl.presentation.store.players.GameplayPlayersStore
-import com.dev.memebattle.feature.gameplay.impl.presentation.view.info.widgets.CountdownTimer
+import com.dev.network.game.current.dto.GameMode
 import com.dev.network.game.current.dto.RoundPhase
+import com.dev.memebattle.core.localization.Res
+import com.dev.memebattle.core.localization.gameplay_info_header_game
+import com.dev.memebattle.core.localization.gameplay_info_min_players
+import com.dev.memebattle.core.localization.gameplay_info_mode
+import com.dev.memebattle.core.localization.gameplay_info_phase
+import com.dev.memebattle.core.localization.gameplay_info_players
+import com.dev.memebattle.core.localization.gameplay_info_ready
+import com.dev.memebattle.core.localization.gameplay_info_round
+import com.dev.memebattle.core.localization.gameplay_info_start_game
+import com.dev.memebattle.core.localization.gameplay_info_submitted
+import com.dev.memebattle.core.localization.gameplay_info_title
+import com.dev.memebattle.core.localization.gameplay_info_voted
+import com.dev.memebattle.core.localization.gameplay_info_wait_ready
+import com.dev.memebattle.core.localization.gameplay_phase_finished
+import com.dev.memebattle.core.localization.gameplay_phase_submitting
+import com.dev.memebattle.core.localization.gameplay_phase_voting
+import com.dev.memebattle.core.localization.gameplay_phase_waiting
+import com.dev.memebattle.core.localization.lobby_create_mode_meme_to_situation
+import com.dev.memebattle.core.localization.lobby_create_mode_situation_to_meme
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun GameplayInfoScreen(
@@ -51,6 +71,19 @@ fun GameplayInfoScreen(
     val isHost = lobbyPlayersState?.players?.firstOrNull()?.userId == myUserId
     val canStartGame = isHost && state.phase == RoundPhase.WAITING
             && playersCount >= 3 && readyCount == playersCount && !state.isStartingGame
+
+    val modeStr = when (state.mode) {
+        GameMode.SITUATION_TO_MEME -> stringResource(Res.string.lobby_create_mode_situation_to_meme)
+        GameMode.MEME_TO_SITUATION -> stringResource(Res.string.lobby_create_mode_meme_to_situation)
+        null -> "—"
+    }
+
+    val phaseStr = when (state.phase) {
+        RoundPhase.WAITING -> stringResource(Res.string.gameplay_phase_waiting)
+        RoundPhase.SUBMITTING -> stringResource(Res.string.gameplay_phase_submitting)
+        RoundPhase.VOTING -> stringResource(Res.string.gameplay_phase_voting)
+        RoundPhase.FINISHED -> stringResource(Res.string.gameplay_phase_finished)
+    }
 
     Box(
         modifier = modifier
@@ -78,14 +111,14 @@ fun GameplayInfoScreen(
         ) {
             // ── Заголовок ─────────────────────────────────────────────────────
             Text(
-                text = "Игра",
+                text = stringResource(Res.string.gameplay_info_header_game),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
                 color = Color.White,
                 modifier = Modifier.padding(bottom = 4.dp),
             )
             Text(
-                text = "Meme Battle",
+                text = stringResource(Res.string.gameplay_info_title),
                 style = MaterialTheme.typography.bodySmall,
                 color = Color(0xFF7C5DFA),
                 fontWeight = FontWeight.Medium,
@@ -96,12 +129,12 @@ fun GameplayInfoScreen(
             Spacer(Modifier.height(16.dp))
 
             // ── Статы ─────────────────────────────────────────────────────────
-            InfoStatRow(label = "Режим", value = state.modeLabel)
-            InfoStatRow(label = "Фаза", value = state.phaseLabel)
+            InfoStatRow(label = stringResource(Res.string.gameplay_info_mode), value = modeStr)
+            InfoStatRow(label = stringResource(Res.string.gameplay_info_phase), value = phaseStr)
 
             if (state.roundNumber > 0) {
                 InfoStatRow(
-                    label = "Раунд",
+                    label = stringResource(Res.string.gameplay_info_round),
                     value = if (state.totalRounds > 0)
                         "${state.roundNumber} / ${state.totalRounds}"
                     else "${state.roundNumber}",
@@ -109,24 +142,18 @@ fun GameplayInfoScreen(
             }
 
             Spacer(Modifier.height(4.dp))
-
-            state.phaseExpiresAt?.let {
-                CountdownTimer(expiresAt = it)
-                Spacer(Modifier.height(4.dp))
-            }
-
             HorizontalDivider(color = Color.White.copy(alpha = 0.08f))
             Spacer(Modifier.height(12.dp))
 
             // ── Игроки ────────────────────────────────────────────────────────
-            InfoStatRow(label = "Игроков", value = "$playersCount")
-            InfoStatRow(label = "Готовы", value = "$readyCount / $playersCount")
+            InfoStatRow(label = stringResource(Res.string.gameplay_info_players), value = "$playersCount")
+            InfoStatRow(label = stringResource(Res.string.gameplay_info_ready), value = "$readyCount / $playersCount")
 
             if (state.phase == RoundPhase.SUBMITTING) {
-                InfoStatRow(label = "Подали", value = "${state.submittedCount} / $playersCount")
+                InfoStatRow(label = stringResource(Res.string.gameplay_info_submitted), value = "${state.submittedCount} / $playersCount")
             }
             if (state.phase == RoundPhase.VOTING) {
-                InfoStatRow(label = "Голоса", value = "${state.votedCount} / $playersCount")
+                InfoStatRow(label = stringResource(Res.string.gameplay_info_voted), value = "${state.votedCount} / $playersCount")
             }
 
             Spacer(Modifier.weight(1f))
@@ -154,9 +181,9 @@ fun GameplayInfoScreen(
                     } else {
                         Text(
                             text = when {
-                                playersCount < 3 -> "Мин. 3 игрока ($playersCount/3)"
-                                readyCount < playersCount -> "Ждём готовность ($readyCount/$playersCount)"
-                                else -> "Начать игру"
+                                playersCount < 3 -> stringResource(Res.string.gameplay_info_min_players, playersCount)
+                                readyCount < playersCount -> stringResource(Res.string.gameplay_info_wait_ready, readyCount, playersCount)
+                                else -> stringResource(Res.string.gameplay_info_start_game)
                             },
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Bold,

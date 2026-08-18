@@ -81,7 +81,7 @@ fun PacksEditView(
             TopAppBar(
                 title = {
                     Text(
-                        text = "Редактирование пэка",
+                        text = stringResource(Res.string.packs_edit_title),
                         color = TextPrimary,
                         fontWeight = FontWeight.SemiBold,
                     )
@@ -155,7 +155,7 @@ fun PacksEditView(
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Text("Карточки", color = TextSecondary, fontSize = 14.sp)
+                                    Text(stringResource(Res.string.packs_details_cards), color = TextSecondary, fontSize = 14.sp)
                                     Button(
                                         onClick = {
                                             if (state.kind == "meme") {
@@ -177,7 +177,7 @@ fun PacksEditView(
                                         contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
                                         modifier = Modifier.height(32.dp)
                                     ) {
-                                        Text("Удалить выбранную", fontSize = 12.sp)
+                                        Text(stringResource(Res.string.packs_edit_delete_card), fontSize = 12.sp)
                                     }
                                 }
 
@@ -276,7 +276,7 @@ fun PacksEditView(
                     // Add new items section
                     item {
                         Spacer(modifier = Modifier.height(16.dp))
-                        Text("Добавить новые", color = TextPrimary, fontWeight = FontWeight.SemiBold, fontSize = 18.sp)
+                        Text(stringResource(Res.string.packs_edit_add_cards), color = TextPrimary, fontWeight = FontWeight.SemiBold, fontSize = 18.sp)
                         Spacer(modifier = Modifier.height(8.dp))
                     }
 
@@ -312,7 +312,7 @@ fun PacksEditView(
                             ),
                             shape = RoundedCornerShape(16.dp)
                         ) {
-                            Text("Удалить пэк", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                            Text(stringResource(Res.string.packs_edit_delete_pack), fontWeight = FontWeight.Bold, fontSize = 16.sp)
                         }
                     }
 
@@ -340,7 +340,7 @@ fun PacksEditView(
                         CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Color.White, strokeWidth = 2.dp)
                     } else {
                         Text(
-                            text = "Сохранить",
+                            text = stringResource(Res.string.packs_edit_save),
                             color = if (state.isSaveEnabled) Color.White else TextSecondary,
                             fontWeight = FontWeight.Bold,
                             fontSize = 16.sp

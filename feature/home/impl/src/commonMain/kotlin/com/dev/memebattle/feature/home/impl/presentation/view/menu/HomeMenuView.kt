@@ -38,10 +38,27 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import org.jetbrains.compose.resources.stringResource
 import com.dev.memebattle.core.localization.Res
 import com.dev.memebattle.core.localization.play
 import com.dev.memebattle.core.localization.store
+import com.dev.memebattle.core.localization.home_join_dialog_title
+import com.dev.memebattle.core.localization.home_join_dialog_description
+import com.dev.memebattle.core.localization.home_join_dialog_nickname_label
+import com.dev.memebattle.core.localization.home_join_dialog_nickname_hint
+import com.dev.memebattle.core.localization.home_join_dialog_confirm
+import com.dev.memebattle.core.localization.home_join_dialog_cancel
+import com.dev.memebattle.core.localization.home_lobbies_available_title
+import com.dev.memebattle.core.localization.home_lobbies_empty
+import com.dev.memebattle.core.localization.home_lobbies_item_title
+import com.dev.memebattle.core.localization.home_lobbies_item_details
+import com.dev.memebattle.core.localization.home_lobbies_item_players
+import com.dev.memebattle.core.localization.home_lobbies_create_fab
+import com.dev.memebattle.core.localization.home_lobbies_btn_join
+import com.dev.memebattle.core.localization.lobby_create_mode_situation_to_meme
+import com.dev.memebattle.core.localization.lobby_create_mode_meme_to_situation
+import com.dev.memebattle.core.localization.gameplay_players_btn_close
 import com.dev.memebattle.feature.home.impl.presentation.component.create.CreateLobbyComponent
 import com.dev.memebattle.feature.home.impl.presentation.component.menu.HomeMenuComponent
 import com.dev.memebattle.feature.home.impl.presentation.store.menu.HomeMenuStore
@@ -302,10 +319,10 @@ fun LobbiesWidget(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             IconButton(onClick = onBack) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(Res.string.gameplay_players_btn_close), tint = Color.White)
             }
             Text(
-                text = "Available Lobbies",
+                text = stringResource(Res.string.home_lobbies_available_title),
                 color = Color.White,
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold
@@ -326,7 +343,7 @@ fun LobbiesWidget(
                 }
                 state.lobbies.isEmpty() -> {
                     Text(
-                        text = "No active lobbies found.\nCreate one and invite friends!",
+                        text = stringResource(Res.string.home_lobbies_empty),
                         color = Color(0xFFB0A2C7),
                         textAlign = TextAlign.Center,
                         modifier = Modifier.align(Alignment.Center)
@@ -361,19 +378,24 @@ fun LobbiesWidget(
                                         // Info block
                                         Column(modifier = Modifier.weight(1f)) {
                                             Text(
-                                                text = "Lobby: ${lobby.id.take(8)}…",
+                                                text = stringResource(Res.string.home_lobbies_item_title, lobby.id.take(8)),
                                                 color = Color.White,
                                                 fontWeight = FontWeight.Bold,
                                                 fontSize = 15.sp
                                             )
                                             Spacer(modifier = Modifier.height(4.dp))
+                                            val modeText = if (lobby.mode == "SITUATION_TO_MEME") {
+                                                stringResource(Res.string.lobby_create_mode_situation_to_meme)
+                                            } else {
+                                                stringResource(Res.string.lobby_create_mode_meme_to_situation)
+                                            }
                                             Text(
-                                                text = "Mode: ${lobby.mode}  •  Rounds: ${lobby.maxRounds}  •  Hand: ${lobby.handSize}",
+                                                text = stringResource(Res.string.home_lobbies_item_details, modeText, lobby.maxRounds, lobby.handSize),
                                                 color = Color(0xFFB0A2C7),
                                                 fontSize = 12.sp
                                             )
                                             Text(
-                                                text = "Players: ${lobby.playersCount}",
+                                                text = stringResource(Res.string.home_lobbies_item_players, lobby.playersCount),
                                                 color = Color(0xFF7C5DFA),
                                                 fontSize = 12.sp,
                                                 fontWeight = FontWeight.SemiBold,
@@ -398,7 +420,7 @@ fun LobbiesWidget(
                                             )
                                             Spacer(modifier = Modifier.width(4.dp))
                                             Text(
-                                                text = "Войти",
+                                                text = stringResource(Res.string.home_lobbies_btn_join),
                                                 fontSize = 13.sp,
                                                 fontWeight = FontWeight.Bold,
                                                 color = Color.White
@@ -425,36 +447,76 @@ fun LobbiesWidget(
                     contentColor = Color.White,
                     shape = RoundedCornerShape(16.dp)
                 ) {
-                    Icon(Icons.Default.Add, contentDescription = "Create Lobby")
+                    Icon(Icons.Default.Add, contentDescription = stringResource(Res.string.home_lobbies_create_fab))
                 }
             }
         }
         
         if (state.joinGameId != null) {
-            AlertDialog(
-                onDismissRequest = onCancelJoin,
-                containerColor = Color(0xFF2E2452),
-                title = {
-                    Text(
-                        text = "Присоединиться к игре",
-                        color = Color.White,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 20.sp
-                    )
-                },
-                text = {
-                    Column {
-                        Text(
-                            text = "Введите ваш игровой Handle (никнейм):",
-                            color = Color(0xFFB0A2C7),
-                            fontSize = 14.sp,
-                            modifier = Modifier.padding(bottom = 12.dp)
+            Dialog(onDismissRequest = onCancelJoin) {
+                Surface(
+                    shape = RoundedCornerShape(24.dp),
+                    color = Color(0xFF1E143B),
+                    border = BorderStroke(
+                        1.dp,
+                        Brush.linearGradient(
+                            listOf(Color(0xFF7C5DFA).copy(alpha = 0.6f), Color(0xFF3B2F5E))
                         )
+                    ),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                ) {
+                    Column(
+                        modifier = Modifier.padding(24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        Text(
+                            text = stringResource(Res.string.home_join_dialog_title),
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 20.sp,
+                        )
+
+                        Spacer(Modifier.height(4.dp))
+
+                        Box(
+                            modifier = Modifier
+                                .width(40.dp)
+                                .height(3.dp)
+                                .clip(RoundedCornerShape(2.dp))
+                                .background(
+                                    Brush.horizontalGradient(
+                                        listOf(Color(0xFF7C5DFA), Color(0xFF5B8DEF))
+                                    )
+                                )
+                        )
+
+                        Spacer(Modifier.height(16.dp))
+
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(Color.White.copy(alpha = 0.05f))
+                                .padding(12.dp),
+                        ) {
+                            Text(
+                                text = stringResource(Res.string.home_join_dialog_description),
+                                color = Color(0xFFB0A2C7),
+                                fontSize = 13.sp,
+                                lineHeight = 20.sp,
+                            )
+                        }
+
+                        Spacer(Modifier.height(16.dp))
+
                         OutlinedTextField(
                             value = state.joinHandleInput,
                             onValueChange = onUpdateJoinHandle,
                             modifier = Modifier.fillMaxWidth(),
-                            label = { Text("Ваш Handle (необязательно)") },
+                            label = { Text(stringResource(Res.string.home_join_dialog_nickname_label)) },
+                            placeholder = { Text(stringResource(Res.string.home_join_dialog_nickname_hint), color = Color.White.copy(alpha = 0.3f)) },
                             singleLine = true,
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor = Color(0xFF7C5DFA),
@@ -462,50 +524,81 @@ fun LobbiesWidget(
                                 focusedLabelColor = Color(0xFF7C5DFA),
                                 unfocusedLabelColor = Color(0xFF887A9E),
                                 focusedTextColor = Color.White,
-                                unfocusedTextColor = Color.White
+                                unfocusedTextColor = Color.White,
+                                cursorColor = Color(0xFF7C5DFA),
                             ),
-                            shape = RoundedCornerShape(12.dp)
+                            shape = RoundedCornerShape(14.dp),
                         )
+
                         if (state.joinError != null) {
-                            Text(
-                                text = state.joinError,
-                                color = Color(0xFFFF5252),
-                                fontSize = 12.sp,
-                                modifier = Modifier.padding(top = 8.dp)
-                            )
+                            Spacer(Modifier.height(8.dp))
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .background(Color(0xFFB71C1C).copy(alpha = 0.2f))
+                                    .border(1.dp, Color(0xFFFF5252).copy(alpha = 0.4f), RoundedCornerShape(10.dp))
+                                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                            ) {
+                                Text(
+                                    text = state.joinError,
+                                    color = Color(0xFFFF5252),
+                                    fontSize = 13.sp,
+                                )
+                            }
                         }
-                    }
-                },
-                confirmButton = {
-                    Button(
-                        onClick = onConfirmJoin,
-                        enabled = !state.isJoining,
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF7C5DFA),
-                            disabledContainerColor = Color(0xFF3B2F5E)
-                        ),
-                        shape = RoundedCornerShape(10.dp)
-                    ) {
-                        if (state.isJoining) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(16.dp),
-                                color = Color.White,
-                                strokeWidth = 2.dp
-                            )
-                        } else {
-                            Text("Войти", color = Color.White, fontWeight = FontWeight.Bold)
+
+                        Spacer(Modifier.height(20.dp))
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        ) {
+                            OutlinedButton(
+                                onClick = onCancelJoin,
+                                enabled = !state.isJoining,
+                                modifier = Modifier.weight(1f),
+                                shape = RoundedCornerShape(14.dp),
+                                border = BorderStroke(1.dp, Color(0xFF3B2F5E)),
+                                colors = ButtonDefaults.outlinedButtonColors(
+                                    contentColor = Color(0xFFB0A2C7),
+                                    disabledContentColor = Color(0xFF887A9E),
+                                ),
+                            ) {
+                                Text(
+                                    text = stringResource(Res.string.home_join_dialog_cancel),
+                                    fontWeight = FontWeight.SemiBold,
+                                )
+                            }
+
+                            Button(
+                                onClick = onConfirmJoin,
+                                enabled = !state.isJoining,
+                                modifier = Modifier.weight(1f),
+                                shape = RoundedCornerShape(14.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(0xFF7C5DFA),
+                                    disabledContainerColor = Color(0xFF3B2F5E),
+                                ),
+                            ) {
+                                if (state.isJoining) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(18.dp),
+                                        color = Color.White,
+                                        strokeWidth = 2.dp,
+                                    )
+                                } else {
+                                    Text(
+                                        text = stringResource(Res.string.home_join_dialog_confirm),
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.White,
+                                    )
+                                }
+                            }
                         }
-                    }
-                },
-                dismissButton = {
-                    TextButton(
-                        onClick = onCancelJoin,
-                        enabled = !state.isJoining
-                    ) {
-                        Text("Отмена", color = Color(0xFFB0A2C7))
                     }
                 }
-            )
+            }
         }
     }
 }

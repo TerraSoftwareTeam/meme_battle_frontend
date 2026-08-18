@@ -32,6 +32,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.dev.memebattle.core.localization.Res
+import com.dev.memebattle.core.localization.gameplay_handle_placeholder
+import com.dev.memebattle.core.localization.gameplay_handle_submit
+import com.dev.memebattle.core.localization.gameplay_handle_subtitle
+import com.dev.memebattle.core.localization.gameplay_handle_title
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * Первый экран — ввод игрового ника перед входом в лобби.
@@ -60,7 +66,7 @@ fun HandleInputContent(
         Spacer(Modifier.height(24.dp))
 
         Text(
-            text = "Как вас называть?",
+            text = stringResource(Res.string.gameplay_handle_title),
             style = MaterialTheme.typography.headlineMedium,
             color = Color.White,
             fontWeight = FontWeight.Bold,
@@ -68,7 +74,7 @@ fun HandleInputContent(
         )
         Spacer(Modifier.height(8.dp))
         Text(
-            text = "Введите игровой ник или оставьте поле пустым — будет использован ник из профиля.",
+            text = stringResource(Res.string.gameplay_handle_subtitle),
             style = MaterialTheme.typography.bodyMedium,
             color = Color.White.copy(alpha = 0.6f),
             textAlign = TextAlign.Center,
@@ -81,7 +87,7 @@ fun HandleInputContent(
             onValueChange = onHandleChange,
             modifier = Modifier.fillMaxWidth(),
             placeholder = {
-                Text("Ваш ник профиля", color = Color.White.copy(alpha = 0.35f))
+                Text(stringResource(Res.string.gameplay_handle_placeholder), color = Color.White.copy(alpha = 0.35f))
             },
             singleLine = true,
             shape = RoundedCornerShape(16.dp),
@@ -119,7 +125,7 @@ fun HandleInputContent(
                 enter = fadeIn(),
                 exit = fadeOut(),
             ) {
-                Text("Войти в лобби", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                Text(stringResource(Res.string.gameplay_handle_submit), fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
             }
         }
     }

@@ -30,6 +30,14 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.dev.memebattle.feature.gameplay.impl.presentation.store.players.GameplayPlayersStore
 import com.dev.memebattle.feature.gameplay.impl.presentation.view.game.widgets.GameCardWidget
+import com.dev.memebattle.core.localization.Res
+import com.dev.memebattle.core.localization.gameplay_players_anonymous_voting_hint
+import com.dev.memebattle.core.localization.gameplay_players_btn_close
+import com.dev.memebattle.core.localization.gameplay_players_card_hidden
+import com.dev.memebattle.core.localization.gameplay_submitting_prompt_label
+import com.dev.memebattle.core.localization.gameplay_voting_btn_vote
+import com.dev.memebattle.core.localization.gameplay_voting_btn_voted
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * Диалог с карточкой игрока в фазе Voting.
@@ -83,8 +91,8 @@ fun SubmissionPreviewDialog(
                 Box(modifier = Modifier.fillMaxWidth(0.65f)) {
                     GameCardWidget(
                         card = player.submissionCard,
-                        label = "Карточка",
-                        emptyLabel = "Карта скрыта\n(анонимное голосование)",
+                        label = stringResource(Res.string.gameplay_submitting_prompt_label),
+                        emptyLabel = stringResource(Res.string.gameplay_players_card_hidden),
                         isHighlighted = !hasAlreadyVoted,
                     )
                 }
@@ -100,7 +108,7 @@ fun SubmissionPreviewDialog(
                         onClick = onDismiss,
                         modifier = Modifier.weight(1f),
                     ) {
-                        Text("Закрыть", color = Color.White.copy(alpha = 0.6f))
+                        Text(stringResource(Res.string.gameplay_players_btn_close), color = Color.White.copy(alpha = 0.6f))
                     }
 
                     Button(
@@ -118,7 +126,7 @@ fun SubmissionPreviewDialog(
                             CircularProgressIndicator(Modifier.size(18.dp), color = Color.White, strokeWidth = 2.dp)
                         } else {
                             Text(
-                                text = if (hasAlreadyVoted) "Проголосовано" else "Голосовать",
+                                text = if (hasAlreadyVoted) stringResource(Res.string.gameplay_voting_btn_voted) else stringResource(Res.string.gameplay_voting_btn_vote),
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color.White,
@@ -130,7 +138,7 @@ fun SubmissionPreviewDialog(
                 if (player.submissionId == null && !hasAlreadyVoted) {
                     Spacer(Modifier.height(8.dp))
                     Text(
-                        text = "Голосование анонимное — карта не привязана к игроку",
+                        text = stringResource(Res.string.gameplay_players_anonymous_voting_hint),
                         style = MaterialTheme.typography.bodySmall,
                         color = Color.White.copy(alpha = 0.4f),
                         textAlign = TextAlign.Center,

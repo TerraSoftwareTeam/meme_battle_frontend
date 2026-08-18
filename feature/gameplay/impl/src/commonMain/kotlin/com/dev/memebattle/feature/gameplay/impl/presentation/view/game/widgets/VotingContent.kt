@@ -34,6 +34,17 @@ import androidx.compose.ui.unit.sp
 import com.dev.memebattle.feature.gameplay.impl.presentation.store.game.GameplayGameStore
 import com.dev.network.game.current.dto.MemeGameCard
 import com.dev.network.game.current.dto.SituationGameCard
+import com.dev.memebattle.core.localization.Res
+import com.dev.memebattle.core.localization.gameplay_voting_btn_vote
+import com.dev.memebattle.core.localization.gameplay_voting_btn_voted
+import com.dev.memebattle.core.localization.gameplay_voting_cannot_vote_self
+import com.dev.memebattle.core.localization.gameplay_voting_prompt_label
+import com.dev.memebattle.core.localization.gameplay_voting_submissions_label
+import com.dev.memebattle.core.localization.gameplay_voting_subtitle
+import com.dev.memebattle.core.localization.gameplay_voting_title
+import com.dev.memebattle.core.localization.gameplay_voting_voted
+import com.dev.memebattle.core.localization.gameplay_voting_your_card
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * Фаза Voting — карта ситуации + веер вариантов для голосования.
@@ -86,13 +97,13 @@ private fun VotingNarrowLayout(
             .padding(horizontal = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(44.dp))
 
         PhaseHeader(
-            title = "Голосование",
-            subtitle = if (state.hasVoted) "Вы проголосовали"
-                       else if (isMyCard) "Это ваша карта"
-                       else "Выберите лучший ответ",
+            title = stringResource(Res.string.gameplay_voting_title),
+            subtitle = if (state.hasVoted) stringResource(Res.string.gameplay_voting_voted)
+                       else if (isMyCard) stringResource(Res.string.gameplay_voting_your_card)
+                       else stringResource(Res.string.gameplay_voting_subtitle, state.submissionCards.size),
             subtitleColor = if (state.hasVoted) Color(0xFF00C853)
                             else if (isMyCard) Color(0xFFFFAB00)
                             else Color.White.copy(alpha = 0.5f),
@@ -112,7 +123,7 @@ private fun VotingNarrowLayout(
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
-                    text = "Нельзя голосовать за свой выбор",
+                    text = stringResource(Res.string.gameplay_voting_cannot_vote_self),
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFFFFAB00),
@@ -127,7 +138,7 @@ private fun VotingNarrowLayout(
         Box(modifier = Modifier.weight(0.38f).fillMaxWidth(), contentAlignment = Alignment.Center) {
             GameCardWidget(
                 card = state.promptCard,
-                label = "Ситуация",
+                label = stringResource(Res.string.gameplay_voting_prompt_label),
                 modifier = Modifier.fillMaxSize(0.7f),
             )
         }
@@ -153,9 +164,9 @@ private fun VotingNarrowLayout(
 
         GameActionButton(
             label = when {
-                state.hasVoted -> "Проголосовано"
-                isMyCard -> "Ваша карта"
-                else -> "Голосовать"
+                state.hasVoted -> stringResource(Res.string.gameplay_voting_btn_voted)
+                isMyCard -> stringResource(Res.string.gameplay_voting_your_card)
+                else -> stringResource(Res.string.gameplay_voting_btn_vote)
             },
             enabled = state.canVote && !isMyCard,
             isLoading = state.isVoting,
@@ -177,7 +188,7 @@ private fun VotingWideLayout(
     Row(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = 24.dp, vertical = 16.dp),
+            .padding(start = 24.dp, end = 24.dp, top = 44.dp, bottom = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(24.dp),
     ) {
         // Ситуация
@@ -187,14 +198,14 @@ private fun VotingWideLayout(
             verticalArrangement = Arrangement.Center,
         ) {
             PhaseHeader(
-                title = "Ситуация раунда",
-                subtitle = "Выберите лучший ответ",
+                title = stringResource(Res.string.gameplay_voting_prompt_label),
+                subtitle = stringResource(Res.string.gameplay_voting_subtitle, state.submissionCards.size),
                 subtitleColor = Color.White.copy(alpha = 0.5f),
             )
             Spacer(Modifier.height(16.dp))
             GameCardWidget(
                 card = state.promptCard,
-                label = "Ситуация",
+                label = stringResource(Res.string.gameplay_voting_prompt_label),
                 modifier = Modifier.widthIn(max = 260.dp).aspectRatio(0.68f),
             )
         }
@@ -206,10 +217,10 @@ private fun VotingWideLayout(
             verticalArrangement = Arrangement.Center,
         ) {
             PhaseHeader(
-                title = "Варианты",
-                subtitle = if (state.hasVoted) "Вы проголосовали"
-                           else if (isMyCard) "Это ваша карта"
-                           else "Выберите лучший ответ",
+                title = stringResource(Res.string.gameplay_voting_submissions_label),
+                subtitle = if (state.hasVoted) stringResource(Res.string.gameplay_voting_voted)
+                           else if (isMyCard) stringResource(Res.string.gameplay_voting_your_card)
+                           else stringResource(Res.string.gameplay_voting_subtitle, state.submissionCards.size),
                 subtitleColor = if (state.hasVoted) Color(0xFF00C853)
                                 else if (isMyCard) Color(0xFFFFAB00)
                                 else Color.White.copy(alpha = 0.5f),
@@ -228,7 +239,7 @@ private fun VotingWideLayout(
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(
-                        text = "Нельзя голосовать за свой выбор",
+                        text = stringResource(Res.string.gameplay_voting_cannot_vote_self),
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFFFFAB00),
@@ -257,9 +268,9 @@ private fun VotingWideLayout(
             Spacer(Modifier.height(12.dp))
             GameActionButton(
                 label = when {
-                    state.hasVoted -> "Проголосовано"
-                    isMyCard -> "Ваша карта"
-                    else -> "Голосовать"
+                    state.hasVoted -> stringResource(Res.string.gameplay_voting_btn_voted)
+                    isMyCard -> stringResource(Res.string.gameplay_voting_your_card)
+                    else -> stringResource(Res.string.gameplay_voting_btn_vote)
                 },
                 enabled = state.canVote && !isMyCard,
                 isLoading = state.isVoting,

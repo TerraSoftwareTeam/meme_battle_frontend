@@ -26,10 +26,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import org.jetbrains.compose.resources.stringResource
+import com.dev.memebattle.core.localization.Res
+import com.dev.memebattle.core.localization.gameplay_collapse
+import com.dev.memebattle.core.localization.gameplay_panels
+import com.dev.memebattle.core.localization.gameplay_tab_players
+import com.dev.memebattle.core.localization.gameplay_tab_info
 
-enum class SideDrawerTab(val label: String) {
-    PLAYERS("Игроки"),
-    INFO("Инфо"),
+enum class SideDrawerTab {
+    PLAYERS,
+    INFO,
 }
 
 // ── Кнопка переключения панелей (Medium layout) ──────────────────────────────
@@ -59,7 +65,7 @@ fun GameplayPanelToggleButton(
                 .padding(horizontal = 14.dp, vertical = 7.dp),
         ) {
             Text(
-                text = if (isOpen) "Свернуть" else "Панели",
+                text = if (isOpen) stringResource(Res.string.gameplay_collapse) else stringResource(Res.string.gameplay_panels),
                 fontSize = 12.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = Color.White.copy(alpha = 0.9f),
@@ -87,8 +93,8 @@ fun GameplaySmallTopBar(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        SmallTabButton(label = "Игроки", onClick = onOpenPlayers)
-        SmallTabButton(label = "Инфо", onClick = onOpenInfo)
+        SmallTabButton(label = stringResource(Res.string.gameplay_tab_players), onClick = onOpenPlayers)
+        SmallTabButton(label = stringResource(Res.string.gameplay_tab_info), onClick = onOpenInfo)
     }
 }
 
@@ -169,7 +175,11 @@ fun GameplaySideDrawer(
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                SideDrawerTab.entries.forEach { tab ->
+                val tabs = listOf(
+                    SideDrawerTab.PLAYERS to stringResource(Res.string.gameplay_tab_players),
+                    SideDrawerTab.INFO    to stringResource(Res.string.gameplay_tab_info),
+                )
+                tabs.forEach { (tab, label) ->
                     val selected = tab == activeTab
                     Box(
                         modifier = Modifier
@@ -183,7 +193,7 @@ fun GameplaySideDrawer(
                         contentAlignment = Alignment.Center,
                     ) {
                         Text(
-                            text = tab.label,
+                            text = label,
                             fontSize = 13.sp,
                             fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
                             color = if (selected) Color.White else Color.White.copy(alpha = 0.7f),
@@ -218,3 +228,4 @@ fun GameplaySideDrawer(
         }
     }
 }
+

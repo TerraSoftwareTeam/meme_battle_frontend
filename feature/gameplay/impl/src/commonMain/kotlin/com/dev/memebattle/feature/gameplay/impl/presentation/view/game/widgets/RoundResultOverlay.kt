@@ -33,6 +33,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.dev.memebattle.feature.gameplay.impl.presentation.store.game.GameplayGameStore
+import com.dev.memebattle.core.localization.Res
+import com.dev.memebattle.core.localization.gameplay_round_result_next_round_auto
+import com.dev.memebattle.core.localization.gameplay_round_result_no_winner
+import com.dev.memebattle.core.localization.gameplay_round_result_title
+import com.dev.memebattle.core.localization.gameplay_round_result_winner
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * BottomSheet-оверлей с итогами раунда.
@@ -78,7 +84,7 @@ fun RoundResultOverlay(
                     ) {
                         // Заголовок
                         Text(
-                            text = "Итоги раунда ${data.roundNumber}",
+                            text = stringResource(Res.string.gameplay_round_result_title, data.roundNumber),
                             style = MaterialTheme.typography.titleLarge,
                             color = Color.White,
                             fontWeight = FontWeight.Bold,
@@ -91,7 +97,7 @@ fun RoundResultOverlay(
                         if (roundWinner != null) {
                             Spacer(Modifier.height(4.dp))
                             Text(
-                                text = "Победитель: ${roundWinner.handle ?: roundWinner.userId.take(8)}",
+                                text = stringResource(Res.string.gameplay_round_result_winner, roundWinner.handle ?: roundWinner.userId.take(8)),
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = Color(0xFFFFD700),
                                 fontWeight = FontWeight.SemiBold,
@@ -99,7 +105,7 @@ fun RoundResultOverlay(
                         } else if (data.winnerUserId != null && data.winnerUserId != "00000000-0000-0000-0000-000000000000") {
                             Spacer(Modifier.height(4.dp))
                             Text(
-                                text = "Победитель: ${data.winnerHandle ?: data.winnerUserId.take(8)}",
+                                text = stringResource(Res.string.gameplay_round_result_winner, data.winnerHandle ?: data.winnerUserId.take(8)),
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = Color(0xFFFFD700),
                                 fontWeight = FontWeight.SemiBold,
@@ -107,7 +113,7 @@ fun RoundResultOverlay(
                         } else {
                             Spacer(Modifier.height(4.dp))
                             Text(
-                                text = "Ничья — никто не проголосовал",
+                                text = stringResource(Res.string.gameplay_round_result_no_winner),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = Color.White.copy(alpha = 0.5f),
                             )
@@ -151,7 +157,7 @@ fun RoundResultOverlay(
                         Spacer(Modifier.height(8.dp))
 
                         Text(
-                            text = "Следующий раунд начнётся автоматически…",
+                            text = stringResource(Res.string.gameplay_round_result_next_round_auto),
                             style = MaterialTheme.typography.bodySmall,
                             color = Color.White.copy(alpha = 0.4f),
                         )

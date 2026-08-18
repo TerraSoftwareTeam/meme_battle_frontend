@@ -57,10 +57,14 @@
     <string name="lobby_create_mode_meme_to_situation">Мем к ситуации</string>
     <string name="lobby_create_rounds_label">Раундов</string>
     <string name="lobby_create_hand_size_label">Карт в руке</string>
+    <string name="lobby_create_nickname_label">Ваш никнейм</string>
+    <string name="lobby_create_nickname_hint">Будет виден другим игрокам</string>
     <string name="lobby_create_submit">Создать и играть</string>
 
     <!-- Gameplay Info panel -->
-    <string name="gameplay_info_title">Битва Мемов</string>
+    <string name="gameplay_info_title">Meme Battle</string>
+    <string name="gameplay_info_title_short">Инфо</string>
+    <string name="gameplay_info_header_game">Игра</string>
     <string name="gameplay_info_mode">Режим</string>
     <string name="gameplay_info_phase">Фаза</string>
     <string name="gameplay_info_round">Раунд</string>
@@ -69,49 +73,67 @@
     <string name="gameplay_info_submitted">Подали</string>
     <string name="gameplay_info_voted">Проголосовали</string>
     <string name="gameplay_info_wait_ready">Ждём готовности (%1$d/%2$d)</string>
+    <string name="gameplay_info_min_players">Мин. 3 игрока (%1$d/3)</string>
     <string name="gameplay_info_start_game">Начать игру</string>
     <string name="gameplay_info_timer">Таймер</string>
+    <string name="gameplay_phase_waiting">Ожидание</string>
+    <string name="gameplay_phase_submitting">Выбор карты</string>
+    <string name="gameplay_phase_voting">Голосование</string>
+    <string name="gameplay_phase_finished">Завершено</string>
 
     <!-- Gameplay Players panel -->
-    <string name="gameplay_players_title">Игроки (%1$d)</string>
-    <string name="gameplay_players_score">%1$d очков</string>
+    <string name="gameplay_players_title">Игроки</string>
+    <string name="gameplay_players_score">Очки: %1$d</string>
     <string name="gameplay_players_me_badge">я</string>
     <string name="gameplay_players_status_ready">Готов</string>
     <string name="gameplay_players_status_not_ready">Не готов</string>
     <string name="gameplay_players_status_submitted">Подал</string>
+    <string name="gameplay_players_status_waiting">Ждёт</string>
     <string name="gameplay_players_status_voted">Проголосовал</string>
+    <string name="gameplay_players_card_hidden">Карта скрыта\n(анонимное голосование)</string>
+    <string name="gameplay_players_btn_close">Закрыть</string>
+    <string name="gameplay_players_anonymous_voting_hint">Голосование анонимное — карта не привязана к игроку</string>
 
     <!-- Gameplay Lobby phase -->
     <string name="gameplay_lobby_title">Лобби</string>
     <string name="gameplay_lobby_subtitle">Ожидание игроков...</string>
+    <string name="gameplay_lobby_ready_label">Готовы к игре</string>
     <string name="gameplay_lobby_ready_count">%1$d из %2$d готовы</string>
     <string name="gameplay_lobby_btn_ready">Я готов!</string>
     <string name="gameplay_lobby_btn_already_ready">Вы готовы</string>
     <string name="gameplay_lobby_waiting">Ждём остальных...</string>
-    <string name="gameplay_lobby_all_ready">Игра начнётся!</string>
+    <string name="gameplay_lobby_all_ready">Все готовы!</string>
+    <string name="gameplay_lobby_min_players_hint">Ожидание участников (мин. 3 игрока)</string>
 
     <!-- Gameplay Submitting phase -->
     <string name="gameplay_submitting_title">Выберите карту</string>
     <string name="gameplay_submitting_subtitle">%1$d карт в руке</string>
     <string name="gameplay_submitting_submitted">Карта подана — ждём остальных</string>
+    <string name="gameplay_submitting_hint">Выберите подходящий мем для ситуации</string>
     <string name="gameplay_submitting_btn_submit">Подать карту</string>
     <string name="gameplay_submitting_btn_submitted">Подано</string>
-    <string name="gameplay_submitting_prompt_label">Промт раунда</string>
+    <string name="gameplay_submitting_prompt_label">Ситуация раунда</string>
+    <string name="gameplay_submitting_prompt_loading">Ситуация загружается…</string>
     <string name="gameplay_submitting_hand_label">Ваша рука</string>
+    <string name="gameplay_submitting_empty_hand">Нет карт в руке</string>
+    <string name="gameplay_submitting_load_error">Ошибка загрузки</string>
 
     <!-- Gameplay Voting phase -->
     <string name="gameplay_voting_title">Голосование</string>
     <string name="gameplay_voting_voted">Вы проголосовали</string>
     <string name="gameplay_voting_subtitle">%1$d вариантов — выберите лучший</string>
+    <string name="gameplay_voting_your_card">Это ваша карта</string>
+    <string name="gameplay_voting_cannot_vote_self">Нельзя голосовать за свой выбор</string>
     <string name="gameplay_voting_btn_vote">Голосовать</string>
     <string name="gameplay_voting_btn_voted">Проголосовано</string>
-    <string name="gameplay_voting_prompt_label">Промт раунда</string>
+    <string name="gameplay_voting_prompt_label">Ситуация раунда</string>
     <string name="gameplay_voting_submissions_label">Варианты</string>
 
     <!-- Gameplay Round Result overlay -->
     <string name="gameplay_round_result_title">Итоги раунда %1$d</string>
     <string name="gameplay_round_result_winner">Победитель: %1$s</string>
     <string name="gameplay_round_result_no_winner">Ничья — никто не проголосовал</string>
+    <string name="gameplay_round_result_next_round_auto">Следующий раунд начнётся автоматически…</string>
     <string name="gameplay_round_result_scoreboard">Таблица очков</string>
     <string name="gameplay_round_result_points">%1$d оч.</string>
 
@@ -120,13 +142,49 @@
     <string name="gameplay_results_game_over">Игра завершена</string>
     <string name="gameplay_results_winner">Победитель: %1$s</string>
     <string name="gameplay_results_exit">Выйти в главное меню</string>
-    <string name="gameplay_results_final_table">Итоговая таблица</string>
+    <string name="gameplay_results_final_table">Итоговые результаты</string>
     <string name="gameplay_results_scores">очков</string>
 
-    <!-- Gameplay side panels -->
+    <!-- Gameplay Handle Input -->
+    <string name="gameplay_handle_title">Как вас называть?</string>
+    <string name="gameplay_handle_subtitle">Введите игровой ник или оставьте поле пустым — будет использован ник из профиля.</string>
+    <string name="gameplay_handle_placeholder">Ваш ник профиля</string>
+    <string name="gameplay_handle_submit">Войти в лобби</string>
+
+    <!-- Gameplay Preview & UI Panels -->
+    <string name="gameplay_preview_hidden">Карта скрыта\n(анонимное голосование)</string>
+    <string name="gameplay_preview_close">Закрыть</string>
+    <string name="gameplay_preview_anonymous_hint">Голосование анонимное — карта не привязана к игроку</string>
     <string name="gameplay_panel_players">Игроки</string>
     <string name="gameplay_panel_info">Инфо</string>
     <string name="gameplay_panel_close">Закрыть</string>
     <string name="gameplay_panel_show">Показать панели</string>
     <string name="gameplay_panel_hide">Скрыть панели</string>
+    <string name="gameplay_collapse">Свернуть</string>
+    <string name="gameplay_panels">Панели</string>
+    <string name="gameplay_tab_players">Игроки</string>
+    <string name="gameplay_tab_info">Инфо</string>
+
+    <!-- Home Join Dialog & Lobbies -->
+    <string name="home_join_dialog_title">Войти в игру</string>
+    <string name="home_join_dialog_description">Вы можете указать никнейм — другие игроки увидят его во время партии. Если пропустить, вы будете отображаться как Аноним.</string>
+    <string name="home_join_dialog_nickname_label">Никнейм</string>
+    <string name="home_join_dialog_nickname_hint">Например: КрутойИгрок</string>
+    <string name="home_join_dialog_confirm">Войти</string>
+    <string name="home_join_dialog_cancel">Отмена</string>
+    <string name="home_lobbies_available_title">Доступные лобби</string>
+    <string name="home_lobbies_empty">Активные лобби не найдены.\nСоздайте новое и пригласите друзей!</string>
+    <string name="home_lobbies_item_title">Лобби: %1$s…</string>
+    <string name="home_lobbies_item_details">Режим: %1$s • Раундов: %2$d • Карты: %3$d</string>
+    <string name="home_lobbies_item_players">Игроков: %1$d</string>
+    <string name="home_lobbies_create_fab">Создать лобби</string>
+    <string name="home_lobbies_btn_join">Войти</string>
+
+    <!-- Packs Edit -->
+    <string name="packs_edit_title">Редактирование пэка</string>
+    <string name="packs_edit_delete_card">Удалить выбранную</string>
+    <string name="packs_edit_add_cards">Добавить новые</string>
+    <string name="packs_edit_delete_pack">Удалить пэк</string>
+    <string name="packs_edit_save">Сохранить</string>
 </resources>
+

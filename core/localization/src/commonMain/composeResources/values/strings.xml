@@ -55,10 +55,14 @@
     <string name="lobby_create_mode_meme_to_situation">Meme to Situation</string>
     <string name="lobby_create_rounds_label">Rounds</string>
     <string name="lobby_create_hand_size_label">Hand Size</string>
+    <string name="lobby_create_nickname_label">Your nickname</string>
+    <string name="lobby_create_nickname_hint">Visible to other players</string>
     <string name="lobby_create_submit">Create and Play</string>
 
     <!-- Gameplay Info -->
     <string name="gameplay_info_title">Meme Battle</string>
+    <string name="gameplay_info_title_short">Info</string>
+    <string name="gameplay_info_header_game">Game</string>
     <string name="gameplay_info_mode">Mode</string>
     <string name="gameplay_info_phase">Phase</string>
     <string name="gameplay_info_round">Round</string>
@@ -67,25 +71,109 @@
     <string name="gameplay_info_submitted">Submitted</string>
     <string name="gameplay_info_voted">Voted</string>
     <string name="gameplay_info_wait_ready">Waiting for ready (%1$d/%2$d)</string>
+    <string name="gameplay_info_min_players">Min. 3 players (%1$d/3)</string>
     <string name="gameplay_info_start_game">Start Game</string>
+    <string name="gameplay_phase_waiting">Waiting</string>
+    <string name="gameplay_phase_submitting">Selecting Card</string>
+    <string name="gameplay_phase_voting">Voting</string>
+    <string name="gameplay_phase_finished">Finished</string>
 
     <!-- Gameplay Players -->
-    <string name="gameplay_players_title">Players (%1$d)</string>
+    <string name="gameplay_players_title">Players</string>
     <string name="gameplay_players_score">Score: %1$d</string>
     <string name="gameplay_players_me_badge">me</string>
     <string name="gameplay_players_status_ready">Ready</string>
     <string name="gameplay_players_status_not_ready">Not ready</string>
     <string name="gameplay_players_status_submitted">Submitted</string>
+    <string name="gameplay_players_status_waiting">Waiting</string>
     <string name="gameplay_players_status_voted">Voted</string>
+    <string name="gameplay_players_card_hidden">Card hidden\n(anonymous voting)</string>
+    <string name="gameplay_players_btn_close">Close</string>
+    <string name="gameplay_players_anonymous_voting_hint">Voting is anonymous — card is not bound to a player</string>
 
     <!-- Gameplay Lobby -->
+    <string name="gameplay_lobby_title">Lobby</string>
+    <string name="gameplay_lobby_subtitle">Waiting for players...</string>
+    <string name="gameplay_lobby_ready_label">Ready for game</string>
     <string name="gameplay_lobby_ready_count">%1$d of %2$d ready</string>
-    <string name="gameplay_lobby_btn_ready">Ready</string>
+    <string name="gameplay_lobby_btn_ready">I am ready!</string>
     <string name="gameplay_lobby_btn_already_ready">You are ready</string>
+    <string name="gameplay_lobby_waiting">Waiting for others...</string>
+    <string name="gameplay_lobby_all_ready">All ready!</string>
+    <string name="gameplay_lobby_min_players_hint">Waiting for players (min. 3 players)</string>
+
+    <!-- Gameplay Submitting -->
+    <string name="gameplay_submitting_title">Select Card</string>
+    <string name="gameplay_submitting_subtitle">%1$d cards in hand</string>
+    <string name="gameplay_submitting_submitted">Card submitted — waiting for others</string>
+    <string name="gameplay_submitting_hint">Choose a suitable meme for the situation</string>
+    <string name="gameplay_submitting_btn_submit">Submit Card</string>
+    <string name="gameplay_submitting_btn_submitted">Submitted</string>
+    <string name="gameplay_submitting_prompt_label">Round Situation</string>
+    <string name="gameplay_submitting_prompt_loading">Situation loading...</string>
+    <string name="gameplay_submitting_hand_label">Your Hand</string>
+    <string name="gameplay_submitting_empty_hand">No cards in hand</string>
+    <string name="gameplay_submitting_load_error">Loading error</string>
+
+    <!-- Gameplay Voting -->
+    <string name="gameplay_voting_title">Voting</string>
+    <string name="gameplay_voting_voted">You voted</string>
+    <string name="gameplay_voting_subtitle">%1$d options — select the best</string>
+    <string name="gameplay_voting_your_card">This is your card</string>
+    <string name="gameplay_voting_cannot_vote_self">You cannot vote for your own card</string>
+    <string name="gameplay_voting_btn_vote">Vote</string>
+    <string name="gameplay_voting_btn_voted">Voted</string>
+    <string name="gameplay_voting_prompt_label">Round Situation</string>
+    <string name="gameplay_voting_submissions_label">Options</string>
+
+    <!-- Gameplay Round Result -->
+    <string name="gameplay_round_result_title">Round %1$d Results</string>
+    <string name="gameplay_round_result_winner">Winner: %1$s</string>
+    <string name="gameplay_round_result_no_winner">Draw — no votes received</string>
+    <string name="gameplay_round_result_next_round_auto">Next round will start automatically...</string>
 
     <!-- Gameplay Results -->
     <string name="gameplay_results_win">You won!</string>
     <string name="gameplay_results_game_over">Game Over</string>
     <string name="gameplay_results_winner">Winner: %1$s</string>
     <string name="gameplay_results_exit">Return to main menu</string>
+    <string name="gameplay_results_final_table">Final Results</string>
+
+    <!-- Gameplay Handle Input -->
+    <string name="gameplay_handle_title">What should we call you?</string>
+    <string name="gameplay_handle_subtitle">Enter a game nickname or leave empty to use profile handle.</string>
+    <string name="gameplay_handle_placeholder">Your profile nickname</string>
+    <string name="gameplay_handle_submit">Join Lobby</string>
+
+    <!-- Gameplay Preview & UI Panels -->
+    <string name="gameplay_preview_hidden">Card hidden\n(anonymous voting)</string>
+    <string name="gameplay_preview_close">Close</string>
+    <string name="gameplay_preview_anonymous_hint">Voting is anonymous — card is not bound to player</string>
+    <string name="gameplay_collapse">Collapse</string>
+    <string name="gameplay_panels">Panels</string>
+    <string name="gameplay_tab_players">Players</string>
+    <string name="gameplay_tab_info">Info</string>
+
+    <!-- Home Join Dialog & Lobbies -->
+    <string name="home_join_dialog_title">Join Game</string>
+    <string name="home_join_dialog_description">You can enter a nickname — other players will see it during the game. If you skip this, you will be displayed as Anonymous.</string>
+    <string name="home_join_dialog_nickname_label">Nickname</string>
+    <string name="home_join_dialog_nickname_hint">e.g. CoolPlayer</string>
+    <string name="home_join_dialog_confirm">Join</string>
+    <string name="home_join_dialog_cancel">Cancel</string>
+    <string name="home_lobbies_available_title">Available Lobbies</string>
+    <string name="home_lobbies_empty">No active lobbies found.\nCreate one and invite friends!</string>
+    <string name="home_lobbies_item_title">Lobby: %1$s…</string>
+    <string name="home_lobbies_item_details">Mode: %1$s • Rounds: %2$d • Hand: %3$d</string>
+    <string name="home_lobbies_item_players">Players: %1$d</string>
+    <string name="home_lobbies_create_fab">Create Lobby</string>
+    <string name="home_lobbies_btn_join">Join</string>
+
+    <!-- Packs Edit -->
+    <string name="packs_edit_title">Edit Pack</string>
+    <string name="packs_edit_delete_card">Delete Selected</string>
+    <string name="packs_edit_add_cards">Add New</string>
+    <string name="packs_edit_delete_pack">Delete Pack</string>
+    <string name="packs_edit_save">Save</string>
 </resources>
+

@@ -42,6 +42,7 @@ import com.dev.memebattle.feature.gameplay.impl.presentation.store.info.Gameplay
 import com.dev.memebattle.feature.gameplay.impl.presentation.store.players.GameplayPlayersStore
 import com.dev.memebattle.feature.gameplay.impl.presentation.view.game.widgets.GameFinishedContent
 import com.dev.memebattle.feature.gameplay.impl.presentation.view.game.widgets.LobbyContent
+import com.dev.memebattle.feature.gameplay.impl.presentation.view.game.widgets.PhaseTimerHud
 import com.dev.memebattle.feature.gameplay.impl.presentation.view.game.widgets.RoundResultOverlay
 import com.dev.memebattle.feature.gameplay.impl.presentation.view.game.widgets.SubmittingContent
 import com.dev.memebattle.feature.gameplay.impl.presentation.view.game.widgets.VotingContent
@@ -186,5 +187,13 @@ fun GameplayGameScreen(
             visible = state.uiPhase == GameplayGameStore.UiPhase.RoundResult,
             result = state.roundResult,
         )
+
+        // Таймер раунда
+        if (state.uiPhase != GameplayGameStore.UiPhase.GameFinished && state.uiPhase != GameplayGameStore.UiPhase.Lobby) {
+            PhaseTimerHud(
+                phaseExpiresAt = infoState?.phaseExpiresAt,
+                modifier = Modifier.align(Alignment.TopCenter),
+            )
+        }
     }
 }

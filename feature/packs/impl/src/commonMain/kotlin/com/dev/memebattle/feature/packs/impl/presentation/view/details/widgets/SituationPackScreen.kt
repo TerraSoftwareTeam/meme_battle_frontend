@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.sp
 import com.dev.memebattle.core.domain.packs.model.SituationCard
 import com.dev.memebattle.core.domain.packs.model.SituationPack
 import com.dev.memebattle.core.localization.Res
+import com.dev.memebattle.core.localization.packs_details_cards
 import com.dev.memebattle.core.localization.packs_details_empty_cards
 import com.dev.memebattle.feature.packs.impl.presentation.view.shared.CardDeckSelector
 import com.dev.memebattle.feature.packs.impl.presentation.view.details.DeckTextSec
@@ -69,7 +70,7 @@ internal fun SituationPackScreen(pack: SituationPack, cards: List<SituationCard>
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("Карточки", color = DeckTextSec, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+                Text(stringResource(Res.string.packs_details_cards), color = DeckTextSec, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
                 Text("${cards.size}", color = DeckTextSec.copy(0.5f), fontSize = 12.sp)
             }
             Spacer(Modifier.height(8.dp))

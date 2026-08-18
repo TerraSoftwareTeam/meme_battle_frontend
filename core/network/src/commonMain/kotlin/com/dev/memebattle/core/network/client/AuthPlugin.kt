@@ -130,23 +130,22 @@ val AppAuthPlugin = createClientPlugin("AppAuthPlugin", ::AuthPluginConfig) {
             println("[AuthPlugin] Caught ResponseException with status: $statusCode for ${request.url}")
             
             if (statusCode == 401) {
-                println("[AuthPlugin] Got 401, clearing tokens and attempting refresh...")
+                println("[AuthPlugin] Got 401, attempting refresh or guest tokens...")
                 
                 val newTokens = mutex.withLock {
-                    // Очищаем текущий невалидный access token
-                    tokenStorage.clear()
-                    
                     val currentRefreshToken = tokenStorage.getRefreshToken()
                     if (!currentRefreshToken.isNullOrBlank()) {
                         println("[AuthPlugin] Attempting token refresh...")
                         refreshTokens(currentRefreshToken)?.also {
                             println("[AuthPlugin] Token refresh successful")
                         } ?: run {
-                            println("[AuthPlugin] Token refresh failed, trying guest tokens...")
+                            println("[AuthPlugin] Token refresh failed, clearing tokens and trying guest tokens...")
+                            tokenStorage.clear()
                             requestGuestTokensBody()
                         }
                     } else {
-                        println("[AuthPlugin] No refresh token, requesting guest tokens...")
+                        println("[AuthPlugin] No refresh token, clearing tokens and requesting guest tokens...")
+                        tokenStorage.clear()
                         requestGuestTokensBody()
                     }
                 }

@@ -37,6 +37,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.dev.memebattle.feature.gameplay.impl.presentation.store.players.GameplayPlayersStore
+import org.jetbrains.compose.resources.stringResource
+import com.dev.memebattle.core.localization.Res
+import com.dev.memebattle.core.localization.gameplay_lobby_title
+import com.dev.memebattle.core.localization.gameplay_lobby_subtitle
+import com.dev.memebattle.core.localization.gameplay_lobby_ready_label
+import com.dev.memebattle.core.localization.gameplay_lobby_min_players_hint
+import com.dev.memebattle.core.localization.gameplay_lobby_all_ready
+import com.dev.memebattle.core.localization.gameplay_lobby_waiting
+import com.dev.memebattle.core.localization.gameplay_lobby_btn_ready
+import com.dev.memebattle.core.localization.gameplay_lobby_btn_already_ready
 
 @Composable
 fun LobbyContent(
@@ -66,7 +76,7 @@ fun LobbyContent(
 
             // ── Заголовок ─────────────────────────────────────────────────────
             Text(
-                text = "Лобби",
+                text = stringResource(Res.string.gameplay_lobby_title),
                 style = MaterialTheme.typography.headlineMedium,
                 color = Color.White,
                 fontWeight = FontWeight.ExtraBold,
@@ -75,7 +85,7 @@ fun LobbyContent(
 
             Spacer(Modifier.height(4.dp))
             Text(
-                text = "Ожидание игроков…",
+                text = stringResource(Res.string.gameplay_lobby_subtitle),
                 style = MaterialTheme.typography.bodyMedium,
                 color = Color.White.copy(alpha = 0.4f),
             )
@@ -100,7 +110,8 @@ fun LobbyContent(
 
             // ── Кнопка готовности ─────────────────────────────────────────────
             GameActionButton(
-                label = if (amIReady) "Вы готовы" else "Я готов!",
+                label = if (amIReady) stringResource(Res.string.gameplay_lobby_btn_already_ready)
+                        else stringResource(Res.string.gameplay_lobby_btn_ready),
                 enabled = !amIReady,
                 isLoading = isSettingReady,
                 onClick = onToggleReady,
@@ -127,6 +138,11 @@ private fun ReadinessProgressCard(
         animationSpec = spring(stiffness = Spring.StiffnessLow),
         label = "readinessFraction",
     )
+
+    val labelReadyTitle  = stringResource(Res.string.gameplay_lobby_ready_label)
+    val labelWaitMin     = stringResource(Res.string.gameplay_lobby_min_players_hint)
+    val labelAllReady    = stringResource(Res.string.gameplay_lobby_all_ready)
+    val labelWaitOthers  = stringResource(Res.string.gameplay_lobby_waiting)
 
     Box(
         modifier = modifier
@@ -188,7 +204,7 @@ private fun ReadinessProgressCard(
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "Готовы к игре",
+                    text = labelReadyTitle,
                     style = MaterialTheme.typography.titleMedium,
                     color = Color.White,
                     fontWeight = FontWeight.SemiBold,
@@ -216,9 +232,9 @@ private fun ReadinessProgressCard(
                 }
                 Spacer(Modifier.height(6.dp))
                 Text(
-                    text = if (totalCount < 3) "Ожидание участников (мин. 3 игрока)"
-                           else if (fraction >= 1f) "Все готовы!"
-                           else "Ждём остальных…",
+                    text = if (totalCount < 3) labelWaitMin
+                           else if (fraction >= 1f) labelAllReady
+                           else labelWaitOthers,
                     style = MaterialTheme.typography.labelSmall,
                     color = if (fraction >= 1f && totalCount >= 3) Color(0xFF00C853) else Color.White.copy(alpha = 0.4f),
                 )

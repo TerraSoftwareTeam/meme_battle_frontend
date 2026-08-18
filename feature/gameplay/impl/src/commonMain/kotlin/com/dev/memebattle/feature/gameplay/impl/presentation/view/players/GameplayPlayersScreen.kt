@@ -36,6 +36,14 @@ import com.dev.memebattle.feature.gameplay.impl.presentation.store.game.Gameplay
 import com.dev.memebattle.feature.gameplay.impl.presentation.store.players.GameplayPlayersStore
 import com.dev.memebattle.feature.gameplay.impl.presentation.view.players.widgets.PlayerAvatar
 import com.dev.memebattle.feature.gameplay.impl.presentation.view.players.widgets.SubmissionPreviewDialog
+import com.dev.memebattle.core.localization.Res
+import com.dev.memebattle.core.localization.gameplay_players_me_badge
+import com.dev.memebattle.core.localization.gameplay_players_status_ready
+import com.dev.memebattle.core.localization.gameplay_players_status_submitted
+import com.dev.memebattle.core.localization.gameplay_players_status_voted
+import com.dev.memebattle.core.localization.gameplay_players_status_waiting
+import com.dev.memebattle.core.localization.gameplay_players_title
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun GameplayPlayersScreen(
@@ -77,7 +85,7 @@ fun GameplayPlayersScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
                 Text(
-                    text = "Игроки",
+                    text = stringResource(Res.string.gameplay_players_title),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     color = Color.White,
@@ -171,7 +179,7 @@ private fun PlayerRow(
             )
             if (player.isMe) {
                 Text(
-                    text = "вы",
+                    text = stringResource(Res.string.gameplay_players_me_badge),
                     style = MaterialTheme.typography.labelSmall,
                     color = Color(0xFF7C5DFA),
                 )
@@ -200,18 +208,27 @@ private fun PlayerStatusBadge(
     player: GameplayPlayersStore.PlayerUiModel,
     uiPhase: GameplayGameStore.UiPhase,
 ) {
-    val (text, color) = when (uiPhase) {
+    val text: String
+    val color: Color
+
+    when (uiPhase) {
         GameplayGameStore.UiPhase.Lobby -> {
-            if (player.isReady) "Готов" to Color(0xFF00C853)
-            else "Ждёт" to Color.White.copy(alpha = 0.35f)
+            text = if (player.isReady) stringResource(Res.string.gameplay_players_status_ready)
+                   else stringResource(Res.string.gameplay_players_status_waiting)
+            color = if (player.isReady) Color(0xFF00C853)
+                    else Color.White.copy(alpha = 0.35f)
         }
         GameplayGameStore.UiPhase.Submitting -> {
-            if (player.hasSubmitted) "Подал" to Color(0xFF7C5DFA)
-            else "..." to Color.White.copy(alpha = 0.25f)
+            text = if (player.hasSubmitted) stringResource(Res.string.gameplay_players_status_submitted)
+                   else "..."
+            color = if (player.hasSubmitted) Color(0xFF7C5DFA)
+                    else Color.White.copy(alpha = 0.25f)
         }
         GameplayGameStore.UiPhase.Voting -> {
-            if (player.hasVoted) "Голос" to Color(0xFF00BCD4)
-            else "..." to Color.White.copy(alpha = 0.25f)
+            text = if (player.hasVoted) stringResource(Res.string.gameplay_players_status_voted)
+                   else "..."
+            color = if (player.hasVoted) Color(0xFF00BCD4)
+                    else Color.White.copy(alpha = 0.25f)
         }
         else -> return
     }
