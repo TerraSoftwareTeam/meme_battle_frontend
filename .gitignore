@@ -1,9 +1,10 @@
-# Gradle
+# Gradle & Build outputs
 .gradle/
 build/
 **/build/
 .kotlin/
 kotlin-js-store/
+.gradle-test-kit/
 
 # IntelliJ IDEA / Android Studio
 .idea/
@@ -11,13 +12,22 @@ kotlin-js-store/
 *.ipr
 *.iws
 out/
+.vscode/
 
-# Local / Sensitive properties
+# Local & Environment properties
 local.properties
 secrets.properties
 .env
+.env.*
 *.keystore
 *.jks
+
+# One-off scripts & temporary tools
+refactor.py
+*.pyc
+__pycache__/
+*.tmp
+*.temp
 
 # Android specific
 *.apk
@@ -41,17 +51,21 @@ xcuserdata/
 *.xcworkspacedata
 *.xcuserstate
 
-# Node/JS (if any)
+# Node/JS
 node_modules/
 .yarn/
+package-lock.json
 
-# Log files
+# Logs & Memory Dumps
 *.log
+*.hprof
+hs_err_pid*.log
 
-# macOS
+# OS Junk
 .DS_Store
 .AppleDouble
 .LSOverride
+Thumbs.db
 
 # Backup files
 *~

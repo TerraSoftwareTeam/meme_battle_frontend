@@ -1,0 +1,9 @@
+services:
+  memebattle-web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: memebattle-web
+    ports:
+      - "8080:80"
+    restart: unless-stopped
