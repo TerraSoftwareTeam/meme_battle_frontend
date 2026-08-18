@@ -1,23 +1,15 @@
 # Stage 1: Build WasmJs web application
-FROM eclipse-temurin:21-jdk-alpine AS builder
+FROM eclipse-temurin:21-jdk AS builder
+
+# Install libatomic1 required by Node.js v25+ (used by Kotlin Wasm tooling)
+RUN apt-get update && apt-get install -y --no-install-recommends libatomic1 && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# Copy gradle wrapper and configuration for layer caching
-COPY gradle /app/gradle
-COPY gradlew /app/gradlew
-COPY gradle.properties /app/gradle.properties
-COPY settings.gradle.kts /app/settings.gradle.kts
-COPY build.gradle.kts /app/build.gradle.kts
-COPY build-logic /app/build-logic
+# Copy source code
+COPY . /app
 
 RUN chmod +x gradlew
-
-# Warm up gradle dependencies
-RUN ./gradlew :webApp:dependencies --no-daemon || true
-
-# Copy full source code
-COPY . /app
 
 # Build production WasmJs web distribution
 RUN ./gradlew :webApp:wasmJsBrowserDistribution --no-daemon
