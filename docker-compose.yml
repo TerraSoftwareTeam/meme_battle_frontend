@@ -1,9 +1,17 @@
+name: meme_battle_frontend
+
 services:
   memebattle-web:
     build:
       context: .
       dockerfile: Dockerfile
+    image: ${APP_IMAGE_NAME:-ghcr.io/terrasoftwareteam/meme_battle_frontend/web}:${APP_IMAGE_TAG:-latest}
     container_name: memebattle-web
-    ports:
-      - "8080:80"
     restart: unless-stopped
+    ports:
+      - "${APP_EXTERNAL_PORT:-8080}:80"
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost/"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
