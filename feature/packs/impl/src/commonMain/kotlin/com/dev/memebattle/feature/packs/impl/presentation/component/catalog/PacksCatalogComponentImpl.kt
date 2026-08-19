@@ -22,6 +22,10 @@ class PacksCatalogComponentImpl(
     private val onNavigateToCreate: () -> Unit,
     private val onNavigateToEdit: (packId: String, kind: String) -> Unit,
     private val onNavigateBack: () -> Unit,
+    /** Если задан (из диплинка) — авто-откроет экран деталей при старте */
+    private val initialOpenPackId: String? = null,
+    /** Тип пака для авто-открытия: "meme" или "situation" */
+    private val initialOpenPackKind: String? = null,
 ) : PacksCatalogComponent, ComponentContext by componentContext {
 
     private val scope = coroutineScope()
@@ -35,6 +39,11 @@ class PacksCatalogComponentImpl(
 
     init {
         store.accept(PacksCatalogStore.Intent.Init)
+        // Deep link: если пришли по ссылке /pack/{id} — сразу открываем детали
+        if (initialOpenPackId != null) {
+            val kind = if (initialOpenPackKind == "situation") "situation" else "meme"
+            onNavigateToDetails(initialOpenPackId, kind)
+        }
     }
 
     override fun onIntent(intent: PacksCatalogStore.Intent) {

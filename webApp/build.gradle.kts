@@ -23,6 +23,8 @@ kotlin {
                 implementation(projects.shared)
                 implementation(projects.host.root)
                 implementation(projects.core.navigation)
+                implementation(projects.feature.home.api)
+                implementation(projects.feature.packs.api)
                 
                 implementation(compose.runtime)
                 implementation(compose.ui)

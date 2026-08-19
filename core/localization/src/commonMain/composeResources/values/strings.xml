@@ -101,6 +101,7 @@
     <string name="gameplay_lobby_waiting">Waiting for others...</string>
     <string name="gameplay_lobby_all_ready">All ready!</string>
     <string name="gameplay_lobby_min_players_hint">Waiting for players (min. 3 players)</string>
+    <string name="gameplay_lobby_btn_share">Share Lobby</string>
 
     <!-- Gameplay Submitting -->
     <string name="gameplay_submitting_title">Select Card</string>

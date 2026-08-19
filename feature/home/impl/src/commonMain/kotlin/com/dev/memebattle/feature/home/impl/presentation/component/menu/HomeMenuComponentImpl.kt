@@ -23,6 +23,8 @@ class HomeMenuComponentImpl(
     private val onNavigateToCreateLobby: () -> Unit,
     private val onNavigateToStore: () -> Unit,
     private val onNavigateToGame: (String) -> Unit,
+    /** Если задан (из диплинка) — авто-откроет Join диалог при старте */
+    private val initialLobbyId: String? = null,
 ) : HomeMenuComponent, ComponentContext by componentContext {
     
     private val scope = coroutineScope()
@@ -40,6 +42,15 @@ class HomeMenuComponentImpl(
 
     @OptIn(ExperimentalCoroutinesApi::class)
     override val state: StateFlow<HomeMenuStore.State> = store.stateFlow(scope)
+
+    init {
+        // Deep link: если пришли по ссылке /lobby/{id} — сразу открываем диалог Join
+        if (initialLobbyId != null) {
+            // Сначала запускаем загрузку лобби (для отображения списка), потом показываем диалог
+            store.accept(HomeMenuStore.Intent.OnPlayClicked)
+            store.accept(HomeMenuStore.Intent.OnJoinLobbyClicked(initialLobbyId))
+        }
+    }
 
     override fun onIntent(intent: HomeMenuStore.Intent) = store.accept(intent)
 }

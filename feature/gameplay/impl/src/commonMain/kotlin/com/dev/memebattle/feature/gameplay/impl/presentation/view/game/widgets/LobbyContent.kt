@@ -3,11 +3,13 @@ package com.dev.memebattle.feature.gameplay.impl.presentation.view.game.widgets
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,11 +19,17 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -36,20 +44,23 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.dev.memebattle.core.localization.Res
+import com.dev.memebattle.core.localization.gameplay_lobby_all_ready
+import com.dev.memebattle.core.localization.gameplay_lobby_btn_already_ready
+import com.dev.memebattle.core.localization.gameplay_lobby_btn_ready
+import com.dev.memebattle.core.localization.gameplay_lobby_btn_share
+import com.dev.memebattle.core.localization.gameplay_lobby_min_players_hint
+import com.dev.memebattle.core.localization.gameplay_lobby_ready_label
+import com.dev.memebattle.core.localization.gameplay_lobby_subtitle
+import com.dev.memebattle.core.localization.gameplay_lobby_title
+import com.dev.memebattle.core.localization.gameplay_lobby_waiting
+import com.dev.memebattle.core.ui.share.rememberLinkSharer
 import com.dev.memebattle.feature.gameplay.impl.presentation.store.players.GameplayPlayersStore
 import org.jetbrains.compose.resources.stringResource
-import com.dev.memebattle.core.localization.Res
-import com.dev.memebattle.core.localization.gameplay_lobby_title
-import com.dev.memebattle.core.localization.gameplay_lobby_subtitle
-import com.dev.memebattle.core.localization.gameplay_lobby_ready_label
-import com.dev.memebattle.core.localization.gameplay_lobby_min_players_hint
-import com.dev.memebattle.core.localization.gameplay_lobby_all_ready
-import com.dev.memebattle.core.localization.gameplay_lobby_waiting
-import com.dev.memebattle.core.localization.gameplay_lobby_btn_ready
-import com.dev.memebattle.core.localization.gameplay_lobby_btn_already_ready
 
 @Composable
 fun LobbyContent(
+    gameId: String = "",
     players: List<GameplayPlayersStore.PlayerUiModel>,
     readyCount: Int,
     amIReady: Boolean,
@@ -59,6 +70,7 @@ fun LobbyContent(
 ) {
     val totalPlayers = players.size
     val readyFraction = if (totalPlayers == 0) 0f else readyCount.toFloat() / totalPlayers
+    val shareLink = rememberLinkSharer()
 
     Box(
         modifier = modifier
@@ -105,6 +117,40 @@ fun LobbyContent(
                 color = Color.White.copy(alpha = 0.07f),
                 modifier = Modifier.widthIn(max = 480.dp).fillMaxWidth(),
             )
+
+            Spacer(Modifier.weight(1f))
+
+            // ── Кнопка "Поделиться лобби" ──────────────────────────────────────
+            if (gameId.isNotBlank()) {
+                OutlinedButton(
+                    onClick = {
+                        val link = "https://play.meme.skyfly.hackclub.app/lobby/$gameId"
+                        shareLink(link, "Присоединяйся к лобби MemeBattle!")
+                    },
+                    shape = RoundedCornerShape(14.dp),
+                    border = BorderStroke(1.dp, Color(0xFF7C5DFA).copy(alpha = 0.5f)),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        containerColor = Color(0xFF7C5DFA).copy(alpha = 0.15f),
+                        contentColor = Color.White
+                    ),
+                    contentPadding = PaddingValues(horizontal = 24.dp, vertical = 12.dp),
+                    modifier = Modifier.widthIn(max = 480.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Share,
+                        contentDescription = null,
+                        tint = Color(0xFF9D85FF),
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        text = stringResource(Res.string.gameplay_lobby_btn_share),
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color.White
+                    )
+                }
+            }
 
             Spacer(Modifier.weight(1f))
 

@@ -13,7 +13,7 @@ import org.koin.mp.KoinPlatform.getKoin
 
 class HomeFeatureEntryImpl : TypedFeatureEntry<HomeComponent, HomeRoute>(), HomeFeatureEntry {
     override val routeClass = HomeRoute::class
-    override val baseRoute: HomeRoute = HomeRoute
+    override val baseRoute: HomeRoute = HomeRoute()
 
     override fun createTyped(route: HomeRoute, componentContext: ComponentContext): HomeComponent {
         val koin = getKoin()
@@ -21,7 +21,8 @@ class HomeFeatureEntryImpl : TypedFeatureEntry<HomeComponent, HomeRoute>(), Home
             componentContext = componentContext,
             storeFactory = koin.get(),
             gameSocketService = koin.get(),
-            gameApiService = koin.get()
+            gameApiService = koin.get(),
+            initialLobbyId = route.openLobbyId,
         )
     }
 

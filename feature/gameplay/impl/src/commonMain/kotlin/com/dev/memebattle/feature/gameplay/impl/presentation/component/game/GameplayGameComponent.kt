@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 
 interface GameplayGameComponent {
+    val gameId: String
     val state: StateFlow<GameplayGameStore.State>
     val effects: SharedFlow<GameplayGameStore.Effect>
     fun onIntent(intent: GameplayGameStore.Intent)

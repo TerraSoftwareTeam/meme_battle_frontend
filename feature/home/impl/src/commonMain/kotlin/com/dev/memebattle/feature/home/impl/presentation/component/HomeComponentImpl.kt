@@ -31,7 +31,9 @@ class HomeComponentImpl(
     componentContext: ComponentContext,
     private val storeFactory: StoreFactory,
     private val gameSocketService: GameSocketService,
-    private val gameApiService: GameApiService
+    private val gameApiService: GameApiService,
+    /** Если задан (из диплинка) — при первом запуске авто-откроет диалог Join для этого лобби */
+    private val initialLobbyId: String? = null,
 ) : HomeComponent, ComponentContext by componentContext {
 
     private val _output = MutableSharedFlow<NavigationOutput>(extraBufferCapacity = 64)
@@ -70,11 +72,12 @@ class HomeComponentImpl(
                         storeFactory = storeFactory,
                         gameSocketService = gameSocketService,
                         gameApiService = gameApiService,
+                        initialLobbyId = initialLobbyId,
                         onNavigateToCreateLobby = {
                             panelsNavigation.activateDetails(DetailsConfig.CreateLobby)
                         },
                         onNavigateToStore = {
-                            _output.tryEmit(NavigationOutput.NavigateTo(PacksRoute))
+                            _output.tryEmit(NavigationOutput.NavigateTo(PacksRoute()))
                         },
                         onNavigateToGame = { gameId ->
                             _output.tryEmit(NavigationOutput.NavigateTo(GameplayRoute(gameId = gameId)))

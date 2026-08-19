@@ -5,6 +5,9 @@ import com.arkivanov.essenty.backhandler.BackDispatcher
 import com.arkivanov.essenty.lifecycle.LifecycleRegistry
 import com.arkivanov.essenty.lifecycle.resume
 import com.arkivanov.essenty.lifecycle.stop
+import com.dev.memebattle.core.navigation.route.AppRoute
+import com.dev.memebattle.feature.home.api.route.HomeRoute
+import com.dev.memebattle.feature.packs.api.route.PacksRoute
 import com.dev.memebattle.host.root.presentation.component.RootComponentImpl
 import com.dev.memebattle.host.root.presentation.view.RootScreen
 import kotlinx.browser.document
@@ -15,6 +18,38 @@ import org.w3c.dom.events.Event
 
 
 private fun isDocumentVisible(): Boolean = js("document.visibilityState === 'visible'")
+
+/**
+ * Парсит текущий URL браузера и возвращает соответствующий AppRoute.
+ * - /lobby/{id}           → HomeRoute(openLobbyId = id)
+ * - /pack/{id}?kind=meme  → PacksRoute(openPackId = id, openPackKind = kind)
+ * - всё остальное         → HomeRoute()
+ */
+private fun parseDeepLink(pathname: String, search: String): AppRoute {
+    val cleanPath = pathname.trimEnd('/')
+    return when {
+        cleanPath.startsWith("/lobby/") -> {
+            val lobbyId = cleanPath.removePrefix("/lobby/").trim()
+            if (lobbyId.isNotEmpty()) HomeRoute(openLobbyId = lobbyId) else HomeRoute()
+        }
+        cleanPath.startsWith("/pack/") -> {
+            val packId = cleanPath.removePrefix("/pack/").trim()
+            val kind = parseQueryParam(search, "kind") ?: "meme"
+            if (packId.isNotEmpty()) PacksRoute(openPackId = packId, openPackKind = kind) else PacksRoute()
+        }
+        else -> HomeRoute()
+    }
+}
+
+/** Минимальный парсер query-строки — достаёт значение одного параметра */
+private fun parseQueryParam(search: String, key: String): String? {
+    if (search.isEmpty()) return null
+    val query = if (search.startsWith("?")) search.drop(1) else search
+    return query.split("&")
+        .map { it.split("=", limit = 2) }
+        .firstOrNull { it.size == 2 && it[0] == key }
+        ?.get(1)
+}
 
 @OptIn(ExperimentalComposeUiApi::class)
 fun main() {
@@ -54,11 +89,19 @@ fun main() {
         }
     })
 
+    // Парсим диплинк из текущего URL перед созданием компонента
+    val initialRoute = parseDeepLink(
+        pathname = window.location.pathname,
+        search = window.location.search
+    )
+    println("Deep link parsed: $initialRoute")
+
     val rootComponent = RootComponentImpl(
         componentContext = DefaultComponentContext(
             lifecycle = lifecycle,
             backHandler = backDispatcher,
-        )
+        ),
+        initialRoute = initialRoute,
     )
 
     ComposeViewport(document.body!!) {
