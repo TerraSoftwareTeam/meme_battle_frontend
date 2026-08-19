@@ -22,7 +22,7 @@ import com.dev.memebattle.feature.packs.impl.presentation.view.details.widgets.M
 import com.dev.memebattle.feature.packs.impl.presentation.view.details.widgets.SituationCardFace
 import com.dev.memebattle.feature.packs.impl.presentation.view.details.widgets.LargeCardPreview
 import com.dev.memebattle.feature.packs.impl.presentation.view.details.widgets.LargeSituationPreview
-import com.dev.memebattle.feature.packs.impl.presentation.view.shared.CardDeckSelector
+import com.dev.memebattle.feature.packs.impl.presentation.view.shared.StaticAdaptiveCardGrid
 import com.dev.memebattle.feature.packs.impl.presentation.view.details.SituationAccents
 import io.github.vinceglb.filekit.compose.rememberFilePickerLauncher
 import io.github.vinceglb.filekit.core.PickerMode
@@ -120,7 +120,7 @@ fun PacksEditView(
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .height(280.dp)
+                                    .height(360.dp)
                                     .padding(vertical = 12.dp),
                                 contentAlignment = Alignment.Center
                             ) {
@@ -155,7 +155,7 @@ fun PacksEditView(
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Text(stringResource(Res.string.packs_details_cards), color = TextSecondary, fontSize = 14.sp)
+                                    Text(stringResource(Res.string.packs_details_cards), color = TextSecondary, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
                                     Button(
                                         onClick = {
                                             if (state.kind == "meme") {
@@ -181,16 +181,16 @@ fun PacksEditView(
                                     }
                                 }
 
-                                CardDeckSelector(
-                                    totalCount = totalCards,
-                                    selectedIdx = safeIdx,
-                                    onSelect = { deckSelectedIdx = it },
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(140.dp)
-                                        .padding(horizontal = 8.dp),
-                                ) { idx, isSelected ->
-                                    if (state.kind == "meme") {
+                                if (state.kind == "meme") {
+                                    // Build a unified index list: existing cards + new files
+                                    val memeIndices = (0 until totalCards).toList()
+                                    StaticAdaptiveCardGrid(
+                                        cards = memeIndices,
+                                        selectedIdx = safeIdx,
+                                        onSelect = { deckSelectedIdx = it },
+                                        modifier = Modifier
+                                            .fillMaxWidth(),
+                                    ) { idx, isSelected ->
                                         if (idx < state.memeCards.size) {
                                             MemeCardFace(model = state.memeCards[idx].mediaUrl, isSelected = isSelected)
                                         } else {
@@ -199,7 +199,16 @@ fun PacksEditView(
                                             LaunchedEffect(file) { bytes = file.readBytes() }
                                             MemeCardFace(model = bytes, isSelected = isSelected)
                                         }
-                                    } else {
+                                    }
+                                } else {
+                                    val situationIndices = (0 until totalCards).toList()
+                                    StaticAdaptiveCardGrid(
+                                        cards = situationIndices,
+                                        selectedIdx = safeIdx,
+                                        onSelect = { deckSelectedIdx = it },
+                                        modifier = Modifier
+                                            .fillMaxWidth(),
+                                    ) { idx, isSelected ->
                                         if (idx < state.situationCards.size) {
                                             SituationCardFace(
                                                 text = state.situationCards[idx].promptText,
@@ -218,7 +227,7 @@ fun PacksEditView(
                                 }
                             }
                         }
-                        item { Spacer(modifier = Modifier.height(8.dp)) }
+
                     }
 
                     // Form Fields Section
