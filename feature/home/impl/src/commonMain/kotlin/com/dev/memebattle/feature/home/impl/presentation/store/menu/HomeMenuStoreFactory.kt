@@ -117,6 +117,7 @@ class HomeMenuStoreFactory(
                     val lobbies = gamesResult.data.games.map { dto ->
                         LobbyEvent.LobbyCreated(
                             id = dto.id,
+                            name = dto.name,
                             hostId = dto.host_id,
                             mode = dto.mode.name.lowercase(),
                             maxRounds = dto.max_rounds,

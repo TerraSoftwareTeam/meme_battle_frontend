@@ -10,6 +10,7 @@ sealed interface LobbyEvent {
     @SerialName("lobby_created")
     data class LobbyCreated(
         @SerialName("id") val id: String,
+        @SerialName("name") val name: String? = null,
         @SerialName("host_id") val hostId: String,
         @SerialName("mode") val mode: String,
         @SerialName("max_rounds") val maxRounds: Int,

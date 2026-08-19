@@ -14,6 +14,8 @@ data class UpdateGameRequest(
   val max_rounds: Int? = null,
   @SerialName("mode")
   val mode: GameMode? = null,
+  @SerialName("name")
+  val name: String? = null,
   @SerialName("selected_meme_pack_ids")
   val selected_meme_pack_ids: List<String>? = null,
   @SerialName("selected_situation_pack_ids")

@@ -16,6 +16,7 @@ interface CreateLobbyStore : Store<Intent, State, Label> {
         data class SetMode(val mode: GameMode) : Intent
         data class SetMaxRounds(val rounds: Int) : Intent
         data class SetHandSize(val size: Int) : Intent
+        data class UpdateLobbyNameInput(val name: String) : Intent
         data class UpdateHandleInput(val handle: String) : Intent
         data object Create : Intent
     }
@@ -32,11 +33,12 @@ interface CreateLobbyStore : Store<Intent, State, Label> {
         val mode: GameMode = GameMode.SITUATION_TO_MEME,
         val maxRounds: Int = 5,
         val handSize: Int = 5,
+        val lobbyNameInput: String = "",
         val handleInput: String = "",
         val error: String? = null
     ) {
         val isCreateEnabled: Boolean
-            get() = selectedMemePackIds.isNotEmpty() && selectedSituationPackIds.isNotEmpty() && !isLoading
+            get() = lobbyNameInput.isNotBlank() && selectedMemePackIds.isNotEmpty() && selectedSituationPackIds.isNotEmpty() && !isLoading
     }
 
     sealed interface Label {

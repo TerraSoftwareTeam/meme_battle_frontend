@@ -10,6 +10,7 @@ import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpStatusCode
 import io.ktor.http.isSuccess
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -123,23 +124,22 @@ val AppAuthPlugin = createClientPlugin("AppAuthPlugin", ::AuthPluginConfig) {
             request.headers.append(HttpHeaders.Authorization, "Bearer $accessToken")
         }
 
-        val call = try {
-            proceed(request)
-        } catch (e: io.ktor.client.plugins.ResponseException) {
-            val statusCode = e.response.status.value
-            println("[AuthPlugin] Caught ResponseException with status: $statusCode for ${request.url}")
-            
-            if (statusCode == 401) {
-                println("[AuthPlugin] Got 401, attempting refresh or guest tokens...")
-                
-                val newTokens = mutex.withLock {
+        var call = proceed(request)
+        if (call.response.status == HttpStatusCode.Unauthorized) {
+            println("[AuthPlugin] Got 401 Unauthorized for ${request.url}, attempting refresh or guest tokens...")
+            val newTokens = mutex.withLock {
+                val currentToken = tokenStorage.getAccessToken()
+                if (!currentToken.isNullOrBlank() && currentToken != accessToken) {
+                    println("[AuthPlugin] Token was already updated by another request")
+                    LocalAuthBody(accessToken = currentToken, refreshToken = tokenStorage.getRefreshToken() ?: "")
+                } else {
                     val currentRefreshToken = tokenStorage.getRefreshToken()
                     if (!currentRefreshToken.isNullOrBlank()) {
                         println("[AuthPlugin] Attempting token refresh...")
                         refreshTokens(currentRefreshToken)?.also {
                             println("[AuthPlugin] Token refresh successful")
                         } ?: run {
-                            println("[AuthPlugin] Token refresh failed, clearing tokens and trying guest tokens...")
+                            println("[AuthPlugin] Token refresh failed, clearing tokens and requesting guest tokens...")
                             tokenStorage.clear()
                             requestGuestTokensBody()
                         }
@@ -149,18 +149,16 @@ val AppAuthPlugin = createClientPlugin("AppAuthPlugin", ::AuthPluginConfig) {
                         requestGuestTokensBody()
                     }
                 }
-
-                if (newTokens == null) {
-                    println("[AuthPlugin] All token methods failed")
-                    throw e
-                } else {
-                    println("[AuthPlugin] Got new token, retrying request...")
-                    request.headers.remove(HttpHeaders.Authorization)
-                    request.headers.append(HttpHeaders.Authorization, "Bearer ${newTokens.accessToken}")
-                    return@on proceed(request)
-                }
             }
-            throw e
+
+            if (newTokens != null) {
+                println("[AuthPlugin] Got new token, retrying request...")
+                request.headers.remove(HttpHeaders.Authorization)
+                request.headers.append(HttpHeaders.Authorization, "Bearer ${newTokens.accessToken}")
+                call = proceed(request)
+            } else {
+                println("[AuthPlugin] All token recovery methods failed")
+            }
         }
 
         call

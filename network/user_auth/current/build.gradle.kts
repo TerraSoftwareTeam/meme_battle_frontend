@@ -1,4 +1,7 @@
-plugins { id("kmp.dev.library") }
+plugins {
+    id("kmp.dev.library")
+    kotlin("plugin.serialization")
+}
 kotlin {
     androidLibrary {
         namespace = "com.dev.memebattle.network.user_auth.current"

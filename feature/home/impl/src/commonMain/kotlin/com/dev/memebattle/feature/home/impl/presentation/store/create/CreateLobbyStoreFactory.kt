@@ -44,6 +44,7 @@ class CreateLobbyStoreFactory(
         data class SetMode(val mode: GameMode) : Msg
         data class SetMaxRounds(val rounds: Int) : Msg
         data class SetHandSize(val size: Int) : Msg
+        data class UpdateLobbyNameInput(val name: String) : Msg
         data class UpdateHandleInput(val handle: String) : Msg
     }
 
@@ -89,6 +90,7 @@ class CreateLobbyStoreFactory(
                 is CreateLobbyStore.Intent.SetMode -> dispatch(Msg.SetMode(intent.mode))
                 is CreateLobbyStore.Intent.SetMaxRounds -> dispatch(Msg.SetMaxRounds(intent.rounds))
                 is CreateLobbyStore.Intent.SetHandSize -> dispatch(Msg.SetHandSize(intent.size))
+                is CreateLobbyStore.Intent.UpdateLobbyNameInput -> dispatch(Msg.UpdateLobbyNameInput(intent.name))
                 is CreateLobbyStore.Intent.UpdateHandleInput -> dispatch(Msg.UpdateHandleInput(intent.handle))
                 CreateLobbyStore.Intent.Create -> createGame(state())
             }
@@ -101,11 +103,14 @@ class CreateLobbyStoreFactory(
                 dispatch(Msg.SetLoading(true))
                 dispatch(Msg.SetError(null))
 
+                val lobbyName = state.lobbyNameInput.trim()
+                val handleInput = state.handleInput.trim().takeIf { it.isNotEmpty() }
                 val request = CreateGameRequest(
                     hand_size = state.handSize,
-                    handle = state.handleInput.trim().takeIf { it.isNotEmpty() },
+                    handle = handleInput,
                     max_rounds = state.maxRounds,
                     mode = state.mode,
+                    name = lobbyName,
                     selected_meme_pack_ids = state.selectedMemePackIds.toList(),
                     selected_situation_pack_ids = state.selectedSituationPackIds.toList()
                 )
@@ -148,6 +153,7 @@ class CreateLobbyStoreFactory(
                 is Msg.SetMode -> copy(mode = msg.mode)
                 is Msg.SetMaxRounds -> copy(maxRounds = msg.rounds)
                 is Msg.SetHandSize -> copy(handSize = msg.size)
+                is Msg.UpdateLobbyNameInput -> copy(lobbyNameInput = msg.name)
                 is Msg.UpdateHandleInput -> copy(handleInput = msg.handle)
             }
     }

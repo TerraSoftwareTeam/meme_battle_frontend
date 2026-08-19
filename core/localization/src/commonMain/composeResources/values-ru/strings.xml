@@ -49,6 +49,8 @@
     <!-- Create Lobby -->
     <string name="lobby_create_title">Создать лобби</string>
     <string name="lobby_create_close">Закрыть</string>
+    <string name="lobby_create_name_label">Название лобби</string>
+    <string name="lobby_create_name_hint">Например: Веселый вечер</string>
     <string name="lobby_create_select_meme_packs">1. Выберите паки мемов</string>
     <string name="lobby_create_select_situation_packs">2. Выберите паки ситуаций</string>
     <string name="lobby_create_game_settings">3. Настройки игры</string>

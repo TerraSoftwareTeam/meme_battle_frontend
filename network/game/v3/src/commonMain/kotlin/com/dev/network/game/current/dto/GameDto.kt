@@ -11,6 +11,8 @@ data class GameDto(
   val id: String,
   @SerialName("mode")
   val mode: GameMode,
+  @SerialName("name")
+  val name: String? = null,
   @SerialName("status")
   val status: GameStatus,
   @SerialName("version")

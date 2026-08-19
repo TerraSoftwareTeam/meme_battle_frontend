@@ -425,8 +425,9 @@ fun LobbiesWidget(
                                     ) {
                                         // Info block
                                         Column(modifier = Modifier.weight(1f)) {
+                                            val titleText = if (!lobby.name.isNullOrBlank()) lobby.name!! else stringResource(Res.string.home_lobbies_item_title, lobby.id.take(8))
                                             Text(
-                                                text = stringResource(Res.string.home_lobbies_item_title, lobby.id.take(8)),
+                                                text = titleText,
                                                 color = Color.White,
                                                 fontWeight = FontWeight.Bold,
                                                 fontSize = 15.sp

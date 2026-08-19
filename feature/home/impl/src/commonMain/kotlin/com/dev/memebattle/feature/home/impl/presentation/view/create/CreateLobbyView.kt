@@ -41,6 +41,8 @@ import com.dev.memebattle.core.localization.lobby_create_mode_situation_to_meme
 import com.dev.memebattle.core.localization.lobby_create_mode_meme_to_situation
 import com.dev.memebattle.core.localization.lobby_create_rounds_label
 import com.dev.memebattle.core.localization.lobby_create_hand_size_label
+import com.dev.memebattle.core.localization.lobby_create_name_label
+import com.dev.memebattle.core.localization.lobby_create_name_hint
 import com.dev.memebattle.core.localization.lobby_create_nickname_label
 import com.dev.memebattle.core.localization.lobby_create_nickname_hint
 import com.dev.memebattle.core.localization.lobby_create_submit
@@ -328,6 +330,26 @@ fun CreateLobbyView(
             )
 
             Spacer(modifier = Modifier.height(16.dp))
+
+            OutlinedTextField(
+                value = state.lobbyNameInput,
+                onValueChange = { component.updateLobbyName(it) },
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text(stringResource(Res.string.lobby_create_name_label)) },
+                placeholder = { Text(stringResource(Res.string.lobby_create_name_hint), color = Color.White.copy(alpha = 0.3f)) },
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Color(0xFF7C5DFA),
+                    unfocusedBorderColor = Color(0xFF3B2F5E),
+                    focusedLabelColor = Color(0xFF7C5DFA),
+                    unfocusedLabelColor = Color(0xFF887A9E),
+                    focusedTextColor = Color.White,
+                    unfocusedTextColor = Color.White,
+                    cursorColor = Color(0xFF7C5DFA),
+                ),
+                shape = RoundedCornerShape(12.dp)
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
 
             OutlinedTextField(
                 value = state.handleInput,

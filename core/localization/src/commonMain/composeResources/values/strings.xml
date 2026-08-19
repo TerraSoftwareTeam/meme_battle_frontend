@@ -47,6 +47,8 @@
     <!-- Create Lobby -->
     <string name="lobby_create_title">Create Lobby</string>
     <string name="lobby_create_close">Close</string>
+    <string name="lobby_create_name_label">Lobby Name</string>
+    <string name="lobby_create_name_hint">e.g. Fun Evening</string>
     <string name="lobby_create_select_meme_packs">1. Select Meme Packs</string>
     <string name="lobby_create_select_situation_packs">2. Select Situation Packs</string>
     <string name="lobby_create_game_settings">3. Game Settings</string>

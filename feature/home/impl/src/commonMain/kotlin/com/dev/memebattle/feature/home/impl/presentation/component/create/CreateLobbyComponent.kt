@@ -12,6 +12,7 @@ interface CreateLobbyComponent {
     fun setMode(mode: GameMode)
     fun setMaxRounds(rounds: Int)
     fun setHandSize(size: Int)
+    fun updateLobbyName(name: String)
     fun updateHandle(handle: String)
     fun createLobby()
     

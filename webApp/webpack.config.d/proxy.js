@@ -19,7 +19,7 @@ config.devServer.proxy = [
     },
     {
         context: ['/api-proxy'],
-        target: 'https://meme.skyfly.hackclub.app',
+        target: 'https://api.meme.skyfly.hackclub.app',
         changeOrigin: true,
         secure: true,
         pathRewrite: { '^/api-proxy': '' },

@@ -19,6 +19,8 @@ data class ActiveGameDto(
   val max_rounds: Int,
   @SerialName("mode")
   val mode: GameMode,
+  @SerialName("name")
+  val name: String? = null,
   @SerialName("players_count")
   val players_count: Int,
 )

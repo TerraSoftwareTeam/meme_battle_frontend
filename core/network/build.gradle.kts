@@ -17,7 +17,7 @@ buildkonfig {
     packageName = "com.dev.memebattle.core.network"
     exposeObjectWithName = "BuildKonfig"
     defaultConfigs {
-        buildConfigField(STRING, "API_BASE_URL", envProperties.getProperty("API_BASE_URL") ?: "https://meme.skyfly.hackclub.app")
+        buildConfigField(STRING, "API_BASE_URL", envProperties.getProperty("API_BASE_URL") ?: "https://api.meme.skyfly.hackclub.app")
         buildConfigField(STRING, "WS_BASE_URL", envProperties.getProperty("WS_BASE_URL") ?: "wss://realtime.meme.skyfly.hackclub.app")
     }
 }
