@@ -16,7 +16,8 @@ import org.koin.core.component.get
 class CreateLobbyComponentImpl(
     componentContext: ComponentContext,
     private val onCloseClicked: () -> Unit,
-    private val onGameCreatedCallback: (String) -> Unit
+    private val onGameCreatedCallback: (String) -> Unit,
+    private val onGoToStoreClicked: () -> Unit = {}
 ) : CreateLobbyComponent, ComponentContext by componentContext, KoinComponent {
 
     private val store = instanceKeeper.getStore {
@@ -43,6 +44,10 @@ class CreateLobbyComponentImpl(
 
     override fun onClose() {
         onCloseClicked()
+    }
+
+    override fun onGoToStore() {
+        onGoToStoreClicked()
     }
 
     override fun onGameCreated(gameId: String) {

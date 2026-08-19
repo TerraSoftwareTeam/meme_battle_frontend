@@ -17,4 +17,5 @@ interface CreateLobbyComponent {
     
     fun onClose()
     fun onGameCreated(gameId: String)
+    fun onGoToStore()
 }

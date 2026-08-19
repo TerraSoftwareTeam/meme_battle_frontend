@@ -94,6 +94,10 @@ class HomeComponentImpl(
                         },
                         onGameCreatedCallback = { gameId ->
                             _output.tryEmit(NavigationOutput.NavigateTo(GameplayRoute(gameId = gameId)))
+                        },
+                        onGoToStoreClicked = {
+                            panelsNavigation.dismissDetails()
+                            _output.tryEmit(NavigationOutput.NavigateTo(PacksRoute()))
                         }
                     )
                 }

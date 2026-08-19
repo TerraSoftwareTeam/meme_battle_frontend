@@ -60,6 +60,9 @@
     <string name="lobby_create_nickname_label">Ваш никнейм</string>
     <string name="lobby_create_nickname_hint">Будет виден другим игрокам</string>
     <string name="lobby_create_submit">Создать и играть</string>
+    <string name="lobby_create_no_favorite_meme_packs">У вас нет избранных паков мемов.\nДобавьте паки из магазина, чтобы использовать их в игре.</string>
+    <string name="lobby_create_no_favorite_situation_packs">У вас нет избранных паков ситуаций.\nДобавьте паки из магазина, чтобы использовать их в игре.</string>
+    <string name="lobby_create_btn_go_to_store">Перейти в магазин</string>
 
     <!-- Gameplay Info panel -->
     <string name="gameplay_info_title">Meme Battle</string>

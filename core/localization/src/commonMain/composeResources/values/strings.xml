@@ -58,6 +58,9 @@
     <string name="lobby_create_nickname_label">Your nickname</string>
     <string name="lobby_create_nickname_hint">Visible to other players</string>
     <string name="lobby_create_submit">Create and Play</string>
+    <string name="lobby_create_no_favorite_meme_packs">You have no favorite meme packs.\nAdd packs from the store to use them in the game.</string>
+    <string name="lobby_create_no_favorite_situation_packs">You have no favorite situation packs.\nAdd packs from the store to use them in the game.</string>
+    <string name="lobby_create_btn_go_to_store">Go to Store</string>
 
     <!-- Gameplay Info -->
     <string name="gameplay_info_title">Meme Battle</string>

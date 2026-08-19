@@ -45,6 +45,13 @@ import com.dev.memebattle.core.localization.lobby_create_nickname_label
 import com.dev.memebattle.core.localization.lobby_create_nickname_hint
 import com.dev.memebattle.core.localization.lobby_create_submit
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.ui.text.style.TextAlign
+import com.dev.memebattle.core.localization.lobby_create_no_favorite_meme_packs
+import com.dev.memebattle.core.localization.lobby_create_no_favorite_situation_packs
+import com.dev.memebattle.core.localization.lobby_create_btn_go_to_store
+
 @Composable
 fun CreateLobbyView(
     component: CreateLobbyComponent,
@@ -95,21 +102,35 @@ fun CreateLobbyView(
             )
             Spacer(modifier = Modifier.height(8.dp))
 
-            LazyVerticalGrid(
-                columns = GridCells.Adaptive(minSize = 140.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(max = 1200.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                userScrollEnabled = false
-            ) {
-                // Show skeletons while loading
-                if (state.isPacksLoading && state.availableMemePacks.isEmpty()) {
+            if (state.isPacksLoading && state.availableMemePacks.isEmpty()) {
+                LazyVerticalGrid(
+                    columns = GridCells.Adaptive(minSize = 140.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 1200.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    userScrollEnabled = false
+                ) {
                     items(state.likedMemePackCount.coerceAtLeast(3)) {
                         PackCardSkeleton()
                     }
-                } else {
+                }
+            } else if (state.availableMemePacks.isEmpty()) {
+                EmptyFavoritePacksCard(
+                    message = stringResource(Res.string.lobby_create_no_favorite_meme_packs),
+                    onGoToStore = { component.onGoToStore() }
+                )
+            } else {
+                LazyVerticalGrid(
+                    columns = GridCells.Adaptive(minSize = 140.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 1200.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    userScrollEnabled = false
+                ) {
                     items(state.availableMemePacks) { pack ->
                         val isSelected = state.selectedMemePackIds.contains(pack.id)
                         SelectablePackCard(
@@ -138,21 +159,35 @@ fun CreateLobbyView(
             )
             Spacer(modifier = Modifier.height(8.dp))
 
-            LazyVerticalGrid(
-                columns = GridCells.Adaptive(minSize = 140.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(max = 1200.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                userScrollEnabled = false
-            ) {
-                // Show skeletons while loading
-                if (state.isPacksLoading && state.availableSituationPacks.isEmpty()) {
+            if (state.isPacksLoading && state.availableSituationPacks.isEmpty()) {
+                LazyVerticalGrid(
+                    columns = GridCells.Adaptive(minSize = 140.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 1200.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    userScrollEnabled = false
+                ) {
                     items(state.likedSituationPackCount.coerceAtLeast(3)) {
                         PackCardSkeleton()
                     }
-                } else {
+                }
+            } else if (state.availableSituationPacks.isEmpty()) {
+                EmptyFavoritePacksCard(
+                    message = stringResource(Res.string.lobby_create_no_favorite_situation_packs),
+                    onGoToStore = { component.onGoToStore() }
+                )
+            } else {
+                LazyVerticalGrid(
+                    columns = GridCells.Adaptive(minSize = 140.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 1200.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    userScrollEnabled = false
+                ) {
                     items(state.availableSituationPacks) { pack ->
                         val isSelected = state.selectedSituationPackIds.contains(pack.id)
                         SelectablePackCard(
@@ -441,6 +476,74 @@ fun SelectablePackCard(
                     .size(28.dp)
                     .background(Color.Black.copy(alpha = 0.5f), shape = RoundedCornerShape(14.dp))
             )
+        }
+    }
+}
+
+@Composable
+private fun EmptyFavoritePacksCard(
+    message: String,
+    onGoToStore: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        color = Color(0xFF2A1F44).copy(alpha = 0.6f),
+        border = BorderStroke(1.dp, Color(0xFF3B2F5E))
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Color(0xFF7C5DFA).copy(alpha = 0.15f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.ShoppingCart,
+                    contentDescription = null,
+                    tint = Color(0xFF7C5DFA),
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(
+                text = message,
+                color = Color(0xFFB0A2C7),
+                fontSize = 14.sp,
+                textAlign = TextAlign.Center,
+                lineHeight = 20.sp
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(
+                onClick = onGoToStore,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF7C5DFA)
+                ),
+                shape = RoundedCornerShape(12.dp),
+                contentPadding = PaddingValues(horizontal = 20.dp, vertical = 10.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.ShoppingCart,
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = stringResource(Res.string.lobby_create_btn_go_to_store),
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color.White
+                )
+            }
         }
     }
 }
