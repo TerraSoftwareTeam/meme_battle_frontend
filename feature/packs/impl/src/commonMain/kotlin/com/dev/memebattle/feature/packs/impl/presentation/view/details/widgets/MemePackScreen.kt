@@ -29,7 +29,7 @@ import com.dev.memebattle.core.domain.packs.model.MemePack
 import com.dev.memebattle.core.localization.Res
 import com.dev.memebattle.core.localization.packs_details_cards
 import com.dev.memebattle.core.localization.packs_details_empty_cards
-import com.dev.memebattle.feature.packs.impl.presentation.view.shared.CardDeckSelector
+import com.dev.memebattle.feature.packs.impl.presentation.view.shared.StaticAdaptiveCardGrid
 import com.dev.memebattle.feature.packs.impl.presentation.view.details.DeckTextSec
 import org.jetbrains.compose.resources.stringResource
 
@@ -48,7 +48,7 @@ internal fun MemePackScreen(pack: MemePack, cards: List<MemeCard>) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(280.dp)
+                .height(360.dp)
                 .padding(horizontal = 24.dp, vertical = 12.dp),
             contentAlignment = Alignment.Center
         ) {
@@ -75,16 +75,15 @@ internal fun MemePackScreen(pack: MemePack, cards: List<MemeCard>) {
             }
             Spacer(Modifier.height(8.dp))
 
-            CardDeckSelector(
-                totalCount = cards.size,
+            StaticAdaptiveCardGrid(
+                cards = cards,
                 selectedIdx = safeIdx,
                 onSelect = { selectedIdx = it },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(140.dp)
                     .padding(horizontal = 8.dp),
-            ) { idx, isSelected ->
-                MemeCardFace(model = cards[idx].mediaUrl, isSelected = isSelected)
+            ) { card, isSelected ->
+                MemeCardFace(model = card.mediaUrl, isSelected = isSelected)
             }
         } else {
             Box(Modifier.fillMaxWidth().height(80.dp), Alignment.Center) {

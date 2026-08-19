@@ -29,7 +29,7 @@ import com.dev.memebattle.core.domain.packs.model.SituationPack
 import com.dev.memebattle.core.localization.Res
 import com.dev.memebattle.core.localization.packs_details_cards
 import com.dev.memebattle.core.localization.packs_details_empty_cards
-import com.dev.memebattle.feature.packs.impl.presentation.view.shared.CardDeckSelector
+import com.dev.memebattle.feature.packs.impl.presentation.view.shared.StaticAdaptiveCardGrid
 import com.dev.memebattle.feature.packs.impl.presentation.view.details.DeckTextSec
 import com.dev.memebattle.feature.packs.impl.presentation.view.details.SituationAccents
 import org.jetbrains.compose.resources.stringResource
@@ -48,7 +48,7 @@ internal fun SituationPackScreen(pack: SituationPack, cards: List<SituationCard>
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(280.dp)
+                .height(360.dp)
                 .padding(horizontal = 24.dp, vertical = 12.dp),
             contentAlignment = Alignment.Center
         ) {
@@ -74,18 +74,19 @@ internal fun SituationPackScreen(pack: SituationPack, cards: List<SituationCard>
                 Text("${cards.size}", color = DeckTextSec.copy(0.5f), fontSize = 12.sp)
             }
             Spacer(Modifier.height(8.dp))
-            CardDeckSelector(
-                totalCount = cards.size,
+
+            StaticAdaptiveCardGrid(
+                cards = cards,
                 selectedIdx = safeIdx,
                 onSelect = { selectedIdx = it },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(140.dp)
                     .padding(horizontal = 8.dp),
-            ) { idx, isSelected ->
+            ) { card, isSelected ->
+                val cardIdx = cards.indexOf(card).let { if (it < 0) 0 else it }
                 SituationCardFace(
-                    text = cards[idx].promptText,
-                    accent = SituationAccents[idx % SituationAccents.size],
+                    text = card.promptText,
+                    accent = SituationAccents[cardIdx % SituationAccents.size],
                     isSelected = isSelected,
                 )
             }

@@ -16,10 +16,32 @@
             android:exported="true"
             android:name=".MainActivity"
             android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboard|keyboardHidden|navigation">
+            <!-- Launcher -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+            <!-- App Links: поделиться лобби — /lobby/{lobbyId} -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="https"
+                    android:host="play.meme.skyfly.hackclub.app"
+                    android:pathPrefix="/lobby/" />
+            </intent-filter>
+
+            <!-- App Links: поделиться паком — /pack/{packId}?kind=... -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="https"
+                    android:host="play.meme.skyfly.hackclub.app"
+                    android:pathPrefix="/pack/" />
             </intent-filter>
         </activity>
     </application>

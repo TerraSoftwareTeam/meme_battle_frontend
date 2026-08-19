@@ -22,7 +22,7 @@ class GameplayGameComponentImpl(
     componentContext: ComponentContext,
     storeFactory: StoreFactory,
     gameApiService: GameApiService,
-    gameId: String,
+    override val gameId: String,
     myUserId: String,
     gameEvents: Flow<GameEvent>,
     personalEvents: Flow<PersonalEvent>,

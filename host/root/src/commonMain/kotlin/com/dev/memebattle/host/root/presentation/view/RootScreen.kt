@@ -5,7 +5,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.arkivanov.decompose.extensions.compose.stack.Children
-import com.arkivanov.decompose.extensions.compose.stack.animation.fade
+import com.arkivanov.decompose.extensions.compose.stack.animation.slide
 import com.arkivanov.decompose.extensions.compose.stack.animation.stackAnimation
 import com.dev.memebattle.core.ui.notification.NotificationController
 import com.dev.memebattle.host.root.presentation.component.RootComponent
@@ -21,7 +21,7 @@ fun RootScreen(
         Box(modifier = Modifier.fillMaxSize()) {
             Children(
                 stack = component.childStack,
-                animation = stackAnimation(fade())
+                animation = stackAnimation(slide())
             ) { child ->
                 child.instance.hostLayer.Render(
                     entry = child.instance.entry,

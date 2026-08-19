@@ -38,14 +38,20 @@ internal fun PackMemeDetailsDto.toDomain(): MemeCard {
             if (origin != null) "$origin/api-proxy$media_url"
             else "${com.dev.memebattle.core.network.BuildKonfig.API_BASE_URL}$media_url"
         }
-        // CDN URL → rewrite through local /cdn-proxy to fix CORS ("*, *" header bug)
+        // CDN URL → rewrite through local /cdn-proxy only on Web to fix CORS ("*, *" header bug).
+        // On Android/native webOrigin is null, so we load the CDN URL directly.
         media_url.contains("cdn.hackclub.com") || media_url.contains("user-cdn.hackclub-assets.com") -> {
-            val prefix = PlatformEnv.webOrigin ?: ""
-            media_url
-                .replace("https://user-cdn.hackclub-assets.com", "$prefix/cdn-proxy")
-                .replace("http://user-cdn.hackclub-assets.com", "$prefix/cdn-proxy")
-                .replace("https://cdn.hackclub.com", "$prefix/cdn-proxy")
-                .replace("http://cdn.hackclub.com", "$prefix/cdn-proxy")
+            val prefix = PlatformEnv.webOrigin
+            if (prefix != null) {
+                media_url
+                    .replace("https://user-cdn.hackclub-assets.com", "$prefix/cdn-proxy")
+                    .replace("http://user-cdn.hackclub-assets.com", "$prefix/cdn-proxy")
+                    .replace("https://cdn.hackclub.com", "$prefix/cdn-proxy")
+                    .replace("http://cdn.hackclub.com", "$prefix/cdn-proxy")
+            } else {
+                // Native platform (Android/iOS): load CDN directly, no CORS restriction
+                media_url
+            }
         }
         else -> media_url
     }

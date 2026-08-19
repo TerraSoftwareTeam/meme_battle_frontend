@@ -108,6 +108,7 @@ fun GameplayGameScreen(
         ) { phase ->
             when (phase) {
                 GameplayGameStore.UiPhase.Lobby -> LobbyContent(
+                    gameId = component.gameId,
                     players = lobbyPlayersState?.players ?: emptyList(),
                     readyCount = infoState?.readyCount ?: 0,
                     amIReady = infoState?.amIReady ?: false,

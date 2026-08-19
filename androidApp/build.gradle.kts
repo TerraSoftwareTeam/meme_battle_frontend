@@ -57,7 +57,10 @@ android {
 dependencies {
     implementation(projects.shared)
     implementation(projects.host.root)
+    implementation(projects.core.navigation)
     implementation(projects.core.localization)
+    implementation(projects.feature.home.api)
+    implementation(projects.feature.packs.api)
     implementation(libs.androidx.activity.compose)
     implementation(libs.decompose.core)
     implementation(libs.decompose.android)

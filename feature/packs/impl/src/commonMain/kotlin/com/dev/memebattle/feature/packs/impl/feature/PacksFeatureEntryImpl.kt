@@ -13,7 +13,7 @@ import org.koin.mp.KoinPlatform.getKoin
 
 class PacksFeatureEntryImpl : TypedFeatureEntry<PacksComponent, PacksRoute>(), PacksFeatureEntry {
     override val routeClass = PacksRoute::class
-    override val baseRoute: PacksRoute = PacksRoute
+    override val baseRoute: PacksRoute = PacksRoute()
 
     override fun createTyped(route: PacksRoute, componentContext: ComponentContext): PacksComponent {
         val koin = getKoin()
@@ -22,6 +22,8 @@ class PacksFeatureEntryImpl : TypedFeatureEntry<PacksComponent, PacksRoute>(), P
             storeFactory = koin.get(),
             packRepository = koin.get(),
             mediaApiService = koin.get(),
+            openPackId = route.openPackId,
+            openPackKind = route.openPackKind,
         )
     }
 

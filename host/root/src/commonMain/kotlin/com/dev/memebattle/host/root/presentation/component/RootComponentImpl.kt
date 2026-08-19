@@ -24,6 +24,7 @@ import org.koin.core.component.KoinComponent
 
 class RootComponentImpl(
     componentContext: ComponentContext,
+    initialRoute: AppRoute = HomeRoute(),
 ) : RootComponent, ComponentContext by componentContext, KoinComponent {
 
     private val hostLayers: List<HostLayer> = getKoin().getAll()
@@ -33,12 +34,12 @@ class RootComponentImpl(
     private val navigation = StackNavigation<AppRoute>()
     private val scope = coroutineScope()
 
-    private val initialRoute: AppRoute = HomeRoute
+    private val _initialRoute: AppRoute = initialRoute
 
     override val childStack: Value<ChildStack<AppRoute, RootComponent.Child>> = childStack(
         source = navigation,
         serializer = null,
-        initialConfiguration = initialRoute,
+        initialConfiguration = _initialRoute,
         handleBackButton = true,
         childFactory = ::createChild
     )

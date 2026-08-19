@@ -1,32 +1,107 @@
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.window.ComposeViewport
 import com.arkivanov.decompose.DefaultComponentContext
+import com.arkivanov.essenty.backhandler.BackDispatcher
 import com.arkivanov.essenty.lifecycle.LifecycleRegistry
-import com.dev.memebattle.core.navigation.entry.FeatureEntry
-import com.dev.memebattle.host.root.di.rootHostModule
+import com.arkivanov.essenty.lifecycle.resume
+import com.arkivanov.essenty.lifecycle.stop
+import com.dev.memebattle.core.navigation.route.AppRoute
+import com.dev.memebattle.feature.home.api.route.HomeRoute
+import com.dev.memebattle.feature.packs.api.route.PacksRoute
 import com.dev.memebattle.host.root.presentation.component.RootComponentImpl
 import com.dev.memebattle.host.root.presentation.view.RootScreen
 import kotlinx.browser.document
+import kotlinx.browser.window
 import com.dev.memebattle.di.initKoin
 import com.dev.memebattle.core.network.WebApiConfig
-import org.koin.mp.KoinPlatform.getKoin
+import org.w3c.dom.events.Event
+
+
+private fun isDocumentVisible(): Boolean = js("document.visibilityState === 'visible'")
+
+/**
+ * Парсит текущий URL браузера и возвращает соответствующий AppRoute.
+ * - /lobby/{id}           → HomeRoute(openLobbyId = id)
+ * - /pack/{id}?kind=meme  → PacksRoute(openPackId = id, openPackKind = kind)
+ * - всё остальное         → HomeRoute()
+ */
+private fun parseDeepLink(pathname: String, search: String): AppRoute {
+    val cleanPath = pathname.trimEnd('/')
+    return when {
+        cleanPath.startsWith("/lobby/") -> {
+            val lobbyId = cleanPath.removePrefix("/lobby/").trim()
+            if (lobbyId.isNotEmpty()) HomeRoute(openLobbyId = lobbyId) else HomeRoute()
+        }
+        cleanPath.startsWith("/pack/") -> {
+            val packId = cleanPath.removePrefix("/pack/").trim()
+            val kind = parseQueryParam(search, "kind") ?: "meme"
+            if (packId.isNotEmpty()) PacksRoute(openPackId = packId, openPackKind = kind) else PacksRoute()
+        }
+        else -> HomeRoute()
+    }
+}
+
+/** Минимальный парсер query-строки — достаёт значение одного параметра */
+private fun parseQueryParam(search: String, key: String): String? {
+    if (search.isEmpty()) return null
+    val query = if (search.startsWith("?")) search.drop(1) else search
+    return query.split("&")
+        .map { it.split("=", limit = 2) }
+        .firstOrNull { it.size == 2 && it[0] == key }
+        ?.get(1)
+}
 
 @OptIn(ExperimentalComposeUiApi::class)
 fun main() {
-    val origin = kotlinx.browser.window.location.origin
+    val origin = window.location.origin
     println("webOrigin initialized to: $origin")
     com.dev.memebattle.core.data.packs.mapper.PlatformEnv.webOrigin = origin
     // Route all API calls through local dev-server proxy to avoid CORS preflight for PATCH/DELETE
-    WebApiConfig.apiBaseUrl = "$origin/api-proxy"
-    // Route WebSocket through local dev-server proxy to avoid CORS for ws/wss
-    val wsOrigin = origin.replace(Regex("^http"), "ws")
-    WebApiConfig.wsBaseUrl = "$wsOrigin/ws-proxy"
+    // ONLY when running locally. In production, use the real API directly.
+    if (origin.contains("localhost") || origin.contains("127.0.0.1")) {
+        WebApiConfig.apiBaseUrl = "$origin/api-proxy"
+        // Route WebSocket through local dev-server proxy to avoid CORS for ws/wss
+        val wsOrigin = origin.replace(Regex("^http"), "ws")
+        WebApiConfig.wsBaseUrl = "$wsOrigin/ws-proxy"
+    }
     initKoin()
 
-
     val lifecycle = LifecycleRegistry()
+    val backDispatcher = BackDispatcher()
+
+    // Manage lifecycle via page visibility (mirrors Android onResume/onStop)
+    lifecycle.resume()
+    window.addEventListener("visibilitychange", callback = { _: Event ->
+        if (isDocumentVisible()) {
+            lifecycle.resume()
+        } else {
+            lifecycle.stop()
+        }
+    })
+
+    // Push a dummy history entry so the browser has something to go "back" from,
+    // then intercept popstate (browser back/forward) and dispatch it to Decompose.
+    window.history.pushState(data = null, title = "", url = null)
+    window.addEventListener("popstate", callback = { _: Event ->
+        if (!backDispatcher.back()) {
+            // Decompose stack is empty — nothing to pop, re-push so user stays in the app
+            window.history.pushState(data = null, title = "", url = null)
+        }
+    })
+
+    // Парсим диплинк из текущего URL перед созданием компонента
+    val initialRoute = parseDeepLink(
+        pathname = window.location.pathname,
+        search = window.location.search
+    )
+    println("Deep link parsed: $initialRoute")
+
     val rootComponent = RootComponentImpl(
-        componentContext = DefaultComponentContext(lifecycle = lifecycle)
+        componentContext = DefaultComponentContext(
+            lifecycle = lifecycle,
+            backHandler = backDispatcher,
+        ),
+        initialRoute = initialRoute,
     )
 
     ComposeViewport(document.body!!) {

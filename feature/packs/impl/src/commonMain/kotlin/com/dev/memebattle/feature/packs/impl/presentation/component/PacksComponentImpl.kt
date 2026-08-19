@@ -37,6 +37,10 @@ class PacksComponentImpl(
     private val storeFactory: StoreFactory,
     private val packRepository: PackRepository,
     private val mediaApiService: MediaApiService,
+    /** Если задан (из диплинка) — авто-откроет экран деталей этого пака */
+    private val openPackId: String? = null,
+    /** "meme" или "situation" — тип пака для экрана деталей */
+    private val openPackKind: String? = null,
 ) : PacksComponent, ComponentContext by componentContext {
 
     private val scope = coroutineScope()
@@ -109,6 +113,8 @@ class PacksComponentImpl(
             componentContext = ctx,
             storeFactory = storeFactory,
             packRepository = packRepository,
+            initialOpenPackId = openPackId,
+            initialOpenPackKind = openPackKind,
             onNavigateToDetails = { packId, kind ->
                 panelsNavigation.activateDetails(DetailsConfig.Details(packId, kind))
             },

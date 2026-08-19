@@ -27,6 +27,7 @@ kotlin {
             implementation(project(":feature:gameplay:api"))
             implementation(project(":core:navigation"))
             implementation(project(":core:localization"))
+            implementation(project(":core:ui"))
             implementation(project(":network:game:current"))
             
             implementation(libs.coil.compose)
