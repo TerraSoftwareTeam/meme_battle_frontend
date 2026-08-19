@@ -1,7 +1,16 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.plugin.compose")
     id("org.jetbrains.compose")
+}
+
+val keystorePropertiesFile = rootProject.file("keystore.properties")
+val keystoreProperties = Properties()
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
 }
 
 android {
@@ -14,6 +23,34 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
+    }
+
+    signingConfigs {
+        create("release") {
+            val keyFile = rootProject.file("key.jks")
+            if (keyFile.exists()) {
+                storeFile = keyFile
+                storePassword = keystoreProperties.getProperty("storePassword")
+                    ?: (project.findProperty("KEYSTORE_PASSWORD") as? String)
+                    ?: System.getenv("KEYSTORE_PASSWORD")
+                keyAlias = keystoreProperties.getProperty("keyAlias")
+                    ?: (project.findProperty("KEY_ALIAS") as? String)
+                    ?: System.getenv("KEY_ALIAS")
+                keyPassword = keystoreProperties.getProperty("keyPassword")
+                    ?: (project.findProperty("KEY_PASSWORD") as? String)
+                    ?: System.getenv("KEY_PASSWORD")
+            }
+        }
+    }
+
+    buildTypes {
+        getByName("release") {
+            isMinifyEnabled = false
+            val releaseSigning = signingConfigs.getByName("release")
+            if (releaseSigning.storeFile?.exists() == true && !releaseSigning.storePassword.isNullOrEmpty()) {
+                signingConfig = releaseSigning
+            }
+        }
     }
 }
 

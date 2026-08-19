@@ -17,6 +17,7 @@ out/
 # Local & Environment properties
 local.properties
 secrets.properties
+keystore.properties
 .env
 .env.*
 *.keystore
