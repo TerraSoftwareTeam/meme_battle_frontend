@@ -184,6 +184,34 @@
     <string name="home_lobbies_create_fab">Создать лобби</string>
     <string name="home_lobbies_btn_join">Войти</string>
 
+    <!-- Auth -->
+    <string name="auth_chip_login">Войти</string>
+    <string name="auth_chip_guest">Гость</string>
+    <string name="auth_dialog_title">Аккаунт</string>
+    <string name="auth_dialog_close">Закрыть</string>
+    <string name="auth_tab_login">Вход</string>
+    <string name="auth_tab_register">Регистрация</string>
+    <string name="auth_tab_guest">Гость</string>
+    <string name="auth_login_username_label">Имя пользователя</string>
+    <string name="auth_login_username_hint">ваш_логин</string>
+    <string name="auth_login_password_label">Пароль</string>
+    <string name="auth_login_password_hint">••••••••</string>
+    <string name="auth_login_show_password">Показать</string>
+    <string name="auth_login_hide_password">Скрыть</string>
+    <string name="auth_login_submit">Войти</string>
+    <string name="auth_register_username_hint">придумайте ник</string>
+    <string name="auth_register_password_label">Пароль (необязательно)</string>
+    <string name="auth_register_password_hint">оставьте пустым для беспарольного входа</string>
+    <string name="auth_register_no_password_hint">Аккаунт без пароля привязан только к этому устройству</string>
+    <string name="auth_register_submit">Зарегистрироваться</string>
+    <string name="auth_guest_current_name_label">Текущее имя гостя</string>
+    <string name="auth_guest_username_label">Имя для гостя (необязательно)</string>
+    <string name="auth_guest_username_hint">оставьте пустым для анонимного</string>
+    <string name="auth_guest_warning_hint">Гостевой аккаунт временный. Для сохранения прогресса зарегистрируйтесь.</string>
+    <string name="auth_guest_btn_anonymous">Анонимно</string>
+    <string name="auth_guest_btn_with_name">С именем</string>
+    <string name="auth_authorized_logout">Выйти из аккаунта</string>
+
     <!-- Packs Edit -->
     <string name="packs_edit_title">Редактирование пэка</string>
     <string name="packs_edit_delete_card">Удалить выбранную</string>

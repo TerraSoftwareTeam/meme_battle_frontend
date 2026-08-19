@@ -16,7 +16,7 @@ kotlin {
     }
     sourceSets {
         commonMain.dependencies {
-            api(projects.network.userAuth.v2)
+            api(projects.network.userAuth.v3)
             implementation(projects.core.network)
             implementation(libs.koin.core)
         }

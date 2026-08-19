@@ -30,7 +30,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -63,8 +65,12 @@ import com.dev.memebattle.core.localization.lobby_create_mode_meme_to_situation
 import com.dev.memebattle.core.localization.gameplay_players_btn_close
 import com.dev.memebattle.feature.home.impl.presentation.component.create.CreateLobbyComponent
 import com.dev.memebattle.feature.home.impl.presentation.component.menu.HomeMenuComponent
+import com.dev.memebattle.feature.home.impl.presentation.store.auth.AuthStore
 import com.dev.memebattle.feature.home.impl.presentation.store.menu.HomeMenuStore
+import com.dev.memebattle.feature.home.impl.presentation.view.auth.AuthDialog
+import com.dev.memebattle.feature.home.impl.presentation.view.auth.UserChip
 import com.dev.memebattle.feature.home.impl.presentation.view.create.CreateLobbyView
+import androidx.compose.ui.zIndex
 
 @Composable
 fun HomeMenuView(
@@ -72,6 +78,20 @@ fun HomeMenuView(
     detailsComponent: CreateLobbyComponent? = null
 ) {
     val state by component.state.collectAsState()
+    val authState by component.authState.collectAsState()
+    var showAuthDialog by remember { mutableStateOf(false) }
+
+    // Close auth dialog automatically on success
+    androidx.compose.runtime.LaunchedEffect(Unit) {
+        component.authEffects.collect { effect ->
+            when (effect) {
+                is com.dev.memebattle.feature.home.impl.presentation.store.auth.AuthStore.Effect.AuthSuccess ->
+                    showAuthDialog = false
+                is com.dev.memebattle.feature.home.impl.presentation.store.auth.AuthStore.Effect.LoggedOut ->
+                    showAuthDialog = false
+            }
+        }
+    }
 
     val backgroundBrush = Brush.verticalGradient(
         colors = listOf(
@@ -87,6 +107,23 @@ fun HomeMenuView(
             .background(backgroundBrush),
         contentAlignment = Alignment.Center
     ) {
+        // ── User chip (top-right) ───────────────────────────────────────
+        androidx.compose.animation.AnimatedVisibility(
+            visible = !state.isLobbyListVisible,
+            enter = fadeIn(tween(300)),
+            exit = fadeOut(tween(200)),
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .statusBarsPadding()
+                .padding(top = 12.dp, end = 16.dp)
+                .zIndex(10f)
+        ) {
+            UserChip(
+                identity = authState.identity,
+                onClick = { showAuthDialog = true },
+                modifier = Modifier
+            )
+        }
         BoxWithConstraints(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
@@ -194,6 +231,15 @@ fun HomeMenuView(
                     }
                 }
             }
+        }
+
+        // ── Auth Dialog ──────────────────────────────────────────────────
+        if (showAuthDialog) {
+            AuthDialog(
+                authState = authState,
+                onIntent = { component.onAuthIntent(it) },
+                onDismiss = { showAuthDialog = false }
+            )
         }
     }
 }

@@ -24,14 +24,20 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.serialization.Serializable
 
+import com.dev.memebattle.core.network.auth.TokenStorage
 import com.dev.network.game.current.api.GameApiService
 import com.dev.network.game.current.api.ws.GameSocketService
+import com.dev.network.user.current.api.UserApiService
+import com.dev.network.user_auth.current.api.User_authApiService
 
 class HomeComponentImpl(
     componentContext: ComponentContext,
     private val storeFactory: StoreFactory,
     private val gameSocketService: GameSocketService,
     private val gameApiService: GameApiService,
+    private val tokenStorage: TokenStorage,
+    private val userAuthService: User_authApiService,
+    private val userApiService: UserApiService,
     /** Если задан (из диплинка) — при первом запуске авто-откроет диалог Join для этого лобби */
     private val initialLobbyId: String? = null,
 ) : HomeComponent, ComponentContext by componentContext {
@@ -72,6 +78,9 @@ class HomeComponentImpl(
                         storeFactory = storeFactory,
                         gameSocketService = gameSocketService,
                         gameApiService = gameApiService,
+                        tokenStorage = tokenStorage,
+                        userAuthService = userAuthService,
+                        userApiService = userApiService,
                         initialLobbyId = initialLobbyId,
                         onNavigateToCreateLobby = {
                             panelsNavigation.activateDetails(DetailsConfig.CreateLobby)

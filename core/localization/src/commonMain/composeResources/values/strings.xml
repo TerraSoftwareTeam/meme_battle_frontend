@@ -173,6 +173,34 @@
     <string name="home_lobbies_create_fab">Create Lobby</string>
     <string name="home_lobbies_btn_join">Join</string>
 
+    <!-- Auth -->
+    <string name="auth_chip_login">Log In</string>
+    <string name="auth_chip_guest">Guest</string>
+    <string name="auth_dialog_title">Account</string>
+    <string name="auth_dialog_close">Close</string>
+    <string name="auth_tab_login">Login</string>
+    <string name="auth_tab_register">Registration</string>
+    <string name="auth_tab_guest">Guest</string>
+    <string name="auth_login_username_label">Username</string>
+    <string name="auth_login_username_hint">your_username</string>
+    <string name="auth_login_password_label">Password</string>
+    <string name="auth_login_password_hint">••••••••</string>
+    <string name="auth_login_show_password">Show</string>
+    <string name="auth_login_hide_password">Hide</string>
+    <string name="auth_login_submit">Log In</string>
+    <string name="auth_register_username_hint">create a nickname</string>
+    <string name="auth_register_password_label">Password (optional)</string>
+    <string name="auth_register_password_hint">leave empty for passwordless login</string>
+    <string name="auth_register_no_password_hint">Account without a password is bound to this device only</string>
+    <string name="auth_register_submit">Register</string>
+    <string name="auth_guest_current_name_label">Current guest name</string>
+    <string name="auth_guest_username_label">Guest name (optional)</string>
+    <string name="auth_guest_username_hint">leave empty for anonymous</string>
+    <string name="auth_guest_warning_hint">Guest account is temporary. Register to save your progress.</string>
+    <string name="auth_guest_btn_anonymous">Anonymous</string>
+    <string name="auth_guest_btn_with_name">With Name</string>
+    <string name="auth_authorized_logout">Log Out</string>
+
     <!-- Packs Edit -->
     <string name="packs_edit_title">Edit Pack</string>
     <string name="packs_edit_delete_card">Delete Selected</string>

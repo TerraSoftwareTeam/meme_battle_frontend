@@ -1,5 +1,10 @@
 package com.dev.network.game.current.di
 
-import org.koin.core.module.Module
+import org.koin.dsl.module
+import org.koin.core.qualifier.named
+import com.dev.network.game.current.api.GameApiService
+import com.dev.network.game.current.api.GameApiServiceImpl
 
-expect val gameNetworkModule: Module
+val gameNetworkModule = module {
+    single<GameApiService> { GameApiServiceImpl(get(named("authenticated"))) }
+}
