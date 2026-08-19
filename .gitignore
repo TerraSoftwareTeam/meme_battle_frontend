@@ -20,6 +20,7 @@ secrets.properties
 keystore.properties
 .env
 .env.*
+!.env.example
 *.keystore
 *.jks
 

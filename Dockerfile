@@ -9,7 +9,7 @@ WORKDIR /app
 # Copy source code
 COPY . /app
 
-RUN chmod +x gradlew
+RUN sed -i 's/\r$//' gradlew && chmod +x gradlew
 
 # Build production WasmJs web distribution
 RUN ./gradlew :webApp:wasmJsBrowserDistribution --no-daemon
