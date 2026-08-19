@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1
 # Stage 1: Build WasmJs web application
 FROM eclipse-temurin:21-jdk AS builder
 
@@ -11,8 +12,9 @@ COPY . /app
 
 RUN sed -i 's/\r$//' gradlew && chmod +x gradlew
 
-# Build production WasmJs web distribution
-RUN ./gradlew :webApp:wasmJsBrowserDistribution --no-daemon
+# Build production WasmJs web distribution with Gradle cache mount
+RUN --mount=type=cache,target=/root/.gradle \
+    ./gradlew :webApp:wasmJsBrowserDistribution --no-daemon --build-cache
 
 # Stage 2: Serve static files with Nginx
 FROM nginx:alpine

@@ -81,7 +81,7 @@ jobs:
           APP_IMAGE_NAME: ghcr.io/terrasoftwareteam/meme_battle_frontend/web
           APP_EXTERNAL_PORT: ${{ vars.APP_EXTERNAL_PORT || '8080' }}
         run: |
-          SHORT_SHA="$(echo \"$GITHUB_SHA\" | cut -c1-7)"
+          SHORT_SHA="${GITHUB_SHA:0:7}"
 
           # Writing to a file
           cat > .env <<EOF
