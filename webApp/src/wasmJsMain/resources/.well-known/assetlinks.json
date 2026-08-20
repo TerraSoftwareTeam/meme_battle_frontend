@@ -1,10 +1,13 @@
-[{
-  "relation": ["delegate_permission/common.handle_all_urls"],
-  "target": {
-    "namespace": "android_app",
-    "package_name": "com.dev.memebattle",
-    "sha256_cert_fingerprints": [
-      "REPLACE_WITH_YOUR_SHA256_FINGERPRINT"
-    ]
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.dev.memebattle",
+      "sha256_cert_fingerprints": [
+        "88:CC:ED:9C:DE:B3:6A:42:92:C1:BA:E5:F0:05:F8:8D:CB:E6:05:DC:88:5D:DD:10:11:F4:D6:EF:54:71:42:83",
+        "D6:38:C9:02:59:2F:EC:05:8F:6B:6B:E5:E3:0B:F5:65:9C:EA:9E:31:4E:FE:DC:06:B1:6A:0D:3A:B0:18:6A:13"
+      ]
+    }
   }
-}]
+]

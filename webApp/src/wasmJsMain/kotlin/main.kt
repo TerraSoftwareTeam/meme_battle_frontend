@@ -14,6 +14,7 @@ import kotlinx.browser.document
 import kotlinx.browser.window
 import com.dev.memebattle.di.initKoin
 import com.dev.memebattle.core.network.WebApiConfig
+import com.dev.memebattle.core.network.utils.MediaUrlEnv
 import org.w3c.dom.events.Event
 
 
@@ -56,10 +57,10 @@ fun main() {
     val origin = window.location.origin
     println("webOrigin initialized to: $origin")
     
-    // Route all API calls through local dev-server proxy to avoid CORS preflight for PATCH/DELETE
-    // ONLY when running locally. In production, use the real API directly.
+    // Route all API calls and CDN requests through local dev-server proxy to avoid CORS preflight
+    // ONLY when running locally. In production, use real CDN and API directly.
     if (origin.contains("localhost") || origin.contains("127.0.0.1")) {
-        com.dev.memebattle.core.data.packs.mapper.PlatformEnv.webOrigin = origin
+        MediaUrlEnv.webOrigin = origin
         WebApiConfig.apiBaseUrl = "$origin/api-proxy"
         // Route WebSocket through local dev-server proxy to avoid CORS for ws/wss
         val wsOrigin = origin.replace(Regex("^http"), "ws")
