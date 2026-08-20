@@ -6,7 +6,6 @@ import com.arkivanov.decompose.router.panels.ChildPanelsMode
 import com.arkivanov.decompose.value.Value
 import com.dev.memebattle.core.navigation.entry.FeatureComponent
 import com.dev.memebattle.feature.home.impl.presentation.component.menu.HomeMenuComponent
-import com.dev.memebattle.feature.home.impl.presentation.component.create.CreateLobbyComponent
 
 interface HomeComponent : FeatureComponent {
     @OptIn(ExperimentalDecomposeApi::class)
@@ -14,7 +13,7 @@ interface HomeComponent : FeatureComponent {
             HomeComponentImpl.MainConfig,
             HomeMenuComponent,
             HomeComponentImpl.DetailsConfig,
-            CreateLobbyComponent,
+            Any,
             Nothing,
             Nothing>>
 

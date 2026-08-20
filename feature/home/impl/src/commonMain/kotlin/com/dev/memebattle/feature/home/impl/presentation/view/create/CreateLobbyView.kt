@@ -1,58 +1,70 @@
 package com.dev.memebattle.feature.home.impl.presentation.view.create
 
-import com.dev.network.game.current.dto.GameMode
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material3.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.dev.memebattle.core.ui.components.pack.PackCard
-import com.dev.memebattle.core.ui.components.pack.PackCardKind
-import com.dev.memebattle.core.ui.components.pack.PackCardSafetyLevel
-import com.dev.memebattle.feature.home.impl.presentation.component.create.CreateLobbyComponent
-import org.jetbrains.compose.resources.stringResource
 import com.dev.memebattle.core.localization.Res
-import com.dev.memebattle.core.localization.lobby_create_title
 import com.dev.memebattle.core.localization.lobby_create_close
+import com.dev.memebattle.core.localization.lobby_create_game_settings
+import com.dev.memebattle.core.localization.lobby_create_hand_size_label
+import com.dev.memebattle.core.localization.lobby_create_mode_label
+import com.dev.memebattle.core.localization.lobby_create_mode_meme_to_situation
+import com.dev.memebattle.core.localization.lobby_create_mode_situation_to_meme
+import com.dev.memebattle.core.localization.lobby_create_name_hint
+import com.dev.memebattle.core.localization.lobby_create_name_label
+import com.dev.memebattle.core.localization.lobby_create_nickname_hint
+import com.dev.memebattle.core.localization.lobby_create_nickname_label
+import com.dev.memebattle.core.localization.lobby_create_rounds_label
 import com.dev.memebattle.core.localization.lobby_create_select_meme_packs
 import com.dev.memebattle.core.localization.lobby_create_select_situation_packs
-import com.dev.memebattle.core.localization.lobby_create_game_settings
-import com.dev.memebattle.core.localization.lobby_create_mode_label
-import com.dev.memebattle.core.localization.lobby_create_mode_situation_to_meme
-import com.dev.memebattle.core.localization.lobby_create_mode_meme_to_situation
-import com.dev.memebattle.core.localization.lobby_create_rounds_label
-import com.dev.memebattle.core.localization.lobby_create_hand_size_label
-import com.dev.memebattle.core.localization.lobby_create_name_label
-import com.dev.memebattle.core.localization.lobby_create_name_hint
-import com.dev.memebattle.core.localization.lobby_create_nickname_label
-import com.dev.memebattle.core.localization.lobby_create_nickname_hint
 import com.dev.memebattle.core.localization.lobby_create_submit
+import com.dev.memebattle.core.localization.lobby_create_title
+import com.dev.memebattle.core.ui.components.pack.PackCardKind
+import com.dev.memebattle.feature.home.impl.presentation.component.create.CreateLobbyComponent
+import com.dev.memebattle.feature.home.impl.presentation.store.create.CreateLobbyStore
+import com.dev.network.game.current.dto.GameMode
+import org.jetbrains.compose.resources.stringResource
 
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.material.icons.filled.ShoppingCart
-import androidx.compose.ui.text.style.TextAlign
-import com.dev.memebattle.core.localization.lobby_create_no_favorite_meme_packs
-import com.dev.memebattle.core.localization.lobby_create_no_favorite_situation_packs
-import com.dev.memebattle.core.localization.lobby_create_btn_go_to_store
+private val AccentColor = Color(0xFF7C5DFA)
+private val SurfaceColor = Color(0xFF2A1F44)
+private val BorderColor = Color(0xFF3B2F5E)
+private val TextSecondary = Color(0xFFB0A2C7)
+private val TextMuted = Color(0xFF887A9E)
 
 @Composable
 fun CreateLobbyView(
@@ -65,7 +77,7 @@ fun CreateLobbyView(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFF1E1035))
+            .background(Color.Transparent)
     ) {
         Column(
             modifier = Modifier
@@ -95,133 +107,57 @@ fun CreateLobbyView(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // ── Meme Packs Section ──────────────────────────────────────
-            Text(
-                text = stringResource(Res.string.lobby_create_select_meme_packs),
-                color = Color(0xFFB0A2C7),
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Medium
+            PackSectionHeader(
+                title = stringResource(Res.string.lobby_create_select_meme_packs),
+                onAddFromCatalog = { component.onOpenPackPicker() }
             )
             Spacer(modifier = Modifier.height(8.dp))
 
-            if (state.isPacksLoading && state.availableMemePacks.isEmpty()) {
-                LazyVerticalGrid(
-                    columns = GridCells.Adaptive(minSize = 140.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .heightIn(max = 1200.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    userScrollEnabled = false
-                ) {
-                    items(state.likedMemePackCount.coerceAtLeast(3)) {
-                        PackCardSkeleton()
-                    }
-                }
-            } else if (state.availableMemePacks.isEmpty()) {
-                EmptyFavoritePacksCard(
-                    message = stringResource(Res.string.lobby_create_no_favorite_meme_packs),
-                    onGoToStore = { component.onGoToStore() }
-                )
+            if (state.isPacksLoading && state.officialMemePacks.isEmpty()) {
+                SkeletonRow(count = 2)
             } else {
-                LazyVerticalGrid(
-                    columns = GridCells.Adaptive(minSize = 140.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .heightIn(max = 1200.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    userScrollEnabled = false
-                ) {
-                    items(state.availableMemePacks) { pack ->
-                        val isSelected = state.selectedMemePackIds.contains(pack.id)
-                        SelectablePackCard(
-                            id = pack.id,
-                            name = pack.name,
-                            description = pack.description ?: "",
-                            createdAt = pack.createdAt,
-                            safetyLevel = PackCardSafetyLevel.valueOf(pack.safetyLevel.name),
-                            packType = PackCardKind.MEME,
-                            languageCode = pack.languageCode,
-                            isSelected = isSelected,
-                            onClick = { component.toggleMemePack(pack.id) }
-                        )
-                    }
-                }
+                PackSelectionRow(
+                    packs = state.availableMemePacks,
+                    selectedIds = state.selectedMemePackIds,
+                    officialIds = CreateLobbyStore.OfficialPackIds.allMemeIds,
+                    packKind = PackCardKind.MEME,
+                    onToggle = { component.toggleMemePack(it) }
+                )
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // ── Situation Packs Section ─────────────────────────────────
-            Text(
-                text = stringResource(Res.string.lobby_create_select_situation_packs),
-                color = Color(0xFFB0A2C7),
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Medium
+            PackSectionHeader(
+                title = stringResource(Res.string.lobby_create_select_situation_packs),
+                onAddFromCatalog = { component.onOpenPackPicker() }
             )
             Spacer(modifier = Modifier.height(8.dp))
 
-            if (state.isPacksLoading && state.availableSituationPacks.isEmpty()) {
-                LazyVerticalGrid(
-                    columns = GridCells.Adaptive(minSize = 140.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .heightIn(max = 1200.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    userScrollEnabled = false
-                ) {
-                    items(state.likedSituationPackCount.coerceAtLeast(3)) {
-                        PackCardSkeleton()
-                    }
-                }
-            } else if (state.availableSituationPacks.isEmpty()) {
-                EmptyFavoritePacksCard(
-                    message = stringResource(Res.string.lobby_create_no_favorite_situation_packs),
-                    onGoToStore = { component.onGoToStore() }
-                )
+            if (state.isPacksLoading && state.officialSituationPacks.isEmpty()) {
+                SkeletonRow(count = 2)
             } else {
-                LazyVerticalGrid(
-                    columns = GridCells.Adaptive(minSize = 140.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .heightIn(max = 1200.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    userScrollEnabled = false
-                ) {
-                    items(state.availableSituationPacks) { pack ->
-                        val isSelected = state.selectedSituationPackIds.contains(pack.id)
-                        SelectablePackCard(
-                            id = pack.id,
-                            name = pack.name,
-                            description = pack.description ?: "",
-                            createdAt = pack.createdAt,
-                            safetyLevel = PackCardSafetyLevel.valueOf(pack.safetyLevel.name),
-                            packType = PackCardKind.SITUATION,
-                            languageCode = pack.languageCode,
-                            isSelected = isSelected,
-                            onClick = { component.toggleSituationPack(pack.id) }
-                        )
-                    }
-                }
+                PackSelectionRow(
+                    packs = state.availableSituationPacks,
+                    selectedIds = state.selectedSituationPackIds,
+                    officialIds = CreateLobbyStore.OfficialPackIds.allSituationIds,
+                    packKind = PackCardKind.SITUATION,
+                    onToggle = { component.toggleSituationPack(it) }
+                )
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // ── Game Settings ───────────────────────────────────────────
             Text(
                 text = stringResource(Res.string.lobby_create_game_settings),
-                color = Color(0xFFB0A2C7),
+                color = TextSecondary,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Medium
             )
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Mode selector
             Text(
                 text = stringResource(Res.string.lobby_create_mode_label),
-                color = Color(0xFF887A9E),
+                color = TextMuted,
                 fontSize = 14.sp
             )
             Spacer(modifier = Modifier.height(6.dp))
@@ -240,7 +176,7 @@ fun CreateLobbyView(
                             .weight(1f)
                             .clickable { component.setMode(mode) },
                         shape = RoundedCornerShape(12.dp),
-                        color = if (isSelected) Color(0xFF7C5DFA) else Color(0xFF2A1F44),
+                        color = if (isSelected) AccentColor else SurfaceColor,
                         tonalElevation = if (isSelected) 4.dp else 0.dp,
                     ) {
                         Text(
@@ -249,7 +185,7 @@ fun CreateLobbyView(
                             fontSize = 13.sp,
                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
                             modifier = Modifier.padding(vertical = 10.dp, horizontal = 8.dp),
-                            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                            textAlign = TextAlign.Center,
                         )
                     }
                 }
@@ -257,24 +193,16 @@ fun CreateLobbyView(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Rounds slider
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(
-                    text = stringResource(Res.string.lobby_create_rounds_label),
-                    color = Color(0xFF887A9E),
-                    fontSize = 14.sp
-                )
-                Surface(
-                    shape = RoundedCornerShape(8.dp),
-                    color = Color(0xFF7C5DFA).copy(alpha = 0.25f),
-                ) {
+                Text(text = stringResource(Res.string.lobby_create_rounds_label), color = TextMuted, fontSize = 14.sp)
+                Surface(shape = RoundedCornerShape(8.dp), color = AccentColor.copy(alpha = 0.25f)) {
                     Text(
                         text = "${state.maxRounds}",
-                        color = Color(0xFF7C5DFA),
+                        color = AccentColor,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
                     )
@@ -286,32 +214,24 @@ fun CreateLobbyView(
                 valueRange = 1f..20f,
                 steps = 18,
                 colors = SliderDefaults.colors(
-                    thumbColor = Color(0xFF7C5DFA),
-                    activeTrackColor = Color(0xFF7C5DFA),
-                    inactiveTrackColor = Color(0xFF2A1F44),
+                    thumbColor = AccentColor,
+                    activeTrackColor = AccentColor,
+                    inactiveTrackColor = SurfaceColor,
                 )
             )
 
             Spacer(modifier = Modifier.height(4.dp))
 
-            // Hand size slider
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(
-                    text = stringResource(Res.string.lobby_create_hand_size_label),
-                    color = Color(0xFF887A9E),
-                    fontSize = 14.sp
-                )
-                Surface(
-                    shape = RoundedCornerShape(8.dp),
-                    color = Color(0xFF7C5DFA).copy(alpha = 0.25f),
-                ) {
+                Text(text = stringResource(Res.string.lobby_create_hand_size_label), color = TextMuted, fontSize = 14.sp)
+                Surface(shape = RoundedCornerShape(8.dp), color = AccentColor.copy(alpha = 0.25f)) {
                     Text(
                         text = "${state.handSize}",
-                        color = Color(0xFF7C5DFA),
+                        color = AccentColor,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
                     )
@@ -323,9 +243,9 @@ fun CreateLobbyView(
                 valueRange = 3f..10f,
                 steps = 6,
                 colors = SliderDefaults.colors(
-                    thumbColor = Color(0xFF7C5DFA),
-                    activeTrackColor = Color(0xFF7C5DFA),
-                    inactiveTrackColor = Color(0xFF2A1F44),
+                    thumbColor = AccentColor,
+                    activeTrackColor = AccentColor,
+                    inactiveTrackColor = SurfaceColor,
                 )
             )
 
@@ -338,13 +258,13 @@ fun CreateLobbyView(
                 label = { Text(stringResource(Res.string.lobby_create_name_label)) },
                 placeholder = { Text(stringResource(Res.string.lobby_create_name_hint), color = Color.White.copy(alpha = 0.3f)) },
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color(0xFF7C5DFA),
-                    unfocusedBorderColor = Color(0xFF3B2F5E),
-                    focusedLabelColor = Color(0xFF7C5DFA),
-                    unfocusedLabelColor = Color(0xFF887A9E),
+                    focusedBorderColor = AccentColor,
+                    unfocusedBorderColor = BorderColor,
+                    focusedLabelColor = AccentColor,
+                    unfocusedLabelColor = TextMuted,
                     focusedTextColor = Color.White,
                     unfocusedTextColor = Color.White,
-                    cursorColor = Color(0xFF7C5DFA),
+                    cursorColor = AccentColor,
                 ),
                 shape = RoundedCornerShape(12.dp)
             )
@@ -358,26 +278,42 @@ fun CreateLobbyView(
                 label = { Text(stringResource(Res.string.lobby_create_nickname_label)) },
                 placeholder = { Text(stringResource(Res.string.lobby_create_nickname_hint), color = Color.White.copy(alpha = 0.3f)) },
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color(0xFF7C5DFA),
-                    unfocusedBorderColor = Color(0xFF3B2F5E),
-                    focusedLabelColor = Color(0xFF7C5DFA),
-                    unfocusedLabelColor = Color(0xFF887A9E),
+                    focusedBorderColor = AccentColor,
+                    unfocusedBorderColor = BorderColor,
+                    focusedLabelColor = AccentColor,
+                    unfocusedLabelColor = TextMuted,
                     focusedTextColor = Color.White,
                     unfocusedTextColor = Color.White,
-                    cursorColor = Color(0xFF7C5DFA),
+                    cursorColor = AccentColor,
                 ),
                 shape = RoundedCornerShape(12.dp)
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            if (state.error != null) {
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(10.dp),
+                    color = Color(0xFFB71C1C).copy(alpha = 0.2f),
+                ) {
+                    Text(
+                        text = state.error!!,
+                        color = Color(0xFFFF5252),
+                        fontSize = 13.sp,
+                        modifier = Modifier.padding(12.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+
             Button(
                 onClick = { component.createLobby() },
                 modifier = Modifier.fillMaxWidth().height(56.dp),
                 enabled = state.isCreateEnabled,
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF7C5DFA),
-                    disabledContainerColor = Color(0xFF3B2F5E)
+                    containerColor = AccentColor,
+                    disabledContainerColor = SurfaceColor
                 ),
                 shape = RoundedCornerShape(12.dp)
             ) {
@@ -388,183 +324,9 @@ fun CreateLobbyView(
                         text = stringResource(Res.string.lobby_create_submit),
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
-                        color = if (state.isCreateEnabled) Color.White else Color(0xFF887A9E)
+                        color = if (state.isCreateEnabled) Color.White else TextMuted
                     )
                 }
-            }
-        }
-    }
-}
-
-@Composable
-fun PackCardSkeleton() {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .aspectRatio(0.70f)
-            .clip(RoundedCornerShape(20.dp))
-            .background(Color(0xFF2A1F44))
-            .padding(16.dp)
-    ) {
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.SpaceBetween
-        ) {
-            // Top shimmer area
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(Color(0xFF3B2F5E))
-            )
-            
-            Spacer(modifier = Modifier.height(12.dp))
-            
-            // Title placeholder
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth(0.7f)
-                    .height(16.dp)
-                    .clip(RoundedCornerShape(4.dp))
-                    .background(Color(0xFF3B2F5E))
-            )
-            
-            Spacer(modifier = Modifier.height(8.dp))
-            
-            // Bottom row placeholders
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Box(
-                    modifier = Modifier
-                        .width(32.dp)
-                        .height(16.dp)
-                        .clip(RoundedCornerShape(4.dp))
-                        .background(Color(0xFF3B2F5E))
-                )
-                Box(
-                    modifier = Modifier
-                        .width(50.dp)
-                        .height(12.dp)
-                        .clip(RoundedCornerShape(4.dp))
-                        .background(Color(0xFF3B2F5E))
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun SelectablePackCard(
-    id: String,
-    name: String,
-    description: String,
-    createdAt: String,
-    safetyLevel: PackCardSafetyLevel,
-    packType: PackCardKind,
-    languageCode: String,
-    isSelected: Boolean,
-    onClick: () -> Unit
-) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .then(
-                if (isSelected) Modifier.border(3.dp, Color(0xFF00E676), RoundedCornerShape(16.dp))
-                else Modifier
-            )
-    ) {
-        PackCard(
-            id = id,
-            name = name,
-            description = description,
-            createdAt = createdAt,
-            safetyLevel = safetyLevel,
-            packType = packType,
-            languageCode = languageCode,
-            onClick = onClick
-        )
-        if (isSelected) {
-            Icon(
-                imageVector = Icons.Default.CheckCircle,
-                contentDescription = "Selected",
-                tint = Color(0xFF00E676),
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(8.dp)
-                    .size(28.dp)
-                    .background(Color.Black.copy(alpha = 0.5f), shape = RoundedCornerShape(14.dp))
-            )
-        }
-    }
-}
-
-@Composable
-private fun EmptyFavoritePacksCard(
-    message: String,
-    onGoToStore: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Surface(
-        modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        color = Color(0xFF2A1F44).copy(alpha = 0.6f),
-        border = BorderStroke(1.dp, Color(0xFF3B2F5E))
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(20.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(48.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(Color(0xFF7C5DFA).copy(alpha = 0.15f)),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Default.ShoppingCart,
-                    contentDescription = null,
-                    tint = Color(0xFF7C5DFA),
-                    modifier = Modifier.size(24.dp)
-                )
-            }
-            Spacer(modifier = Modifier.height(12.dp))
-            Text(
-                text = message,
-                color = Color(0xFFB0A2C7),
-                fontSize = 14.sp,
-                textAlign = TextAlign.Center,
-                lineHeight = 20.sp
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            Button(
-                onClick = onGoToStore,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF7C5DFA)
-                ),
-                shape = RoundedCornerShape(12.dp),
-                contentPadding = PaddingValues(horizontal = 20.dp, vertical = 10.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.ShoppingCart,
-                    contentDescription = null,
-                    tint = Color.White,
-                    modifier = Modifier.size(18.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = stringResource(Res.string.lobby_create_btn_go_to_store),
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = Color.White
-                )
             }
         }
     }

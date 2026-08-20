@@ -7,8 +7,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import com.dev.memebattle.feature.home.impl.presentation.component.HomeComponent
+import com.dev.memebattle.feature.home.impl.presentation.component.HomeComponentImpl
+import com.dev.memebattle.feature.home.impl.presentation.component.create.CreateLobbyComponent
+import com.dev.memebattle.feature.home.impl.presentation.component.packpicker.PackPickerComponent
 import com.dev.memebattle.feature.home.impl.presentation.view.create.CreateLobbyView
 import com.dev.memebattle.feature.home.impl.presentation.view.menu.HomeMenuView
+import com.dev.memebattle.feature.home.impl.presentation.view.packpicker.PackPickerView
 
 @OptIn(com.arkivanov.decompose.ExperimentalDecomposeApi::class)
 @Composable
@@ -21,7 +25,14 @@ fun HomeView(
     Box(modifier = modifier.fillMaxSize()) {
         HomeMenuView(
             component = panels.main.instance,
-            detailsComponent = panels.details?.instance
+            detailsComponent = when (val details = panels.details?.instance) {
+                is CreateLobbyComponent -> details
+                else -> null
+            },
+            packPickerComponent = when (val details = panels.details?.instance) {
+                is PackPickerComponent -> details
+                else -> null
+            }
         )
     }
 }

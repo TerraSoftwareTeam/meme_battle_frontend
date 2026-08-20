@@ -18,5 +18,7 @@ interface CreateLobbyComponent {
     
     fun onClose()
     fun onGameCreated(gameId: String)
+    /** Opens the in-app pack picker screen. */
+    fun onOpenPackPicker()
     fun onGoToStore()
 }
