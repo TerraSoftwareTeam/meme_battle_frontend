@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.sp
 import com.dev.memebattle.feature.packs.impl.presentation.component.create.PacksCreateComponent
 import com.dev.memebattle.feature.packs.impl.presentation.store.create.PacksCreateStore
 import com.dev.memebattle.feature.packs.impl.presentation.view.create.widgets.*
+import com.dev.memebattle.feature.packs.impl.presentation.view.shared.UploadProgressCard
 import io.github.vinceglb.filekit.compose.rememberFilePickerLauncher
 import io.github.vinceglb.filekit.core.PickerMode
 import io.github.vinceglb.filekit.core.PickerType
@@ -180,25 +181,29 @@ fun PacksCreateView(
                     .navigationBarsPadding()
                     .padding(horizontal = 24.dp, vertical = 16.dp)
             ) {
-                Button(
-                    onClick = { component.onIntent(PacksCreateStore.Intent.Create) },
-                    modifier = Modifier.fillMaxWidth().height(56.dp),
-                    enabled = state.isCreateEnabled,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = AccentColor,
-                        disabledContainerColor = SurfaceColor
-                    ),
-                    shape = RoundedCornerShape(16.dp)
-                ) {
-                    if (state.isLoading) {
-                        CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Color.White, strokeWidth = 2.dp)
-                    } else {
-                        Text(
-                            text = stringResource(Res.string.packs_create_submit),
-                            color = if (state.isCreateEnabled) Color.White else TextSecondary,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 16.sp
-                        )
+                if (state.uploadProgress != null) {
+                    UploadProgressCard(progressState = state.uploadProgress)
+                } else {
+                    Button(
+                        onClick = { component.onIntent(PacksCreateStore.Intent.Create) },
+                        modifier = Modifier.fillMaxWidth().height(56.dp),
+                        enabled = state.isCreateEnabled,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = AccentColor,
+                            disabledContainerColor = SurfaceColor
+                        ),
+                        shape = RoundedCornerShape(16.dp)
+                    ) {
+                        if (state.isLoading) {
+                            CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Color.White, strokeWidth = 2.dp)
+                        } else {
+                            Text(
+                                text = stringResource(Res.string.packs_create_submit),
+                                color = if (state.isCreateEnabled) Color.White else TextSecondary,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 16.sp
+                            )
+                        }
                     }
                 }
             }

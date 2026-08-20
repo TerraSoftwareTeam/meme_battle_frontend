@@ -28,6 +28,7 @@ import io.github.vinceglb.filekit.compose.rememberFilePickerLauncher
 import io.github.vinceglb.filekit.core.PickerMode
 import io.github.vinceglb.filekit.core.PickerType
 import kotlinx.coroutines.flow.collectLatest
+import com.dev.memebattle.feature.packs.impl.presentation.view.shared.UploadProgressCard
 import org.jetbrains.compose.resources.stringResource
 import com.dev.memebattle.core.localization.Res
 import com.dev.memebattle.core.localization.*
@@ -335,25 +336,29 @@ fun PacksEditView(
                     .navigationBarsPadding()
                     .padding(horizontal = 24.dp, vertical = 16.dp)
             ) {
-                Button(
-                    onClick = { component.onIntent(PacksEditStore.Intent.Save) },
-                    modifier = Modifier.fillMaxWidth().height(56.dp),
-                    enabled = state.isSaveEnabled,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = AccentColor,
-                        disabledContainerColor = SurfaceColor
-                    ),
-                    shape = RoundedCornerShape(16.dp)
-                ) {
-                    if (state.isSaving) {
-                        CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Color.White, strokeWidth = 2.dp)
-                    } else {
-                        Text(
-                            text = stringResource(Res.string.packs_edit_save),
-                            color = if (state.isSaveEnabled) Color.White else TextSecondary,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 16.sp
-                        )
+                if (state.uploadProgress != null) {
+                    UploadProgressCard(progressState = state.uploadProgress)
+                } else {
+                    Button(
+                        onClick = { component.onIntent(PacksEditStore.Intent.Save) },
+                        modifier = Modifier.fillMaxWidth().height(56.dp),
+                        enabled = state.isSaveEnabled,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = AccentColor,
+                            disabledContainerColor = SurfaceColor
+                        ),
+                        shape = RoundedCornerShape(16.dp)
+                    ) {
+                        if (state.isSaving) {
+                            CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Color.White, strokeWidth = 2.dp)
+                        } else {
+                            Text(
+                                text = stringResource(Res.string.packs_edit_save),
+                                color = if (state.isSaveEnabled) Color.White else TextSecondary,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 16.sp
+                            )
+                        }
                     }
                 }
             }

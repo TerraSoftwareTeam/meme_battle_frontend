@@ -10,6 +10,8 @@ import com.dev.network.media.current.api.MediaApiService
 import kotlinx.coroutines.launch
 import com.dev.memebattle.core.domain.packs.model.SafetyLevel
 
+import com.dev.memebattle.feature.packs.impl.presentation.store.model.UploadProgressState
+
 internal class PacksCreateStoreFactory(
     private val storeFactory: StoreFactory,
     private val packRepository: PackRepository,
@@ -55,24 +57,33 @@ internal class PacksCreateStoreFactory(
                     
                     if (currentState.type == PacksCreateStore.PackType.Memes) {
                         val mediaIds = mutableListOf<Long>()
-                        for (file in currentState.selectedFiles) {
+                        val totalFiles = currentState.selectedFiles.size
+                        if (totalFiles > 0) {
+                            dispatch(Message.UpdateUploadProgress(UploadProgressState(current = 0, total = totalFiles)))
+                        }
+
+                        for ((index, file) in currentState.selectedFiles.withIndex()) {
+                            dispatch(Message.UpdateUploadProgress(UploadProgressState(current = index, total = totalFiles)))
+
                             println("[PacksCreateStore] Reading file: ${file.name}")
                             val rawBytes = file.readBytes()
                             println("[PacksCreateStore] File read complete: ${rawBytes.size} bytes, compressing if needed...")
                             
                             val maxSizeBytes = 2 * 1024 * 1024 * 15L  // 2 MB limit
                             val byteArray = compressImageIfNeeded(rawBytes, maxSizeBytes)
-                            if (byteArray.size < rawBytes.size) {
-                                println("[PacksCreateStore] File compressed from ${rawBytes.size} to ${byteArray.size} bytes")
-                            } else {
-                                println("[PacksCreateStore] Using original file size: ${byteArray.size} bytes")
-                            }
-                            
                             val fileName = file.name
-                            val result = mediaApiService.uploadImageMedia(byteArray, fileName)
-                            println("[PacksCreateStore] Upload result: $result")
+
+                            val result = mediaApiService.uploadImageMedia(
+                                byteArray = byteArray,
+                                fileName = fileName,
+                            )
+
+                            println("[PacksCreateStore] Upload result for $fileName: $result")
                             when (result) {
-                                is com.dev.memebattle.core.network.call.NetworkResult.Success -> mediaIds.add(result.data.id)
+                                is com.dev.memebattle.core.network.call.NetworkResult.Success -> {
+                                    mediaIds.add(result.data.id)
+                                    dispatch(Message.UpdateUploadProgress(UploadProgressState(current = index + 1, total = totalFiles)))
+                                }
                                 is com.dev.memebattle.core.network.call.NetworkResult.Error -> {
                                     dispatch(Message.SetError(result.error.toString()))
                                     dispatch(Message.SetLoading(false))
@@ -120,6 +131,7 @@ internal class PacksCreateStoreFactory(
                     dispatch(Message.SetError(e.message ?: "Unexpected error"))
                     publish(PacksCreateStore.Effect.ShowError(e.message ?: "Unexpected error"))
                 } finally {
+                    dispatch(Message.UpdateUploadProgress(null))
                     dispatch(Message.SetLoading(false))
                 }
             }
@@ -129,6 +141,7 @@ internal class PacksCreateStoreFactory(
     private sealed interface Message {
         data class SetLoading(val isLoading: Boolean) : Message
         data class SetError(val error: String?) : Message
+        data class UpdateUploadProgress(val uploadProgress: UploadProgressState?) : Message
         data class UpdateName(val name: String) : Message
         data class UpdateDescription(val description: String) : Message
         data class UpdateType(val type: PacksCreateStore.PackType) : Message
@@ -146,6 +159,7 @@ internal class PacksCreateStoreFactory(
         override fun PacksCreateStore.State.reduce(msg: Message): PacksCreateStore.State = when (msg) {
             is Message.SetLoading -> copy(isLoading = msg.isLoading, error = null)
             is Message.SetError -> copy(error = msg.error, isLoading = false)
+            is Message.UpdateUploadProgress -> copy(uploadProgress = msg.uploadProgress)
             is Message.UpdateName -> copy(name = msg.name)
             is Message.UpdateDescription -> copy(description = msg.description)
             is Message.UpdateType -> copy(type = msg.type)

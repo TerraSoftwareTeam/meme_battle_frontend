@@ -3,6 +3,8 @@ package com.dev.memebattle.feature.packs.impl.presentation.store.create
 import com.arkivanov.mvikotlin.core.store.Store
 import com.dev.memebattle.core.domain.packs.model.SafetyLevel
 
+import com.dev.memebattle.feature.packs.impl.presentation.store.model.UploadProgressState
+
 interface PacksCreateStore : Store<PacksCreateStore.Intent, PacksCreateStore.State, PacksCreateStore.Effect> {
 
     enum class PackType { Memes, Situations }
@@ -25,6 +27,7 @@ interface PacksCreateStore : Store<PacksCreateStore.Intent, PacksCreateStore.Sta
 
     data class State(
         val isLoading: Boolean = false,
+        val uploadProgress: UploadProgressState? = null,
         val error: String? = null,
         val type: PackType = PackType.Memes,
         val name: String = "",

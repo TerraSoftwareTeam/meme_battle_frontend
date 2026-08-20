@@ -5,6 +5,8 @@ import com.dev.memebattle.core.domain.packs.model.MemeCard
 import com.dev.memebattle.core.domain.packs.model.SafetyLevel
 import com.dev.memebattle.core.domain.packs.model.SituationCard
 
+import com.dev.memebattle.feature.packs.impl.presentation.store.model.UploadProgressState
+
 interface PacksEditStore : Store<PacksEditStore.Intent, PacksEditStore.State, PacksEditStore.Effect> {
 
     sealed interface Intent {
@@ -29,6 +31,7 @@ interface PacksEditStore : Store<PacksEditStore.Intent, PacksEditStore.State, Pa
         val kind: String = "meme",
         val isLoading: Boolean = false,
         val isSaving: Boolean = false,
+        val uploadProgress: UploadProgressState? = null,
         val error: String? = null,
         val name: String = "",
         val description: String = "",

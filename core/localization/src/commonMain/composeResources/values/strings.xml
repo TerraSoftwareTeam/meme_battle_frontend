@@ -225,5 +225,13 @@
     <string name="packs_edit_add_cards">Add New</string>
     <string name="packs_edit_delete_pack">Delete Pack</string>
     <string name="packs_edit_save">Save</string>
+
+    <!-- Packs Upload Progress -->
+    <string name="packs_uploading_title">Uploading images...</string>
+    <string name="packs_uploading_progress">%1$d / %2$d uploaded (%3$d%%)</string>
+    <string name="packs_uploading_status_pending">In queue</string>
+    <string name="packs_uploading_status_uploading">Uploading...</string>
+    <string name="packs_uploading_status_completed">Uploaded</string>
+    <string name="packs_uploading_status_error">Upload error</string>
 </resources>
 

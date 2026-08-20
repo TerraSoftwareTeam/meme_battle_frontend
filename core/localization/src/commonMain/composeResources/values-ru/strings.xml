@@ -236,5 +236,13 @@
     <string name="packs_edit_add_cards">Добавить новые</string>
     <string name="packs_edit_delete_pack">Удалить пэк</string>
     <string name="packs_edit_save">Сохранить</string>
+
+    <!-- Packs Upload Progress -->
+    <string name="packs_uploading_title">Загрузка картинок...</string>
+    <string name="packs_uploading_progress">%1$d / %2$d загружено (%3$d%%)</string>
+    <string name="packs_uploading_status_pending">В очереди</string>
+    <string name="packs_uploading_status_uploading">Загрузка...</string>
+    <string name="packs_uploading_status_completed">Загружено</string>
+    <string name="packs_uploading_status_error">Ошибка загрузки</string>
 </resources>
 

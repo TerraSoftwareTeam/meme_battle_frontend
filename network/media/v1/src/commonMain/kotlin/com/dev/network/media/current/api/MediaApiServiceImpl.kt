@@ -8,7 +8,6 @@ import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.forms.submitFormWithBinaryData
 import io.ktor.client.request.forms.formData
-import io.ktor.http.contentType
 import io.ktor.http.Headers
 import io.ktor.http.HttpHeaders
 
@@ -18,7 +17,7 @@ class MediaApiServiceImpl(
 
     override suspend fun uploadImageMedia(
         byteArray: ByteArray,
-        fileName: String
+        fileName: String,
     ): NetworkResult<MediaAssetDto> = safeCall {
         val mimeType = getMimeType(fileName)
         println("MediaApiServiceImpl: Starting upload of image '$fileName', size: ${byteArray.size} bytes, determined MIME-type: $mimeType")
@@ -52,7 +51,7 @@ class MediaApiServiceImpl(
             "heic" -> "image/heic"
             "heif" -> "image/heif"
             "svg" -> "image/svg+xml"
-            else -> "image/jpeg" // Дефолтный тип для изображений
+            else -> "image/jpeg"
         }
     }
 }

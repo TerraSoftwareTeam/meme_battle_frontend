@@ -12,6 +12,8 @@ import com.dev.network.media.current.api.MediaApiService
 import kotlinx.coroutines.launch
 import com.dev.memebattle.feature.packs.impl.presentation.store.create.compressImageIfNeeded
 
+import com.dev.memebattle.feature.packs.impl.presentation.store.model.UploadProgressState
+
 internal class PacksEditStoreFactory(
     private val storeFactory: StoreFactory,
     private val packRepository: PackRepository,
@@ -145,13 +147,29 @@ internal class PacksEditStoreFactory(
 
                     if (currentState.kind == "meme") {
                         val mediaIds = mutableListOf<Long>()
-                        for (file in currentState.selectedFiles) {
+                        val totalFiles = currentState.selectedFiles.size
+                        if (totalFiles > 0) {
+                            dispatch(Message.UpdateUploadProgress(UploadProgressState(current = 0, total = totalFiles)))
+                        }
+
+                        for ((index, file) in currentState.selectedFiles.withIndex()) {
+                            dispatch(Message.UpdateUploadProgress(UploadProgressState(current = index, total = totalFiles)))
+
                             val rawBytes = file.readBytes()
                             val maxSizeBytes = 2 * 1024 * 1024 * 15L
                             val byteArray = compressImageIfNeeded(rawBytes, maxSizeBytes)
-                            val result = mediaApiService.uploadImageMedia(byteArray, file.name)
+                            val fileName = file.name
+
+                            val result = mediaApiService.uploadImageMedia(
+                                byteArray = byteArray,
+                                fileName = fileName,
+                            )
+
                             when (result) {
-                                is com.dev.memebattle.core.network.call.NetworkResult.Success -> mediaIds.add(result.data.id)
+                                is com.dev.memebattle.core.network.call.NetworkResult.Success -> {
+                                    mediaIds.add(result.data.id)
+                                    dispatch(Message.UpdateUploadProgress(UploadProgressState(current = index + 1, total = totalFiles)))
+                                }
                                 is com.dev.memebattle.core.network.call.NetworkResult.Error -> {
                                     publish(PacksEditStore.Effect.ShowNotification(result.error.toString(), true))
                                     dispatch(Message.SetSaving(false))
@@ -201,6 +219,7 @@ internal class PacksEditStoreFactory(
                 } catch (e: Exception) {
                     publish(PacksEditStore.Effect.ShowNotification(e.message ?: "Unexpected error", true))
                 } finally {
+                    dispatch(Message.UpdateUploadProgress(null))
                     dispatch(Message.SetSaving(false))
                 }
             }
@@ -210,6 +229,7 @@ internal class PacksEditStoreFactory(
     private sealed interface Message {
         data class SetLoading(val isLoading: Boolean) : Message
         data class SetSaving(val isSaving: Boolean) : Message
+        data class UpdateUploadProgress(val uploadProgress: UploadProgressState?) : Message
         data class SetPackInfo(val packId: String, val kind: String) : Message
         data class LoadedMeme(val name: String, val description: String, val isPublic: Boolean, val safetyLevel: SafetyLevel, val languageCode: String, val cards: List<MemeCard>) : Message
         data class LoadedSituation(val name: String, val description: String, val isPublic: Boolean, val safetyLevel: SafetyLevel, val languageCode: String, val cards: List<SituationCard>) : Message
@@ -229,6 +249,7 @@ internal class PacksEditStoreFactory(
         override fun PacksEditStore.State.reduce(msg: Message): PacksEditStore.State = when (msg) {
             is Message.SetLoading -> copy(isLoading = msg.isLoading)
             is Message.SetSaving -> copy(isSaving = msg.isSaving)
+            is Message.UpdateUploadProgress -> copy(uploadProgress = msg.uploadProgress)
             is Message.SetPackInfo -> copy(packId = msg.packId, kind = msg.kind)
             is Message.LoadedMeme -> copy(name = msg.name, description = msg.description, isPublic = msg.isPublic, safetyLevel = msg.safetyLevel, languageCode = msg.languageCode, memeCards = msg.cards)
             is Message.LoadedSituation -> copy(name = msg.name, description = msg.description, isPublic = msg.isPublic, safetyLevel = msg.safetyLevel, languageCode = msg.languageCode, situationCards = msg.cards)
