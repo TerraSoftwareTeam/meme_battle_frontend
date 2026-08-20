@@ -19,6 +19,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.SubcomposeAsyncImage
+import com.dev.memebattle.core.network.utils.normalizeMediaUrl
 import com.dev.memebattle.feature.packs.impl.presentation.view.details.DeckAccent
 import com.dev.memebattle.feature.packs.impl.presentation.view.details.DeckTextPri
 import com.dev.memebattle.core.ui.components.pack.CardBack
@@ -27,8 +28,9 @@ import com.dev.memebattle.core.ui.components.pack.CardBack
 internal fun MemeCardFace(model: Any?, isSelected: Boolean) {
     Box(Modifier.fillMaxSize().background(Color.Black), contentAlignment = Alignment.Center) {
         if (model != null && (model !is String || model.isNotBlank())) {
+            val formattedModel = if (model is String) normalizeMediaUrl(model) else model
             SubcomposeAsyncImage(
-                model = model,
+                model = formattedModel,
                 contentDescription = null,
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Fit,

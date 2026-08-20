@@ -29,9 +29,11 @@ import com.dev.memebattle.feature.gameplay.impl.presentation.store.players.Gamep
 import com.dev.network.game.current.api.GameApiService
 import com.dev.network.game.current.api.ws.GameSocketService
 import com.dev.network.game.current.dto.GameStateDto
+import com.dev.network.game.current.dto.MemeGameCard
 import com.dev.network.game.current.dto.VoteRequest
 import com.dev.network.game.current.dto.ws.GameEvent
 import com.dev.network.game.current.dto.ws.PersonalEvent
+import com.dev.memebattle.core.network.utils.normalizeMediaUrl
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -278,8 +280,14 @@ class GameplayComponentImpl(
                 val submissions = round.submissions ?: return@launch
                 if (submissions.isEmpty()) return@launch
 
-                // card уже является GameCard (sealed interface) — берём напрямую
-                val cards = submissions.map { it.card }
+                val cards = submissions.map { sub ->
+                    val card = sub.card
+                    if (card is MemeGameCard) {
+                        MemeGameCard(card.data.copy(mediaUrl = normalizeMediaUrl(card.data.mediaUrl)))
+                    } else {
+                        card
+                    }
+                }
                 val ids   = submissions.map { it.id }
 
                 panels.value.main.instance?.onIntent(

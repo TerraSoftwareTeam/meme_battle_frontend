@@ -31,7 +31,7 @@ internal class PacksDetailsStoreFactory(
             scope.launch {
                 packRepository.packUpdates.collect { updatedId ->
                     val s = state()
-                    if (s.packId == updatedId && s.kind != null) {
+                    if (s.packId != null && s.packId == updatedId) {
                         load(s.packId, s.kind)
                     }
                 }
@@ -42,34 +42,6 @@ internal class PacksDetailsStoreFactory(
             when (intent) {
                 is PacksDetailsStore.Intent.Load -> load(intent.packId, intent.kind)
                 is PacksDetailsStore.Intent.Close -> publish(PacksDetailsStore.Effect.NavigateBack)
-                is PacksDetailsStore.Intent.ToggleLike -> toggleLike()
-            }
-        }
-
-        private fun toggleLike() {
-            val s = state()
-            val packId = s.packId ?: return
-            val isLiked = s.isLiked
-            
-            dispatch(Message.LikeLoading(true))
-            scope.launch {
-                val result = when (s.kind) {
-                    PacksDetailsStore.PackKind.Meme -> {
-                        if (isLiked) packRepository.unlikeMemePack(packId)
-                        else packRepository.likeMemePack(packId)
-                    }
-                    PacksDetailsStore.PackKind.Situation -> {
-                        if (isLiked) packRepository.unlikeSituationPack(packId)
-                        else packRepository.likeSituationPack(packId)
-                    }
-                }
-                
-                result.onSuccess {
-                    dispatch(Message.LikeToggled(!isLiked))
-                }.onFailure { err ->
-                    dispatch(Message.Error(err.message))
-                }
-                dispatch(Message.LikeLoading(false))
             }
         }
 
@@ -80,8 +52,7 @@ internal class PacksDetailsStoreFactory(
                     PacksDetailsStore.PackKind.Meme -> {
                         packRepository.getMemePackDetails(packId)
                             .onSuccess { details ->
-                                val isLiked = packRepository.likedMemePacks.value.any { it.id == packId }
-                                dispatch(Message.MemeDetailsLoaded(details.pack, details.memes, isLiked))
+                                dispatch(Message.MemeDetailsLoaded(details.pack, details.memes))
                             }
                             .onFailure { err ->
                                 dispatch(Message.Error(err.message))
@@ -90,8 +61,7 @@ internal class PacksDetailsStoreFactory(
                     PacksDetailsStore.PackKind.Situation -> {
                         packRepository.getSituationPackDetails(packId)
                             .onSuccess { details ->
-                                val isLiked = packRepository.likedSituationPacks.value.any { it.id == packId }
-                                dispatch(Message.SituationDetailsLoaded(details.pack, details.situations, isLiked))
+                                dispatch(Message.SituationDetailsLoaded(details.pack, details.situations))
                             }
                             .onFailure { err ->
                                 dispatch(Message.Error(err.message))
@@ -104,10 +74,8 @@ internal class PacksDetailsStoreFactory(
 
     private sealed interface Message {
         data class Loading(val packId: String, val kind: PacksDetailsStore.PackKind) : Message
-        data class MemeDetailsLoaded(val pack: MemePack, val cards: List<MemeCard>, val isLiked: Boolean) : Message
-        data class SituationDetailsLoaded(val pack: SituationPack, val cards: List<SituationCard>, val isLiked: Boolean) : Message
-        data class LikeLoading(val isLoading: Boolean) : Message
-        data class LikeToggled(val isLiked: Boolean) : Message
+        data class MemeDetailsLoaded(val pack: MemePack, val cards: List<MemeCard>) : Message
+        data class SituationDetailsLoaded(val pack: SituationPack, val cards: List<SituationCard>) : Message
         data class Error(val message: String?) : Message
     }
 
@@ -118,16 +86,12 @@ internal class PacksDetailsStoreFactory(
                 isLoading = false,
                 memePack = msg.pack,
                 memeCards = msg.cards,
-                isLiked = msg.isLiked,
             )
             is Message.SituationDetailsLoaded -> copy(
                 isLoading = false,
                 situationPack = msg.pack,
                 situationCards = msg.cards,
-                isLiked = msg.isLiked,
             )
-            is Message.LikeLoading -> copy(isLikeLoading = msg.isLoading)
-            is Message.LikeToggled -> copy(isLiked = msg.isLiked)
             is Message.Error -> copy(isLoading = false, error = msg.message)
         }
     }

@@ -23,6 +23,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import com.dev.memebattle.core.network.utils.normalizeMediaUrl
 
 internal class GameRepositoryImpl(
     private val socketService: GameSocketService,
@@ -92,7 +93,7 @@ internal class GameRepositoryImpl(
                 val newHand = event.cards.map { card ->
                     if (card.kind.equals("meme", ignoreCase = true)) {
                         MemeGameCard(
-                            MemeCardData(id = card.id, mediaUrl = card.imageUrl ?: "")
+                            MemeCardData(id = card.id, mediaUrl = normalizeMediaUrl(card.imageUrl))
                         )
                     } else {
                         SituationGameCard(
@@ -112,7 +113,7 @@ internal class GameRepositoryImpl(
             is GameEvent.RoundStarted -> {
                 val promptCard = if (event.promptKind.equals("meme", ignoreCase = true)) {
                     MemeGameCard(
-                        MemeCardData(id = "", mediaUrl = event.promptContent)
+                        MemeCardData(id = "", mediaUrl = normalizeMediaUrl(event.promptContent))
                     )
                 } else {
                     SituationGameCard(

@@ -22,6 +22,7 @@ import com.dev.network.game.current.dto.ws.GameEvent
 import com.dev.network.game.current.dto.ws.HandCard
 import com.dev.network.game.current.dto.ws.PersonalEvent
 import com.dev.network.game.current.dto.ws.ScoreboardEntry
+import com.dev.memebattle.core.network.utils.normalizeMediaUrl
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -246,7 +247,7 @@ internal class GameplayGameStoreFactory(
                     is GameEvent.RoundStarted -> {
                         val promptCardId = "prompt_${event.roundId}"
                         val promptCard: GameCard = if (event.promptKind == "meme") {
-                            MemeGameCard(MemeCardData(promptCardId, event.promptContent))
+                            MemeGameCard(MemeCardData(promptCardId, normalizeMediaUrl(event.promptContent)))
                         } else {
                             SituationGameCard(SituationCardData(promptCardId, event.promptContent))
                         }
@@ -398,7 +399,7 @@ internal class GameplayGameStoreFactory(
 private fun HandCard.toGameCard(): GameCard {
     val imgUrl = imageUrl
     return if (kind == "meme" && imgUrl != null) {
-        MemeGameCard(MemeCardData(id, imgUrl))
+        MemeGameCard(MemeCardData(id, normalizeMediaUrl(imgUrl)))
     } else {
         SituationGameCard(SituationCardData(id, text ?: ""))
     }

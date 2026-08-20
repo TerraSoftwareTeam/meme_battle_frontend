@@ -13,6 +13,7 @@ import com.dev.memebattle.feature.packs.api.route.PacksRoute
 import com.dev.memebattle.host.root.presentation.component.RootComponentImpl
 import com.dev.memebattle.host.root.presentation.view.RootScreen
 import org.koin.android.ext.koin.androidContext
+import okio.Path.Companion.toPath
 
 
 class MainActivity : ComponentActivity() {
@@ -31,6 +32,24 @@ class MainActivity : ComponentActivity() {
         }
 
         setContent {
+            coil3.compose.setSingletonImageLoaderFactory { context ->
+                coil3.ImageLoader.Builder(context)
+                    .components {
+                        add(coil3.network.ktor3.KtorNetworkFetcherFactory())
+                    }
+                    .memoryCache {
+                        coil3.memory.MemoryCache.Builder()
+                            .maxSizePercent(context, 0.25)
+                            .build()
+                    }
+                    .diskCache {
+                        coil3.disk.DiskCache.Builder()
+                            .directory(context.cacheDir.resolve("image_cache").absolutePath.toPath())
+                            .maxSizeBytes(100L * 1024 * 1024)
+                            .build()
+                    }
+                    .build()
+            }
             RootScreen(component = rootComponent)
         }
     }

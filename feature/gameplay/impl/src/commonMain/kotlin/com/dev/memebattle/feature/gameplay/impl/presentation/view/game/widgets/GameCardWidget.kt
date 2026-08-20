@@ -45,6 +45,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.SubcomposeAsyncImage
+import com.dev.memebattle.core.network.utils.normalizeMediaUrl
 import com.dev.network.game.current.dto.GameCard
 import com.dev.network.game.current.dto.MemeGameCard
 import com.dev.network.game.current.dto.SituationGameCard
@@ -148,7 +149,7 @@ private fun MemeCardContent(
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         SubcomposeAsyncImage(
-            model = imageUrl,
+            model = normalizeMediaUrl(imageUrl),
             contentDescription = label,
             contentScale = ContentScale.Crop,
             modifier = Modifier

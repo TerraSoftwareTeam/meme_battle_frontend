@@ -15,6 +15,9 @@ import com.dev.network.game.current.dto.PackSituationDto
 import com.dev.network.game.current.dto.SituationPackDetailsResponse
 import com.dev.network.game.current.dto.SituationPackDto
 import com.dev.network.game.current.dto.LanguageCode
+import com.dev.memebattle.core.network.utils.MediaUrlEnv
+import com.dev.memebattle.core.network.utils.normalizeMediaUrl
+
 internal fun MemePackDto.toDomain(): MemePack = MemePack(
     id = id,
     name = name,
@@ -27,35 +30,13 @@ internal fun MemePackDto.toDomain(): MemePack = MemePack(
 )
 
 object PlatformEnv {
-    var webOrigin: String? = null
+    var webOrigin: String?
+        get() = MediaUrlEnv.webOrigin
+        set(value) { MediaUrlEnv.webOrigin = value }
 }
 
 internal fun PackMemeDetailsDto.toDomain(): MemeCard {
-    val fullUrl = when {
-        // Relative path → prepend API base (use local proxy on web to avoid CORS)
-        media_url.startsWith("/") -> {
-            val origin = PlatformEnv.webOrigin
-            if (origin != null) "$origin/api-proxy$media_url"
-            else "${com.dev.memebattle.core.network.BuildKonfig.API_BASE_URL}$media_url"
-        }
-        // CDN URL → rewrite through local /cdn-proxy only on Web to fix CORS ("*, *" header bug).
-        // On Android/native webOrigin is null, so we load the CDN URL directly.
-        media_url.contains("cdn.hackclub.com") || media_url.contains("user-cdn.hackclub-assets.com") -> {
-            val prefix = PlatformEnv.webOrigin
-            if (prefix != null) {
-                media_url
-                    .replace("https://user-cdn.hackclub-assets.com", "$prefix/cdn-proxy")
-                    .replace("http://user-cdn.hackclub-assets.com", "$prefix/cdn-proxy")
-                    .replace("https://cdn.hackclub.com", "$prefix/cdn-proxy")
-                    .replace("http://cdn.hackclub.com", "$prefix/cdn-proxy")
-            } else {
-                // Native platform (Android/iOS): load CDN directly, no CORS restriction
-                media_url
-            }
-        }
-        else -> media_url
-    }
-    println("PackMemeDetailsDto.toDomain: mapping '$media_url' -> '$fullUrl' (webOrigin=${PlatformEnv.webOrigin})")
+    val fullUrl = normalizeMediaUrl(media_url)
     return MemeCard(
         id = id,
         packId = pack_id,

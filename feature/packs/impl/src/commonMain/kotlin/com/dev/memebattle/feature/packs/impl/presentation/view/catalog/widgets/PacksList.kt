@@ -35,7 +35,6 @@ internal fun PacksList(
             val packs = when (state.activeFilter) {
                 PacksCatalogStore.PackFilter.All -> state.memePacks
                 PacksCatalogStore.PackFilter.Personal -> state.myMemePacks
-                PacksCatalogStore.PackFilter.Liked -> state.likedMemePacks
             }
             packs.map { PackUiModel(it.id, it.name, it.description, it.createdAt, it.safetyLevel, it.languageCode) }
         }
@@ -43,7 +42,6 @@ internal fun PacksList(
             val packs = when (state.activeFilter) {
                 PacksCatalogStore.PackFilter.All -> state.situationPacks
                 PacksCatalogStore.PackFilter.Personal -> state.mySituationPacks
-                PacksCatalogStore.PackFilter.Liked -> state.likedSituationPacks
             }
             packs.map { PackUiModel(it.id, it.name, it.description, it.createdAt, it.safetyLevel, it.languageCode) }
         }

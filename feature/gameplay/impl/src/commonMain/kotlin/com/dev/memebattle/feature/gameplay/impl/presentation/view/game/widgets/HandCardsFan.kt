@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import coil3.compose.SubcomposeAsyncImage
+import com.dev.memebattle.core.network.utils.normalizeMediaUrl
 import com.dev.memebattle.core.localization.Res
 import com.dev.memebattle.core.localization.gameplay_submitting_empty_hand
 import org.jetbrains.compose.resources.stringResource
@@ -164,7 +165,7 @@ private fun FanCardItem(
     ) {
         when (card) {
             is HandCardData.Meme -> SubcomposeAsyncImage(
-                model = card.imageUrl,
+                model = normalizeMediaUrl(card.imageUrl),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize().clip(shape),
