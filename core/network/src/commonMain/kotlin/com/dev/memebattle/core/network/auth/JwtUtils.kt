@@ -10,17 +10,10 @@ import kotlin.io.encoding.ExperimentalEncodingApi
  */
 @OptIn(ExperimentalEncodingApi::class)
 fun decodeJwtSub(jwt: String): String? = runCatching {
-    // JWT = header.payload.signature  (all Base64url-encoded)
     val payloadEncoded = jwt.split(".").getOrNull(1) ?: return null
+    val json = Base64.UrlSafe.withPadding(Base64.PaddingOption.PRESENT_OPTIONAL)
+        .decode(payloadEncoded)
+        .decodeToString()
 
-    // Base64url → Base64: replace URL-safe chars and add padding
-    val base64 = payloadEncoded
-        .replace('-', '+')
-        .replace('_', '/')
-        .let { it + "=".repeat((4 - it.length % 4) % 4) }
-
-    val json = Base64.decode(base64).decodeToString()
-
-    // Simple regex extraction — no full JSON parser needed here
     Regex(""""sub"\s*:\s*"([^"]+)"""").find(json)?.groupValues?.getOrNull(1)
 }.getOrNull()
