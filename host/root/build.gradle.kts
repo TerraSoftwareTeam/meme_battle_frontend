@@ -15,6 +15,7 @@ kotlin {
         commonMain.dependencies {
             implementation(projects.core.navigation)
             implementation(projects.core.ui)
+            implementation(projects.core.localization)
             implementation(projects.feature.home.api)
             implementation(projects.feature.gameplay.api)
             

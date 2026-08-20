@@ -43,6 +43,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import com.dev.memebattle.core.localization.Res
 import com.dev.memebattle.core.localization.store
+import com.dev.memebattle.feature.home.impl.presentation.view.menu.widgets.LanguageSwitchChip
 import com.dev.memebattle.feature.home.impl.presentation.component.create.CreateLobbyComponent
 import com.dev.memebattle.feature.home.impl.presentation.component.menu.HomeMenuComponent
 import com.dev.memebattle.feature.home.impl.presentation.component.packpicker.PackPickerComponent
@@ -87,21 +88,29 @@ fun HomeMenuView(
             .background(backgroundBrush),
         contentAlignment = Alignment.Center
     ) {
-        androidx.compose.animation.AnimatedVisibility(
-            visible = !state.isLobbyListVisible,
-            enter = fadeIn(tween(300)),
-            exit = fadeOut(tween(200)),
+        Row(
             modifier = Modifier
-                .align(Alignment.TopEnd)
+                .align(Alignment.TopCenter)
+                .fillMaxWidth()
                 .statusBarsPadding()
-                .padding(top = 12.dp, end = 16.dp)
-                .zIndex(10f)
+                .padding(top = 12.dp, start = 16.dp, end = 16.dp)
+                .zIndex(10f),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            UserChip(
-                identity = authState.identity,
-                onClick = { showAuthDialog = true },
-                modifier = Modifier
-            )
+            LanguageSwitchChip()
+
+            androidx.compose.animation.AnimatedVisibility(
+                visible = !state.isLobbyListVisible,
+                enter = fadeIn(tween(300)),
+                exit = fadeOut(tween(200))
+            ) {
+                UserChip(
+                    identity = authState.identity,
+                    onClick = { showAuthDialog = true },
+                    modifier = Modifier
+                )
+            }
         }
 
         BoxWithConstraints(

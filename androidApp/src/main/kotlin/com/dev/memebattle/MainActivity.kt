@@ -14,12 +14,13 @@ import com.dev.memebattle.host.root.presentation.component.RootComponentImpl
 import com.dev.memebattle.host.root.presentation.view.RootScreen
 import org.koin.android.ext.koin.androidContext
 import okio.Path.Companion.toPath
-
+import com.dev.memebattle.core.localization.initAndroidLocalization
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        initAndroidLocalization(applicationContext)
         initKoinIfNeeded()
 
         val initialRoute = parseDeepLink(intent)

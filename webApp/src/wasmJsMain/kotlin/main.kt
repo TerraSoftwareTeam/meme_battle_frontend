@@ -67,6 +67,7 @@ fun main() {
         val wsOrigin = origin.replace(Regex("^http"), "ws")
         WebApiConfig.wsBaseUrl = "$wsOrigin/ws-proxy"
     }
+    com.dev.memebattle.core.localization.initAppLanguage()
     initKoin()
 
     val lifecycle = LifecycleRegistry()

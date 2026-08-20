@@ -7,6 +7,8 @@ import androidx.compose.ui.Modifier
 import com.arkivanov.decompose.extensions.compose.stack.Children
 import com.arkivanov.decompose.extensions.compose.stack.animation.slide
 import com.arkivanov.decompose.extensions.compose.stack.animation.stackAnimation
+import androidx.compose.runtime.key
+import com.dev.memebattle.core.localization.currentAppLanguage
 import com.dev.memebattle.core.ui.notification.NotificationController
 import com.dev.memebattle.host.root.presentation.component.RootComponent
 import org.koin.compose.koinInject
@@ -17,17 +19,19 @@ fun RootScreen(
 ) {
     val notificationController: NotificationController = koinInject()
 
-    AppNotificationHost(controller = notificationController) {
-        Box(modifier = Modifier.fillMaxSize()) {
-            Children(
-                stack = component.childStack,
-                animation = stackAnimation(slide())
-            ) { child ->
-                child.instance.hostLayer.Render(
-                    entry = child.instance.entry,
-                    component = child.instance.component,
-                    onNavigate = component::onNavigate
-                )
+    key(currentAppLanguage) {
+        AppNotificationHost(controller = notificationController) {
+            Box(modifier = Modifier.fillMaxSize()) {
+                Children(
+                    stack = component.childStack,
+                    animation = stackAnimation(slide())
+                ) { child ->
+                    child.instance.hostLayer.Render(
+                        entry = child.instance.entry,
+                        component = child.instance.component,
+                        onNavigate = component::onNavigate
+                    )
+                }
             }
         }
     }
