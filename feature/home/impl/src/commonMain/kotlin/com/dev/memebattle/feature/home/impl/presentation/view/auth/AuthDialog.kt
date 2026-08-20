@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -79,7 +80,9 @@ fun AuthDialog(
         ) {
             Surface(
                 modifier = Modifier
-                    .fillMaxWidth(fraction = 0.92f)
+                    .padding(16.dp)
+                    .widthIn(max = 440.dp)
+                    .fillMaxWidth()
                     .wrapContentHeight()
                     .clickable(enabled = false, onClick = {}),
                 shape = RoundedCornerShape(28.dp),

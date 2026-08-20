@@ -6,6 +6,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,6 +19,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -49,6 +52,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.dev.memebattle.core.localization.Res
 import com.dev.memebattle.core.localization.gameplay_players_btn_close
 import com.dev.memebattle.core.localization.home_join_dialog_cancel
@@ -217,20 +221,33 @@ fun LobbiesWidget(
         }
         
         if (state.joinGameId != null) {
-            Dialog(onDismissRequest = onCancelJoin) {
-                Surface(
-                    shape = RoundedCornerShape(24.dp),
-                    color = Color(0xFF1E143B),
-                    border = BorderStroke(
-                        1.dp,
-                        Brush.linearGradient(
-                            listOf(Color(0xFF7C5DFA).copy(alpha = 0.6f), Color(0xFF3B2F5E))
-                        )
-                    ),
+            Dialog(
+                onDismissRequest = onCancelJoin,
+                properties = DialogProperties(usePlatformDefaultWidth = false)
+            ) {
+                Box(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = 0.6f))
+                        .clickable(onClick = onCancelJoin),
+                    contentAlignment = Alignment.Center,
                 ) {
+                    Surface(
+                        shape = RoundedCornerShape(24.dp),
+                        color = Color(0xFF1E143B),
+                        border = BorderStroke(
+                            1.dp,
+                            Brush.linearGradient(
+                                listOf(Color(0xFF7C5DFA).copy(alpha = 0.6f), Color(0xFF3B2F5E))
+                            )
+                        ),
+                        modifier = Modifier
+                            .padding(16.dp)
+                            .widthIn(max = 440.dp)
+                            .fillMaxWidth()
+                            .wrapContentHeight()
+                            .clickable(enabled = false, onClick = {}),
+                    ) {
                     Column(
                         modifier = Modifier.padding(24.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
@@ -365,4 +382,5 @@ fun LobbiesWidget(
             }
         }
     }
+}
 }
