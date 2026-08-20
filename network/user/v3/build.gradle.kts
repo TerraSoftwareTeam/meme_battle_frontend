@@ -1,7 +1,10 @@
-plugins { id("kmp.dev.library") }
+plugins {
+    id("kmp.dev.library")
+    kotlin("plugin.serialization")
+}
 kotlin {
     androidLibrary {
-        namespace = "com.dev.memebattle.network.user.current"
+        namespace = "com.dev.memebattle.network.user.v3"
         compileSdk = libs.versions.compileSdk.get().toInt()
         minSdk = libs.versions.minSdk.get().toInt()
     }
@@ -10,15 +13,14 @@ kotlin {
         iosSimulatorArm64()
     ).forEach { iosTarget ->
         iosTarget.binaries.framework {
-            baseName = "UserCurrentNetwork"
+            baseName = "UserNetwork"
             isStatic = true
         }
     }
     sourceSets {
         commonMain.dependencies {
-            api(projects.network.user.v3)
-            implementation(projects.core.network)
-            implementation(libs.koin.core)
+            api(projects.core.network)
+            implementation(libs.ktor.client.core)
         }
     }
 }

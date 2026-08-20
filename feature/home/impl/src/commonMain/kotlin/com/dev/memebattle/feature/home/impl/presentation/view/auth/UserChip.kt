@@ -91,11 +91,7 @@ fun UserChip(
         }
 
         // Display name label
-        val label = when (identity) {
-            is UserIdentity.Authorized -> identity.username
-            is UserIdentity.Guest      -> identity.name?.takeIf { it.isNotBlank() } ?: stringResource(Res.string.auth_chip_guest)
-            UserIdentity.Unknown       -> stringResource(Res.string.auth_chip_login)
-        }
+        val label = identity.displayName ?: stringResource(Res.string.auth_chip_guest)
         Text(
             text = label,
             fontSize = 13.sp,

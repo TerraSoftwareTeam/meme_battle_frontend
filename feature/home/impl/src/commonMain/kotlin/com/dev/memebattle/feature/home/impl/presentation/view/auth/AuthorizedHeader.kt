@@ -25,7 +25,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.dev.memebattle.core.localization.Res
 import com.dev.memebattle.core.localization.auth_authorized_logout
+import com.dev.memebattle.core.localization.auth_chip_guest
 import com.dev.memebattle.feature.home.impl.domain.UserIdentity
+import com.dev.memebattle.feature.home.impl.domain.displayName
 import org.jetbrains.compose.resources.stringResource
 
 /**
@@ -41,6 +43,8 @@ internal fun AuthorizedHeader(
         modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
+        val displayName = identity.displayName ?: stringResource(Res.string.auth_chip_guest)
+
         // Avatar
         Box(
             modifier = Modifier
@@ -52,7 +56,7 @@ internal fun AuthorizedHeader(
             contentAlignment = Alignment.Center,
         ) {
             Text(
-                text = identity.username.take(1).uppercase(),
+                text = displayName.take(1).uppercase(),
                 fontSize = 28.sp,
                 fontWeight = FontWeight.ExtraBold,
                 color = Color.White,
@@ -62,15 +66,10 @@ internal fun AuthorizedHeader(
         Spacer(Modifier.height(12.dp))
 
         Text(
-            text = identity.username,
+            text = displayName,
             fontSize = 20.sp,
             fontWeight = FontWeight.Bold,
             color = Color.White,
-        )
-        Text(
-            text = "ID: ${identity.id.take(8)}…",
-            fontSize = 12.sp,
-            color = Color(0xFF887A9E),
         )
 
         Spacer(Modifier.height(20.dp))

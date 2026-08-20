@@ -25,17 +25,16 @@ import com.dev.memebattle.core.localization.auth_tab_register
 import org.jetbrains.compose.resources.stringResource
 
 /** Auth flow tab variants. */
-internal enum class AuthTab { Login, Register, Guest }
+internal enum class AuthTab { Login, Register }
 
 /**
- * Three-segment tab selector: Вход / Регистрация / Гость.
+ * Two-segment tab selector: Вход / Регистрация.
  */
 @Composable
 internal fun AuthTabRow(selected: AuthTab, onSelect: (AuthTab) -> Unit) {
     val tabs = listOf(
         AuthTab.Login    to stringResource(Res.string.auth_tab_login),
         AuthTab.Register to stringResource(Res.string.auth_tab_register),
-        AuthTab.Guest    to stringResource(Res.string.auth_tab_guest),
     )
     Row(
         modifier = Modifier

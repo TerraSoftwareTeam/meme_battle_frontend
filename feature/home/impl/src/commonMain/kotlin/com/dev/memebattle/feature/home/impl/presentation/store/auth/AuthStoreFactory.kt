@@ -13,6 +13,7 @@ import com.dev.memebattle.feature.home.impl.domain.UserIdentity
 import com.dev.memebattle.feature.home.impl.domain.isAuthorized
 import com.dev.network.user.current.api.UserApiService
 import com.dev.network.user_auth.current.api.User_authApiService
+import com.dev.network.user.current.dto.UpdateMeDto
 import com.dev.network.user_auth.current.dto.AuthUserDto
 import com.dev.network.user_auth.current.dto.GuestAuthDto
 import com.dev.network.user_auth.current.dto.RegisterAuthUserDto
@@ -74,10 +75,18 @@ class AuthStoreFactory(
 
     private suspend fun tryLoadAuthorizedProfile(): UserIdentity {
         return when (val result = userApiService.getMe()) {
-            is NetworkResult.Success -> UserIdentity.Authorized(
-                id = result.data.id,
-                username = result.data.username
-            )
+            is NetworkResult.Success -> {
+                val user = result.data
+                if (user.is_guest) {
+                    val customName = user.username.takeIf { it.isNotBlank() && !it.startsWith("player-") }
+                    UserIdentity.Guest(name = customName)
+                } else {
+                    UserIdentity.Authorized(
+                        id = user.id,
+                        username = user.username
+                    )
+                }
+            }
             is NetworkResult.Error -> {
                 UserIdentity.Guest(name = null)
             }
@@ -86,7 +95,11 @@ class AuthStoreFactory(
 
     private suspend fun tryLoadGuestProfile(): UserIdentity {
         return when (val result = userApiService.getMe()) {
-            is NetworkResult.Success -> UserIdentity.Guest(name = result.data.username)
+            is NetworkResult.Success -> {
+                val user = result.data
+                val customName = user.username.takeIf { it.isNotBlank() && !it.startsWith("player-") }
+                UserIdentity.Guest(name = customName)
+            }
             is NetworkResult.Error -> UserIdentity.Guest(name = null)
         }
     }
@@ -199,42 +212,21 @@ class AuthStoreFactory(
                 dispatch(Msg.SetLoading(true))
                 dispatch(Msg.ClearError)
 
-                // Step 1: Register
-                val registerResult = userAuthService.createUserAuth(
-                    RegisterAuthUserDto(
+                val updateResult = userApiService.updateMe(
+                    UpdateMeDto(
                         username = username,
                         password = password.takeIf { it.isNotBlank() }
                     )
                 )
-                when (registerResult) {
+                when (updateResult) {
                     is NetworkResult.Success -> {
-                        // Step 2: Login immediately to obtain tokens
-                        val loginResult = userAuthService.loginUser(
-                            AuthUserDto(
-                                username = username,
-                                password = password.takeIf { it.isNotBlank() }
-                            )
-                        )
-                        when (loginResult) {
-                            is NetworkResult.Success -> {
-                                val body = loginResult.data
-                                tokenStorage.saveTokens(
-                                    accessToken = body.access_token,
-                                    refreshToken = body.refresh_token,
-                                    origin = AuthOrigin.USER
-                                )
-                                val profile = tryLoadAuthorizedProfile()
-                                dispatch(Msg.SetIdentity(profile))
-                                dispatch(Msg.SetLoading(false))
-                                publish(AuthStore.Effect.AuthSuccess)
-                            }
-                            is NetworkResult.Error -> {
-                                dispatch(Msg.SetError("Registered, but login failed: ${loginResult.error.toUserMessage()}"))
-                            }
-                        }
+                        val profile = tryLoadAuthorizedProfile()
+                        dispatch(Msg.SetIdentity(profile))
+                        dispatch(Msg.SetLoading(false))
+                        publish(AuthStore.Effect.AuthSuccess)
                     }
                     is NetworkResult.Error -> {
-                        dispatch(Msg.SetError(registerResult.error.toUserMessage()))
+                        dispatch(Msg.SetError(updateResult.error.toUserMessage()))
                     }
                 }
             }

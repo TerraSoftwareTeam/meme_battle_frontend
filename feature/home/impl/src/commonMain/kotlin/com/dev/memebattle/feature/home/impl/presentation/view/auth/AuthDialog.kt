@@ -63,8 +63,7 @@ fun AuthDialog(
     onIntent: (AuthStore.Intent) -> Unit,
     onDismiss: () -> Unit,
 ) {
-    val initialTab = if (authState.identity.isGuest) AuthTab.Guest else AuthTab.Login
-    var selectedTab by remember { mutableStateOf(initialTab) }
+    var selectedTab by remember { mutableStateOf(AuthTab.Login) }
     var passwordVisible by remember { mutableStateOf(false) }
 
     Dialog(
@@ -168,10 +167,6 @@ fun AuthDialog(
                                         state = authState,
                                         passwordVisible = passwordVisible,
                                         onTogglePassword = { passwordVisible = !passwordVisible },
-                                        onIntent = onIntent,
-                                    )
-                                    AuthTab.Guest -> GuestForm(
-                                        state = authState,
                                         onIntent = onIntent,
                                     )
                                 }

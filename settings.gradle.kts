@@ -72,3 +72,5 @@ include(":network:user:v2")
 include(":network:user_auth:v3")
 
 
+
+include(":network:user:v3")
