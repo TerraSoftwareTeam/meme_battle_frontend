@@ -9,6 +9,9 @@ plugins {
 kotlin {
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
+        compilerOptions {
+            freeCompilerArgs.add("-Xwasm-use-try-table")
+        }
         browser {
             commonWebpackConfig {
                 outputFileName = "webApp.js"

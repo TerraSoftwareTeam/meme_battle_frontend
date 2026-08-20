@@ -95,9 +95,9 @@ internal class GameSocketServiceImpl(
             try {
                 ensureConnectionToken()
 
-                println("[WS] Connecting to $wsBaseUrl/connection/websocket")
+                println("[WS] Connecting to $wsBaseUrl/connection/websocket?token=${connectionToken}")
                 httpClient.webSocket({
-                    url.takeFrom("$wsBaseUrl/connection/websocket")
+                    url.takeFrom("$wsBaseUrl/connection/websocket?token=${connectionToken}")
                 }) {
                     println("[WS] Session opened")
                     reconnectDelay = 2.seconds // reset backoff on success

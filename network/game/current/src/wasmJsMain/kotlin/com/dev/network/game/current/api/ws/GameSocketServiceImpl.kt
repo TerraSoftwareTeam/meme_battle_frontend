@@ -106,7 +106,7 @@ internal class GameSocketServiceImpl(
                 connectionToken = token
                 reconnectDelayMs = 2000L // сброс backoff при успехе
 
-                val wsUrl = "$wsBaseUrl/connection/websocket"
+                val wsUrl = "$wsBaseUrl/connection/websocket?token=$token"
                 println("[WS] Connecting to: $wsUrl")
                 val connected = connectWebSocket(wsUrl, token)
 
