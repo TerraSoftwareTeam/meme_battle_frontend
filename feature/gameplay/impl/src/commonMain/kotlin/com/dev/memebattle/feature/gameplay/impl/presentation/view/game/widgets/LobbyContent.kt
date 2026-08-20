@@ -65,6 +65,7 @@ fun LobbyContent(
     readyCount: Int,
     amIReady: Boolean,
     isSettingReady: Boolean,
+    maxPlayers: Int? = null,
     onToggleReady: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -109,6 +110,7 @@ fun LobbyContent(
                 readyCount = readyCount,
                 totalCount = totalPlayers,
                 fraction = readyFraction,
+                maxPlayers = maxPlayers,
                 modifier = Modifier.widthIn(max = 480.dp).fillMaxWidth(),
             )
 
@@ -177,6 +179,7 @@ private fun ReadinessProgressCard(
     readyCount: Int,
     totalCount: Int,
     fraction: Float,
+    maxPlayers: Int? = null,
     modifier: Modifier = Modifier,
 ) {
     val animFraction by animateFloatAsState(
@@ -249,12 +252,25 @@ private fun ReadinessProgressCard(
             }
 
             Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = labelReadyTitle,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = Color.White,
-                    fontWeight = FontWeight.SemiBold,
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = labelReadyTitle,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = Color.White,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                    val boundsText = if (maxPlayers != null) "Мин: 3 | Макс: $maxPlayers" else "Мин: 3"
+                    Text(
+                        text = boundsText,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = Color(0xFF9D85FF),
+                        fontWeight = FontWeight.Bold,
+                    )
+                }
                 Spacer(Modifier.height(8.dp))
                 // Горизонтальный прогресс-бар
                 Box(
@@ -278,11 +294,13 @@ private fun ReadinessProgressCard(
                 }
                 Spacer(Modifier.height(6.dp))
                 Text(
-                    text = if (totalCount < 3) labelWaitMin
+                    text = if (totalCount < 3) "Нужно еще участников (мин. 3)"
                            else if (fraction >= 1f) labelAllReady
                            else labelWaitOthers,
                     style = MaterialTheme.typography.labelSmall,
-                    color = if (fraction >= 1f && totalCount >= 3) Color(0xFF00C853) else Color.White.copy(alpha = 0.4f),
+                    color = if (totalCount < 3) Color(0xFFFF5252)
+                           else if (fraction >= 1f) Color(0xFF00C853)
+                           else Color.White.copy(alpha = 0.4f),
                 )
             }
         }

@@ -64,6 +64,17 @@
     <string name="lobby_create_submit">Создать и играть</string>
     <string name="lobby_create_btn_add_from_store">Добавить из каталога</string>
     <string name="lobby_create_official_badge">Официальный</string>
+    <string name="lobby_create_capacity_title">Вместимость лобби</string>
+    <string name="lobby_create_max_players_label">Максимум игроков</string>
+    <string name="lobby_create_max_players_value">%1$d игроков</string>
+    <string name="lobby_create_cards_memes_count">Выбрано мемов: %1$d</string>
+    <string name="lobby_create_cards_situations_count">Выбрано ситуаций: %1$d</string>
+    <string name="lobby_create_cards_per_player">На 1 игрока: %1$d карт (рука %2$d + добор %3$d)</string>
+    <string name="lobby_create_prompts_needed">Промтов в резерве: %1$d из %2$d нужно</string>
+    <string name="lobby_create_insufficient_cards_warning">Недостаточно карт в выбранных паках для игры с данными параметрами</string>
+    <string name="lobby_create_min_players_warning">Для игры требуется минимум 3 игрока (сейчас максимум: %1$d). Выберите больше паков или уменьшите параметры игры.</string>
+    <string name="gameplay_lobby_player_bounds">Ограничения лобби: от 3 до %1$d игроков</string>
+    <string name="gameplay_info_max_players">Макс. игроков</string>
     <string name="pack_picker_title">Выбор паков</string>
     <string name="pack_picker_tab_memes">Мемы</string>
     <string name="pack_picker_tab_situations">Ситуации</string>

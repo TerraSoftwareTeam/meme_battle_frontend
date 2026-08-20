@@ -87,6 +87,7 @@ fun PackSelectionRow(
     selectedIds: Set<String>,
     officialIds: Set<String>,
     packKind: PackCardKind,
+    cardCounts: Map<String, Int> = emptyMap(),
     onToggle: (String) -> Unit,
 ) {
     data class PackInfo(
@@ -96,17 +97,20 @@ fun PackSelectionRow(
         val createdAt: String,
         val safetyLevel: SafetyLevel,
         val languageCode: String,
+        val cardCount: Int?,
     )
 
     val packInfoList = packs.mapNotNull { pack ->
         when (pack) {
             is MemePack -> PackInfo(
                 id = pack.id, name = pack.name, description = pack.description,
-                createdAt = pack.createdAt, safetyLevel = pack.safetyLevel, languageCode = pack.languageCode
+                createdAt = pack.createdAt, safetyLevel = pack.safetyLevel, languageCode = pack.languageCode,
+                cardCount = cardCounts[pack.id]
             )
             is SituationPack -> PackInfo(
                 id = pack.id, name = pack.name, description = pack.description,
-                createdAt = pack.createdAt, safetyLevel = pack.safetyLevel, languageCode = pack.languageCode
+                createdAt = pack.createdAt, safetyLevel = pack.safetyLevel, languageCode = pack.languageCode,
+                cardCount = cardCounts[pack.id]
             )
             else -> null
         }
@@ -141,6 +145,7 @@ fun PackSelectionRow(
                     languageCode = pack.languageCode,
                     isSelected = isSelected,
                     isOfficial = isOfficial,
+                    cardCount = pack.cardCount,
                     onClick = { onToggle(pack.id) }
                 )
             }

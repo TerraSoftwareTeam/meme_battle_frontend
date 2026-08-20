@@ -56,6 +56,8 @@ class CreateLobbyStoreFactory(
             val newMemeIds: Set<String>,
             val newSituationIds: Set<String>
         ) : Msg
+        data class UpdateMemePackCardCount(val packId: String, val count: Int) : Msg
+        data class UpdateSituationPackCardCount(val packId: String, val count: Int) : Msg
     }
 
     private inner class ExecutorImpl :
@@ -101,6 +103,10 @@ class CreateLobbyStoreFactory(
                     if (currentState.selectedMemePackIds.isEmpty() && officialPacks.isNotEmpty()) {
                         dispatch(Msg.ToggleMemePack(officialPacks.first().id))
                     }
+
+                    // Fetch details to get card counts for all known meme packs
+                    val knownMemeIds = allPacks.map { it.id }.toSet() + currentState.selectedMemePackIds + initialSelectedMemeIds
+                    fetchMemePackDetailsIfNeeded(knownMemeIds)
                 }
             }
 
@@ -135,16 +141,50 @@ class CreateLobbyStoreFactory(
                     if (currentState.selectedSituationPackIds.isEmpty() && officialPacks.isNotEmpty()) {
                         dispatch(Msg.ToggleSituationPack(officialPacks.first().id))
                     }
+
+                    // Fetch details to get card counts for all known situation packs
+                    val knownSituationIds = allPacks.map { it.id }.toSet() + currentState.selectedSituationPackIds + initialSelectedSituationIds
+                    fetchSituationPackDetailsIfNeeded(knownSituationIds)
+                }
+            }
+        }
+
+        private fun fetchMemePackDetailsIfNeeded(packIds: Set<String>) {
+            val currentState = state()
+            val missingIds = packIds.filter { it !in currentState.memePackCardCounts }
+            missingIds.forEach { packId ->
+                scope.launch {
+                    val result = packRepository.getMemePackDetails(packId)
+                    result.onSuccess { details ->
+                        dispatch(Msg.UpdateMemePackCardCount(packId, details.memes.size))
+                    }
+                }
+            }
+        }
+
+        private fun fetchSituationPackDetailsIfNeeded(packIds: Set<String>) {
+            val currentState = state()
+            val missingIds = packIds.filter { it !in currentState.situationPackCardCounts }
+            missingIds.forEach { packId ->
+                scope.launch {
+                    val result = packRepository.getSituationPackDetails(packId)
+                    result.onSuccess { details ->
+                        dispatch(Msg.UpdateSituationPackCardCount(packId, details.situations.size))
+                    }
                 }
             }
         }
 
         override fun executeIntent(intent: CreateLobbyStore.Intent) {
             when (intent) {
-                is CreateLobbyStore.Intent.ToggleMemePack ->
+                is CreateLobbyStore.Intent.ToggleMemePack -> {
                     dispatch(Msg.ToggleMemePack(intent.id))
-                is CreateLobbyStore.Intent.ToggleSituationPack ->
+                    fetchMemePackDetailsIfNeeded(setOf(intent.id))
+                }
+                is CreateLobbyStore.Intent.ToggleSituationPack -> {
                     dispatch(Msg.ToggleSituationPack(intent.id))
+                    fetchSituationPackDetailsIfNeeded(setOf(intent.id))
+                }
                 is CreateLobbyStore.Intent.SetMode ->
                     dispatch(Msg.SetMode(intent.mode))
                 is CreateLobbyStore.Intent.SetMaxRounds ->
@@ -155,8 +195,11 @@ class CreateLobbyStoreFactory(
                     dispatch(Msg.UpdateLobbyNameInput(intent.name))
                 is CreateLobbyStore.Intent.UpdateHandleInput ->
                     dispatch(Msg.UpdateHandleInput(intent.handle))
-                is CreateLobbyStore.Intent.AddPacksFromPicker ->
+                is CreateLobbyStore.Intent.AddPacksFromPicker -> {
                     addPacksFromPicker(intent)
+                    fetchMemePackDetailsIfNeeded(intent.memePackIds)
+                    fetchSituationPackDetailsIfNeeded(intent.situationPackIds)
+                }
                 CreateLobbyStore.Intent.Create ->
                     createGame(state())
             }
@@ -250,6 +293,12 @@ class CreateLobbyStoreFactory(
                     extraSituationPacks = msg.extraSituationPacks,
                     selectedMemePackIds = msg.newMemeIds,
                     selectedSituationPackIds = msg.newSituationIds
+                )
+                is Msg.UpdateMemePackCardCount -> copy(
+                    memePackCardCounts = memePackCardCounts + (msg.packId to msg.count)
+                )
+                is Msg.UpdateSituationPackCardCount -> copy(
+                    situationPackCardCounts = situationPackCardCounts + (msg.packId to msg.count)
                 )
             }
     }

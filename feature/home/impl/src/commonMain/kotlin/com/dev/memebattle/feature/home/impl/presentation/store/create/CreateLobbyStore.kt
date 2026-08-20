@@ -57,7 +57,10 @@ interface CreateLobbyStore : Store<Intent, State, Label> {
         val handSize: Int = 5,
         val lobbyNameInput: String = "",
         val handleInput: String = "",
-        val error: String? = null
+        val error: String? = null,
+        // Card counts mapping (packId -> number of cards)
+        val memePackCardCounts: Map<String, Int> = emptyMap(),
+        val situationPackCardCounts: Map<String, Int> = emptyMap(),
     ) {
         /** All meme packs to show in the selection list (official first, then extras). */
         val availableMemePacks: List<MemePack>
@@ -71,11 +74,53 @@ interface CreateLobbyStore : Store<Intent, State, Label> {
                 officialSituationPacks.none { it.id == extra.id }
             }
 
+        /** Total cards available in currently selected meme packs. */
+        val totalSelectedMemesCount: Int
+            get() = selectedMemePackIds.sumOf { memePackCardCounts[it] ?: 0 }
+
+        /** Total cards available in currently selected situation packs. */
+        val totalSelectedSituationsCount: Int
+            get() = selectedSituationPackIds.sumOf { situationPackCardCounts[it] ?: 0 }
+
+        /** Total cards required per player (handSize at start + 1 draw per round). */
+        val cardsNeededPerPlayer: Int
+            get() = handSize + maxRounds
+
+        /**
+         * Calculated maximum players count supported by current pack selection and lobby parameters.
+         *
+         * Mode SITUATION_TO_MEME:
+         * - Memes needed per player: H + R
+         * - Situations (prompts) needed: R
+         * - Max players: totalSelectedMemes / (H + R), if totalSelectedSituations >= R.
+         *
+         * Mode MEME_TO_SITUATION:
+         * - Situations needed per player: H + R
+         * - Memes (prompts) needed: R
+         * - Max players: totalSelectedSituations / (H + R), if totalSelectedMemes >= R.
+         */
+        val calculatedMaxPlayers: Int
+            get() {
+                val perPlayer = cardsNeededPerPlayer
+                if (perPlayer <= 0 || maxRounds <= 0) return 0
+                return when (mode) {
+                    GameMode.SITUATION_TO_MEME -> {
+                        if (totalSelectedSituationsCount < maxRounds) 0
+                        else totalSelectedMemesCount / perPlayer
+                    }
+                    GameMode.MEME_TO_SITUATION -> {
+                        if (totalSelectedMemesCount < maxRounds) 0
+                        else totalSelectedSituationsCount / perPlayer
+                    }
+                }
+            }
+
         val isCreateEnabled: Boolean
             get() = lobbyNameInput.isNotBlank()
                 && selectedMemePackIds.isNotEmpty()
                 && selectedSituationPackIds.isNotEmpty()
                 && !isLoading
+                && calculatedMaxPlayers >= 3
     }
 
     sealed interface Label {

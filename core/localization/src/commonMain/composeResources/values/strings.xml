@@ -62,6 +62,17 @@
     <string name="lobby_create_submit">Create and Play</string>
     <string name="lobby_create_btn_add_from_store">Add from Catalog</string>
     <string name="lobby_create_official_badge">Official</string>
+    <string name="lobby_create_capacity_title">Lobby Capacity</string>
+    <string name="lobby_create_max_players_label">Max Players</string>
+    <string name="lobby_create_max_players_value">%1$d players</string>
+    <string name="lobby_create_cards_memes_count">Selected memes: %1$d</string>
+    <string name="lobby_create_cards_situations_count">Selected situations: %1$d</string>
+    <string name="lobby_create_cards_per_player">Per player: %1$d cards (hand %2$d + draw %3$d)</string>
+    <string name="lobby_create_prompts_needed">Prompts in reserve: %1$d of %2$d needed</string>
+    <string name="lobby_create_insufficient_cards_warning">Not enough cards in selected packs for these game settings</string>
+    <string name="lobby_create_min_players_warning">At least 3 players are required (current max: %1$d). Select more packs or decrease game settings.</string>
+    <string name="gameplay_lobby_player_bounds">Lobby limits: 3 to %1$d players</string>
+    <string name="gameplay_info_max_players">Max Players</string>
     <string name="pack_picker_title">Select Packs</string>
     <string name="pack_picker_tab_memes">Memes</string>
     <string name="pack_picker_tab_situations">Situations</string>

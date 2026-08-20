@@ -43,6 +43,7 @@ fun SelectablePackCard(
     languageCode: String,
     isSelected: Boolean,
     isOfficial: Boolean = false,
+    cardCount: Int? = null,
     onClick: () -> Unit
 ) {
     Box(
@@ -81,6 +82,7 @@ fun SelectablePackCard(
                 )
             }
         }
+
         if (isSelected) {
             Box(
                 modifier = Modifier

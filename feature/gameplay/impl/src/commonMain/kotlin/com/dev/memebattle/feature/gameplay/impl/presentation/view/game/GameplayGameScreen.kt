@@ -113,6 +113,7 @@ fun GameplayGameScreen(
                     readyCount = infoState?.readyCount ?: 0,
                     amIReady = infoState?.amIReady ?: false,
                     isSettingReady = infoState?.isSettingReady ?: false,
+                    maxPlayers = infoState?.maxPlayers,
                     onToggleReady = onToggleReady,
                 )
 

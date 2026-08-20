@@ -29,6 +29,10 @@ interface GameplayInfoStore : Store<GameplayInfoStore.Intent, GameplayInfoStore.
         val phaseExpiresAt: String? = null,
         val playerCount: Int = 0,
         val readyCount: Int = 0,
+        /** Минимальное число игроков (всегда 3). */
+        val minPlayers: Int = 3,
+        /** Максимальное число игроков для данного лобби (если известно, иначе null). */
+        val maxPlayers: Int? = null,
         /** Кол-во игроков, подавших карту (из submission_received событий). */
         val submittedCount: Int = 0,
         /** Кол-во проголосовавших в текущем раунде (из vote_received событий). */
@@ -44,7 +48,8 @@ interface GameplayInfoStore : Store<GameplayInfoStore.Intent, GameplayInfoStore.
         val canStartGame: Boolean
             get() = isHost
                 && phase == RoundPhase.WAITING
-                && playerCount >= 3
+                && playerCount >= minPlayers
+                && (maxPlayers == null || playerCount <= maxPlayers)
                 && readyCount == playerCount
                 && !isStartingGame
 

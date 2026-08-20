@@ -40,7 +40,7 @@ import com.dev.memebattle.core.localization.pack_picker_tab_memes
 import com.dev.memebattle.core.localization.pack_picker_tab_situations
 import com.dev.memebattle.core.localization.pack_picker_title
 import com.dev.memebattle.feature.home.impl.presentation.component.packpicker.PackPickerComponent
-import com.dev.memebattle.feature.home.impl.presentation.store.packpicker.PackPickerStore.PackPickerTab
+import com.dev.memebattle.feature.home.impl.presentation.component.packpicker.PackPickerTab
 import org.jetbrains.compose.resources.stringResource
 
 private val AccentColor = Color(0xFF7C5DFA)
@@ -98,7 +98,7 @@ fun PackPickerView(
                     Surface(
                         modifier = Modifier
                             .weight(1f)
-                            .clickable { component.onSelectTab(tab) },
+                            .clickable { component.onSwitchTab(tab) },
                         shape = RoundedCornerShape(12.dp),
                         color = if (isSelected) AccentColor else SurfaceColor
                     ) {
@@ -108,7 +108,7 @@ fun PackPickerView(
                             fontSize = 14.sp,
                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
                             modifier = Modifier.padding(vertical = 10.dp),
-                            alignment = Alignment.Center
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
                         )
                     }
                 }
