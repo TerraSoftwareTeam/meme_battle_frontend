@@ -73,6 +73,13 @@ internal fun LargeCardPreview(model: Any?, idx: Int) {
 @Composable
 internal fun LargeSituationPreview(text: String, idx: Int) {
     val accent = SituationAccents[idx % SituationAccents.size]
+    val textLength = text.length
+    val (fontSize, lineHeight) = when {
+        textLength < 50  -> 18.sp to 26.sp
+        textLength < 110 -> 15.sp to 22.sp
+        textLength < 180 -> 13.sp to 18.sp
+        else             -> 11.sp to 15.sp
+    }
     Card(
         modifier = Modifier.fillMaxSize(),
         shape = RoundedCornerShape(18.dp),
@@ -82,7 +89,7 @@ internal fun LargeSituationPreview(text: String, idx: Int) {
     ) {
         Box(Modifier.fillMaxSize().padding(24.dp), Alignment.Center) {
             Box(Modifier.size(120.dp).background(Brush.radialGradient(listOf(accent.copy(0.12f), Color.Transparent)), CircleShape))
-            Text(text.ifBlank { "—" }, color = DeckTextPri, fontSize = 18.sp, fontWeight = FontWeight.SemiBold, lineHeight = 26.sp, textAlign = TextAlign.Center)
+            Text(text.ifBlank { "—" }, color = DeckTextPri, fontSize = fontSize, fontWeight = FontWeight.SemiBold, lineHeight = lineHeight, textAlign = TextAlign.Center)
         }
     }
 }

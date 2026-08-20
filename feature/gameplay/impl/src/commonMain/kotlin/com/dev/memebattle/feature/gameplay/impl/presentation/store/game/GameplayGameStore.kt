@@ -51,7 +51,12 @@ interface GameplayGameStore : Store<GameplayGameStore.Intent, GameplayGameStore.
         /** Small-экран: переключить между промтом и картой из руки. */
         data object TogglePromptVisible : Intent
         /** Загрузить карты для голосования (вызывается ComponentImpl при переходе в Voting). */
-        data class LoadSubmissions(val cards: List<com.dev.network.game.current.dto.GameCard>, val ids: List<String>) : Intent
+        data class LoadSubmissions(
+            val cards: List<com.dev.network.game.current.dto.GameCard>,
+            val ids: List<String>,
+            val mySubmissionCard: com.dev.network.game.current.dto.GameCard? = null,
+            val hasVoted: Boolean = false,
+        ) : Intent
         /** Пользователь нажал "Выйти" на экране GameFinished. */
         data object ExitGame : Intent
     }

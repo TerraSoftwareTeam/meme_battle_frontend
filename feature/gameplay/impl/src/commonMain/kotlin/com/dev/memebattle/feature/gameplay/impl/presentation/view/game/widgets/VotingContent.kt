@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -66,18 +67,25 @@ fun VotingContent(
             .statusBarsPadding()
             .navigationBarsPadding(),
     ) {
-        if (maxWidth > 600.dp) {
+        val isWide = maxWidth > 600.dp
+        val isCompactHeight = maxHeight < 650.dp
+
+        if (isWide) {
             VotingWideLayout(state, isMyCard, onSelectSubmission, onVote)
         } else {
-            VotingNarrowLayout(state, isMyCard, onSelectSubmission, onVote)
+            VotingNarrowLayout(state, isCompactHeight, isMyCard, onSelectSubmission, onVote)
         }
     }
 }
 
 private fun isSameCard(a: com.dev.network.game.current.dto.GameCard, b: com.dev.network.game.current.dto.GameCard): Boolean {
     return when {
-        a is MemeGameCard && b is MemeGameCard -> a.data.id == b.data.id || a.data.mediaUrl == b.data.mediaUrl
-        a is SituationGameCard && b is SituationGameCard -> a.data.id == b.data.id || a.data.promptText == b.data.promptText
+        a is MemeGameCard && b is MemeGameCard -> 
+            a.data.id == b.data.id || 
+            com.dev.memebattle.core.network.utils.normalizeMediaUrl(a.data.mediaUrl) == com.dev.memebattle.core.network.utils.normalizeMediaUrl(b.data.mediaUrl)
+        a is SituationGameCard && b is SituationGameCard -> 
+            a.data.id == b.data.id || 
+            a.data.promptText.trim() == b.data.promptText.trim()
         else -> false
     }
 }
@@ -87,6 +95,7 @@ private fun isSameCard(a: com.dev.network.game.current.dto.GameCard, b: com.dev.
 @Composable
 private fun VotingNarrowLayout(
     state: GameplayGameStore.State,
+    isCompactHeight: Boolean,
     isMyCard: Boolean,
     onSelectSubmission: (Int) -> Unit,
     onVote: (String) -> Unit,
@@ -97,7 +106,7 @@ private fun VotingNarrowLayout(
             .padding(horizontal = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Spacer(Modifier.height(44.dp))
+        Spacer(Modifier.height(if (isCompactHeight) 16.dp else 40.dp))
 
         PhaseHeader(
             title = stringResource(Res.string.gameplay_voting_title),
@@ -109,7 +118,7 @@ private fun VotingNarrowLayout(
                             else Color.White.copy(alpha = 0.5f),
         )
 
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(if (isCompactHeight) 6.dp else 10.dp))
 
         // Предупреждающий баннер при выборе своей карты
         AnimatedVisibility(visible = isMyCard && !state.hasVoted, enter = fadeIn(), exit = fadeOut()) {
@@ -132,21 +141,21 @@ private fun VotingNarrowLayout(
             }
         }
 
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(if (isCompactHeight) 6.dp else 8.dp))
 
         // Карта ситуации
-        Box(modifier = Modifier.weight(0.38f).fillMaxWidth(), contentAlignment = Alignment.Center) {
+        Box(modifier = Modifier.weight(0.46f).fillMaxWidth(), contentAlignment = Alignment.Center) {
             GameCardWidget(
                 card = state.promptCard,
                 label = stringResource(Res.string.gameplay_voting_prompt_label),
-                modifier = Modifier.fillMaxSize(0.7f),
+                modifier = Modifier.fillMaxHeight(0.88f).aspectRatio(0.68f),
             )
         }
 
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(6.dp))
 
         // Веер вариантов
-        Box(modifier = Modifier.weight(0.62f).fillMaxWidth()) {
+        Box(modifier = Modifier.weight(0.54f).fillMaxWidth()) {
             val submissionCards = state.submissionCards.mapIndexed { i, card ->
                 when (card) {
                     is MemeGameCard    -> HandCardData.Meme(card.data.id, card.data.mediaUrl)

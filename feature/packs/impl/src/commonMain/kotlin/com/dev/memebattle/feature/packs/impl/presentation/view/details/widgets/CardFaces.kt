@@ -53,12 +53,19 @@ internal fun MemeCardFace(model: Any?, isSelected: Boolean) {
 
 @Composable
 internal fun SituationCardFace(text: String, accent: Color, isSelected: Boolean) {
+    val textLength = text.length
+    val (fontSize, lineHeight) = when {
+        textLength < 40  -> 12.sp to 16.sp
+        textLength < 80  -> 10.sp to 14.sp
+        textLength < 140 -> 9.sp to 12.sp
+        else             -> 8.sp to 10.sp
+    }
     Box(
         modifier = Modifier.fillMaxSize().background(Color(0xFF0F0B1E)),
         contentAlignment = Alignment.Center,
     ) {
         Box(Modifier.size(60.dp).background(Brush.radialGradient(listOf(accent.copy(0.18f), Color.Transparent)), CircleShape))
-        Text(text, color = DeckTextPri, fontSize = 10.sp, lineHeight = 14.sp, textAlign = TextAlign.Center,
+        Text(text, color = DeckTextPri, fontSize = fontSize, lineHeight = lineHeight, textAlign = TextAlign.Center,
             maxLines = 8, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(8.dp))
     }
 }

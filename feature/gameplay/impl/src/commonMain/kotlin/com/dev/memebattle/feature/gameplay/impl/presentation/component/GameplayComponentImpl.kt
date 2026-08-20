@@ -290,8 +290,21 @@ class GameplayComponentImpl(
                 }
                 val ids   = submissions.map { it.id }
 
+                val mySubmissionNormalized = round.my_submission?.let { card ->
+                    if (card is MemeGameCard) {
+                        MemeGameCard(card.data.copy(mediaUrl = normalizeMediaUrl(card.data.mediaUrl)))
+                    } else {
+                        card
+                    }
+                }
+
                 panels.value.main.instance?.onIntent(
-                    GameplayGameStore.Intent.LoadSubmissions(cards, ids)
+                    GameplayGameStore.Intent.LoadSubmissions(
+                        cards = cards,
+                        ids = ids,
+                        mySubmissionCard = mySubmissionNormalized,
+                        hasVoted = round.has_voted,
+                    )
                 )
             }
         }
@@ -300,10 +313,8 @@ class GameplayComponentImpl(
     // ── Голосование из PlayersScreen (через Effect маршрутизация) ────────────
 
     private fun handleVoteFromPlayers(submissionId: String) {
-        // Vote через PlayersScreen
-        scope.launch {
-            gameApiService.voteCard(gameId, VoteRequest(submission_id = submissionId))
-        }
+        // Vote через PlayersScreen — направляем в GameplayGameStore для согласованного стейта и обработки ошибок
+        panels.value.main.instance?.onIntent(GameplayGameStore.Intent.Vote(submissionId))
     }
 
     // ── Public API ────────────────────────────────────────────────────────────

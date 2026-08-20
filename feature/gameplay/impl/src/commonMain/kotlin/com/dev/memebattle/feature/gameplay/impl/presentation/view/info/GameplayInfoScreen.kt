@@ -38,7 +38,6 @@ import com.dev.network.game.current.dto.GameMode
 import com.dev.network.game.current.dto.RoundPhase
 import com.dev.memebattle.core.localization.Res
 import com.dev.memebattle.core.localization.gameplay_info_header_game
-import com.dev.memebattle.core.localization.gameplay_info_max_players
 import com.dev.memebattle.core.localization.gameplay_info_min_players
 import com.dev.memebattle.core.localization.gameplay_info_mode
 import com.dev.memebattle.core.localization.gameplay_info_phase
@@ -150,7 +149,6 @@ fun GameplayInfoScreen(
             InfoStatRow(label = stringResource(Res.string.gameplay_info_players), value = "$playersCount")
             InfoStatRow(label = stringResource(Res.string.gameplay_info_ready), value = "$readyCount / $playersCount")
             InfoStatRow(label = "Мин. игроков", value = "${state.minPlayers}")
-            InfoStatRow(label = stringResource(Res.string.gameplay_info_max_players), value = if (state.maxPlayers != null) "${state.maxPlayers}" else "—")
 
             if (state.phase == RoundPhase.SUBMITTING) {
                 InfoStatRow(label = stringResource(Res.string.gameplay_info_submitted), value = "${state.submittedCount} / $playersCount")

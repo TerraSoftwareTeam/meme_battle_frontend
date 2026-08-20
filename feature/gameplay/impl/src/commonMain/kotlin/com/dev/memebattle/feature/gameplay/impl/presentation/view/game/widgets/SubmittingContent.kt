@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -59,11 +60,12 @@ fun SubmittingContent(
             .navigationBarsPadding(),
     ) {
         val isWide = maxWidth > 600.dp
+        val isCompactHeight = maxHeight < 650.dp
 
         if (isWide) {
             SubmittingWideLayout(state, onSelectCard, onSubmit)
         } else {
-            SubmittingNarrowLayout(state, onSelectCard, onSubmit)
+            SubmittingNarrowLayout(state, isCompactHeight, onSelectCard, onSubmit)
         }
     }
 }
@@ -71,6 +73,7 @@ fun SubmittingContent(
 @Composable
 private fun SubmittingNarrowLayout(
     state: GameplayGameStore.State,
+    isCompactHeight: Boolean,
     onSelectCard: (Int) -> Unit,
     onSubmit: () -> Unit,
 ) {
@@ -80,7 +83,7 @@ private fun SubmittingNarrowLayout(
             .padding(horizontal = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Spacer(Modifier.height(44.dp))
+        Spacer(Modifier.height(if (isCompactHeight) 16.dp else 40.dp))
 
         PhaseHeader(
             title = stringResource(Res.string.gameplay_submitting_title),
@@ -90,20 +93,20 @@ private fun SubmittingNarrowLayout(
                             else Color.White.copy(alpha = 0.5f),
         )
 
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(if (isCompactHeight) 8.dp else 14.dp))
 
-        Box(modifier = Modifier.weight(0.45f).fillMaxWidth(), contentAlignment = Alignment.Center) {
+        Box(modifier = Modifier.weight(0.46f).fillMaxWidth(), contentAlignment = Alignment.Center) {
             GameCardWidget(
                 card = state.promptCard,
                 label = stringResource(Res.string.gameplay_submitting_prompt_label),
                 emptyLabel = stringResource(Res.string.gameplay_submitting_prompt_loading),
-                modifier = Modifier.fillMaxSize(0.75f),
+                modifier = Modifier.fillMaxHeight(0.88f).aspectRatio(0.68f),
             )
         }
 
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(6.dp))
 
-        Box(modifier = Modifier.weight(0.55f).fillMaxWidth()) {
+        Box(modifier = Modifier.weight(0.54f).fillMaxWidth()) {
             HandCardsFan(
                 cards = state.handCards.map { card ->
                     when (card) {

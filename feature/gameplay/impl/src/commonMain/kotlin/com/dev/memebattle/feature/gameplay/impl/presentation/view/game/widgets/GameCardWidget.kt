@@ -38,6 +38,8 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -104,13 +106,14 @@ fun GameCardWidget(
                     }
                 }
                 .clip(shape)
+                .background(Color.Black, shape)
                 .border(
-                    width = if (isSubmitted || isHighlighted) 2.dp else 1.dp,
+                    width = if (isSubmitted || isHighlighted) 2.5.dp else 1.5.dp,
                     brush = Brush.linearGradient(
                         when {
                             isSubmitted   -> listOf(Color(0xFF00C853), Color(0xFF00E676))
-                            isHighlighted -> listOf(Color(0xFF7C5DFA), Color(0xFFB39DDB))
-                            else          -> listOf(Color.White.copy(alpha = 0.08f), Color.White.copy(alpha = 0.04f))
+                            isHighlighted -> listOf(Color(0xFF9D7BFF), Color(0xFF7C5DFA))
+                            else          -> listOf(Color(0xFF8B6BFF).copy(alpha = 0.5f), Color(0xFF4E389E).copy(alpha = 0.35f))
                         }
                     ),
                     shape = shape,
@@ -147,14 +150,18 @@ private fun MemeCardContent(
     label: String,
     shape: RoundedCornerShape,
 ) {
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black, shape)
+            .clip(shape),
+        contentAlignment = Alignment.Center,
+    ) {
         SubcomposeAsyncImage(
             model = normalizeMediaUrl(imageUrl),
             contentDescription = label,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .fillMaxSize()
-                .clip(shape),
+            contentScale = ContentScale.Fit,
+            modifier = Modifier.fillMaxSize(),
             loading = {
                 MemeShimmer()
             },
@@ -185,7 +192,7 @@ private fun MemeCardContent(
                 .fillMaxWidth()
                 .background(
                     Brush.verticalGradient(
-                        listOf(Color.Transparent, Color.Black.copy(alpha = 0.65f))
+                        listOf(Color.Transparent, Color.Black.copy(alpha = 0.75f))
                     )
                 )
                 .padding(horizontal = 10.dp, vertical = 8.dp),
@@ -300,19 +307,34 @@ private fun SituationCardContent(
                 .padding(14.dp),
         )
 
-        // Текст ситуации — центр
-        Text(
-            text = text,
-            style = MaterialTheme.typography.bodyMedium,
-            color = Color.White,
-            textAlign = TextAlign.Center,
-            fontWeight = FontWeight.Medium,
-            fontStyle = if (text.startsWith("\"")) FontStyle.Italic else FontStyle.Normal,
-            lineHeight = 22.sp,
+        // Текст ситуации — адаптивный размер и возможность скролла при длинном тексте
+        val textLength = text.length
+        val (fontSize, lineHeight) = when {
+            textLength < 45  -> 16.sp to 22.sp
+            textLength < 90  -> 14.sp to 19.sp
+            textLength < 150 -> 12.sp to 16.sp
+            textLength < 220 -> 11.sp to 14.sp
+            else             -> 10.sp to 13.sp
+        }
+
+        Box(
             modifier = Modifier
                 .align(Alignment.Center)
-                .padding(horizontal = 16.dp, vertical = 32.dp),
-        )
+                .fillMaxWidth()
+                .padding(horizontal = 14.dp, vertical = 32.dp)
+                .verticalScroll(rememberScrollState()),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                text = text,
+                fontSize = fontSize,
+                lineHeight = lineHeight,
+                color = Color.White,
+                textAlign = TextAlign.Center,
+                fontWeight = FontWeight.Medium,
+                fontStyle = if (text.startsWith("\"")) FontStyle.Italic else FontStyle.Normal,
+            )
+        }
     }
 }
 

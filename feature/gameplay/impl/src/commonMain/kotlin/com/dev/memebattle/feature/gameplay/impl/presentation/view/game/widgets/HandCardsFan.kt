@@ -30,6 +30,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -138,16 +139,17 @@ private fun FanCardItem(
 
     val borderBrush = when {
         isSubmitted -> Brush.linearGradient(listOf(Color(0xFF00C853), Color(0xFF00E676)))
-        isSelected  -> Brush.linearGradient(listOf(Color(0xFF7C5DFA), Color(0xFFB39DDB)))
-        else        -> Brush.linearGradient(listOf(Color(0xFF3A2860), Color(0xFF2A1840)))
+        isSelected  -> Brush.linearGradient(listOf(Color(0xFF9D7BFF), Color(0xFF7C5DFA)))
+        else        -> Brush.linearGradient(listOf(Color(0xFF8B6BFF).copy(alpha = 0.5f), Color(0xFF4E389E).copy(alpha = 0.35f)))
     }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
             .clip(shape)
+            .background(Color.Black, shape)
             .border(
-                width = if (isSelected || isSubmitted) 2.dp else 1.dp,
+                width = if (isSelected || isSubmitted) 2.5.dp else 1.5.dp,
                 brush = borderBrush,
                 shape = shape,
             )
@@ -164,30 +166,45 @@ private fun FanCardItem(
             },
     ) {
         when (card) {
-            is HandCardData.Meme -> SubcomposeAsyncImage(
-                model = normalizeMediaUrl(card.imageUrl),
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize().clip(shape),
-                loading = { MemeShimmerSmall() },
-                error = {
-                    Box(
-                        Modifier.fillMaxSize().background(Color(0xFF1A1035)),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Text(
-                            "Ошибка загрузки",
-                            fontSize = 11.sp,
-                            color = Color.White.copy(alpha = 0.4f),
-                            textAlign = TextAlign.Center,
-                        )
-                    }
-                },
-            )
+            is HandCardData.Meme -> Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black, shape)
+                    .clip(shape),
+                contentAlignment = Alignment.Center,
+            ) {
+                SubcomposeAsyncImage(
+                    model = normalizeMediaUrl(card.imageUrl),
+                    contentDescription = null,
+                    contentScale = ContentScale.Fit,
+                    modifier = Modifier.fillMaxSize(),
+                    loading = { MemeShimmerSmall() },
+                    error = {
+                        Box(
+                            Modifier.fillMaxSize().background(Color(0xFF1A1035)),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Text(
+                                "Ошибка загрузки",
+                                fontSize = 11.sp,
+                                color = Color.White.copy(alpha = 0.4f),
+                                textAlign = TextAlign.Center,
+                            )
+                        }
+                    },
+                )
+            }
 
             is HandCardData.Situation -> {
                 val accentIndex = (card.id.hashCode() and 0x7FFFFFFF) % SituationAccents.size
                 val accent = SituationAccents[accentIndex]
+                val textLength = card.text.length
+                val (fontSize, lineHeight) = when {
+                    textLength < 40  -> 12.sp to 16.sp
+                    textLength < 80  -> 10.sp to 14.sp
+                    textLength < 140 -> 9.sp to 12.sp
+                    else             -> 8.sp to 10.sp
+                }
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -198,11 +215,12 @@ private fun FanCardItem(
                 ) {
                     Text(
                         text = card.text,
-                        style = MaterialTheme.typography.labelSmall,
+                        fontSize = fontSize,
+                        lineHeight = lineHeight,
                         color = Color.White.copy(alpha = 0.9f),
                         textAlign = TextAlign.Center,
-                        lineHeight = 16.sp,
-                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 14.dp),
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 10.dp),
                     )
                 }
             }

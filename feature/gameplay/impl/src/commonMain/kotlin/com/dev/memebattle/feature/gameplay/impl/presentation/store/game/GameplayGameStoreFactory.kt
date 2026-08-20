@@ -61,21 +61,35 @@ internal class GameplayGameStoreFactory(
             return GameplayGameStore.State(isLoading = true, uiPhase = GameplayGameStore.UiPhase.Lobby)
         }
         
-        return when (snapshot.game.status) {
-            GameStatus.LOBBY -> GameplayGameStore.State(
-                isLoading = false, 
-                uiPhase = GameplayGameStore.UiPhase.Lobby,
-            )
-            GameStatus.PLAYING -> GameplayGameStore.State(
-                isLoading = false,
-                uiPhase = GameplayGameStore.UiPhase.Lobby, // WebSocket события переключат фазу
-                handCards = snapshot.my_hand,
-            )
-            GameStatus.FINISHED -> GameplayGameStore.State(
-                isLoading = false,
-                uiPhase = GameplayGameStore.UiPhase.GameFinished,
-            )
+        val round = snapshot.round
+        val promptCard = round?.prompt?.let { normalizeCard(it) }
+        val mySubmissionCard = round?.my_submission?.let { normalizeCard(it) }
+        val submissions = round?.submissions
+        val submissionCards = submissions?.map { normalizeCard(it.card) } ?: emptyList()
+        val submissionIds = submissions?.map { it.id } ?: emptyList()
+
+        val uiPhase = when (snapshot.game.status) {
+            GameStatus.LOBBY -> GameplayGameStore.UiPhase.Lobby
+            GameStatus.FINISHED -> GameplayGameStore.UiPhase.GameFinished
+            GameStatus.PLAYING -> when (round?.phase) {
+                com.dev.network.game.current.dto.RoundPhase.SUBMITTING -> GameplayGameStore.UiPhase.Submitting
+                com.dev.network.game.current.dto.RoundPhase.VOTING -> GameplayGameStore.UiPhase.Voting
+                com.dev.network.game.current.dto.RoundPhase.FINISHED -> GameplayGameStore.UiPhase.RoundResult
+                else -> GameplayGameStore.UiPhase.Lobby
+            }
         }
+
+        return GameplayGameStore.State(
+            isLoading = false,
+            uiPhase = uiPhase,
+            handCards = snapshot.my_hand,
+            roundId = round?.id,
+            promptCard = promptCard,
+            mySubmissionCard = mySubmissionCard,
+            hasVoted = round?.has_voted ?: false,
+            submissionCards = submissionCards,
+            submissionIds = submissionIds,
+        )
     }
 
     // ── Actions (от Bootstrapper) ──────────────────────────────────────────
@@ -91,6 +105,13 @@ internal class GameplayGameStoreFactory(
         data class Initialized(
             val gameStatus: GameStatus?,
             val hand: List<GameCard>,
+            val roundId: String? = null,
+            val promptCard: GameCard? = null,
+            val mySubmissionCard: GameCard? = null,
+            val hasVoted: Boolean = false,
+            val roundPhase: com.dev.network.game.current.dto.RoundPhase? = null,
+            val submissionCards: List<GameCard> = emptyList(),
+            val submissionIds: List<String> = emptyList(),
         ) : Msg
 
         // Lobby
@@ -106,6 +127,8 @@ internal class GameplayGameStoreFactory(
         data class SubmissionsLoaded(
             val cards: List<GameCard>,
             val ids: List<String>,
+            val mySubmissionCard: GameCard? = null,
+            val hasVoted: Boolean = false,
         ) : Msg
 
         // Submitting
@@ -157,7 +180,7 @@ internal class GameplayGameStoreFactory(
                 is GameplayGameStore.Intent.Vote            -> vote(intent.submissionId)
                 is GameplayGameStore.Intent.TogglePromptVisible -> dispatch(Msg.TogglePrompt)
                 is GameplayGameStore.Intent.LoadSubmissions -> dispatch(
-                    Msg.SubmissionsLoaded(intent.cards, intent.ids)
+                    Msg.SubmissionsLoaded(intent.cards, intent.ids, intent.mySubmissionCard, intent.hasVoted)
                 )
                 is GameplayGameStore.Intent.ExitGame        -> publish(GameplayGameStore.Effect.ExitGame)
             }
@@ -174,9 +197,23 @@ internal class GameplayGameStoreFactory(
                 return
             }
 
+            val round = snapshot.round
+            val promptCard = round?.prompt?.let { normalizeCard(it) }
+            val mySubmissionCard = round?.my_submission?.let { normalizeCard(it) }
+            val submissions = round?.submissions
+            val submissionCards = submissions?.map { normalizeCard(it.card) } ?: emptyList()
+            val submissionIds = submissions?.map { it.id } ?: emptyList()
+
             dispatch(Msg.Initialized(
                 gameStatus = snapshot.game.status,
                 hand = snapshot.my_hand,
+                roundId = round?.id,
+                promptCard = promptCard,
+                mySubmissionCard = mySubmissionCard,
+                hasVoted = round?.has_voted ?: false,
+                roundPhase = round?.phase,
+                submissionCards = submissionCards,
+                submissionIds = submissionIds,
             ))
         }
 
@@ -196,24 +233,28 @@ internal class GameplayGameStoreFactory(
             val st = state()
             if (!st.canSubmit) return
             val card = st.selectedHandCard ?: return
-            val roundId = st.roundId ?: return
             val cardId = when(card) {
                 is MemeGameCard -> card.data.id
                 is SituationGameCard -> card.data.id
             }
             dispatch(Msg.SubmittingStarted)
             scope.launch {
-                val result = gameApiService.submitCard(
-                    id = gameId,
-                    body = SubmitCardRequest(card_id = cardId)
-                )
-                when (result) {
-                    is NetworkResult.Success -> dispatch(Msg.MySubmissionConfirmed(card))
-                    is NetworkResult.Error -> publish(
-                        GameplayGameStore.Effect.ShowError(result.error.userMessage())
+                try {
+                    val result = gameApiService.submitCard(
+                        id = gameId,
+                        body = SubmitCardRequest(card_id = cardId)
                     )
+                    when (result) {
+                        is NetworkResult.Success -> dispatch(Msg.MySubmissionConfirmed(card))
+                        is NetworkResult.Error -> publish(
+                            GameplayGameStore.Effect.ShowError(result.error.userMessage())
+                        )
+                    }
+                } catch (e: Exception) {
+                    publish(GameplayGameStore.Effect.ShowError(e.message ?: "Ошибка отправки карты"))
+                } finally {
+                    dispatch(Msg.SubmittingFinished)
                 }
-                dispatch(Msg.SubmittingFinished)
             }
         }
 
@@ -222,20 +263,33 @@ internal class GameplayGameStoreFactory(
         private fun vote(submissionId: String) {
             val st = state()
             if (!st.canVote) return
-            val roundId = st.roundId ?: return
             dispatch(Msg.VotingStarted)
             scope.launch {
-                val result = gameApiService.voteCard(
-                    id = gameId,
-                    body = VoteRequest(submission_id = submissionId)
-                )
-                when (result) {
-                    is NetworkResult.Success -> dispatch(Msg.VotedConfirmed)
-                    is NetworkResult.Error -> publish(
-                        GameplayGameStore.Effect.ShowError(result.error.userMessage())
+                try {
+                    val result = gameApiService.voteCard(
+                        id = gameId,
+                        body = VoteRequest(submission_id = submissionId)
                     )
+                    when (result) {
+                        is NetworkResult.Success -> dispatch(Msg.VotedConfirmed)
+                        is NetworkResult.Error -> {
+                            val userMsg = result.error.userMessage()
+                            val lowerMsg = userMsg.lowercase()
+                            if (lowerMsg.contains("own") || lowerMsg.contains("сво") || lowerMsg.contains("self")) {
+                                st.selectedSubmissionCard?.let { card ->
+                                    dispatch(Msg.MySubmissionConfirmed(card))
+                                }
+                            } else if (lowerMsg.contains("already") || lowerMsg.contains("уже")) {
+                                dispatch(Msg.VotedConfirmed)
+                            }
+                            publish(GameplayGameStore.Effect.ShowError(userMsg))
+                        }
+                    }
+                } catch (e: Exception) {
+                    publish(GameplayGameStore.Effect.ShowError(e.message ?: "Ошибка при голосовании"))
+                } finally {
+                    dispatch(Msg.VotingFinished)
                 }
-                dispatch(Msg.VotingFinished)
             }
         }
 
@@ -330,12 +384,23 @@ internal class GameplayGameStoreFactory(
         override fun GameplayGameStore.State.reduce(msg: Msg): GameplayGameStore.State = when (msg) {
             is Msg.Initialized -> copy(
                 isLoading = false,
-                uiPhase = when (msg.gameStatus) {
-                    null, GameStatus.LOBBY -> GameplayGameStore.UiPhase.Lobby
-                    GameStatus.PLAYING -> GameplayGameStore.UiPhase.Lobby
-                    GameStatus.FINISHED -> GameplayGameStore.UiPhase.GameFinished
+                uiPhase = when {
+                    msg.gameStatus == GameStatus.FINISHED -> GameplayGameStore.UiPhase.GameFinished
+                    msg.gameStatus == GameStatus.LOBBY || msg.gameStatus == null -> GameplayGameStore.UiPhase.Lobby
+                    msg.roundPhase == com.dev.network.game.current.dto.RoundPhase.SUBMITTING -> GameplayGameStore.UiPhase.Submitting
+                    msg.roundPhase == com.dev.network.game.current.dto.RoundPhase.VOTING -> GameplayGameStore.UiPhase.Voting
+                    msg.roundPhase == com.dev.network.game.current.dto.RoundPhase.FINISHED -> GameplayGameStore.UiPhase.RoundResult
+                    else -> GameplayGameStore.UiPhase.Lobby
                 },
                 handCards = msg.hand,
+                roundId = msg.roundId ?: roundId,
+                promptCard = msg.promptCard ?: promptCard,
+                mySubmissionCard = mySubmissionCard ?: msg.mySubmissionCard,
+                hasVoted = hasVoted || msg.hasVoted,
+                submissionCards = if (msg.submissionCards.isNotEmpty()) msg.submissionCards else submissionCards,
+                submissionIds = if (msg.submissionIds.isNotEmpty()) msg.submissionIds else submissionIds,
+                isVoting = false,
+                isSubmitting = false,
             )
             is Msg.EnteredLobby -> copy(uiPhase = GameplayGameStore.UiPhase.Lobby)
 
@@ -355,10 +420,18 @@ internal class GameplayGameStoreFactory(
                 isSubmitting = false,
                 isVoting = false,
             )
-            is Msg.PhaseChangedToVoting -> copy(uiPhase = GameplayGameStore.UiPhase.Voting)
+            is Msg.PhaseChangedToVoting -> copy(
+                uiPhase = GameplayGameStore.UiPhase.Voting,
+                isVoting = false,
+                isSubmitting = false,
+            )
             is Msg.SubmissionsLoaded -> copy(
                 submissionCards = msg.cards,
                 submissionIds = msg.ids,
+                mySubmissionCard = mySubmissionCard ?: msg.mySubmissionCard,
+                hasVoted = hasVoted || msg.hasVoted,
+                isVoting = false,
+                isSubmitting = false,
             )
 
             is Msg.HandUpdated -> copy(handCards = msg.cards)
@@ -378,10 +451,14 @@ internal class GameplayGameStoreFactory(
             is Msg.RoundResultReceived -> copy(
                 uiPhase = GameplayGameStore.UiPhase.RoundResult,
                 roundResult = msg.data,
+                isVoting = false,
+                isSubmitting = false,
             )
             is Msg.RoundResultDismissed -> copy(
                 uiPhase = GameplayGameStore.UiPhase.Submitting, // следующий раунд придёт через RoundStarted
                 roundResult = null,
+                isVoting = false,
+                isSubmitting = false,
             )
 
             // GameFinished
@@ -389,6 +466,8 @@ internal class GameplayGameStoreFactory(
                 uiPhase = GameplayGameStore.UiPhase.GameFinished,
                 gameWinnerUserId = msg.winnerUserId,
                 finalScoreboard = msg.finalScoreboard,
+                isVoting = false,
+                isSubmitting = false,
             )
         }
     }
@@ -410,4 +489,12 @@ private fun com.dev.memebattle.core.network.error.NetworkError.userMessage(): St
     is com.dev.memebattle.core.network.error.NetworkError.ServerError -> "Ошибка сервера ($code)"
     is com.dev.memebattle.core.network.error.NetworkError.Exception -> cause.message ?: "Неизвестная ошибка"
     else -> "Произошла ошибка"
+}
+
+private fun normalizeCard(card: GameCard): GameCard {
+    return if (card is MemeGameCard) {
+        MemeGameCard(card.data.copy(mediaUrl = normalizeMediaUrl(card.data.mediaUrl)))
+    } else {
+        card
+    }
 }
