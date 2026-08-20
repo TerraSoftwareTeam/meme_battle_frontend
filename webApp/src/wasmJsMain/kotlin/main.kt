@@ -123,4 +123,10 @@ fun main() {
             component = rootComponent
         )
     }
+    hideLoadingScreen()
+}
+
+@OptIn(kotlin.js.ExperimentalWasmJsInterop::class)
+private fun hideLoadingScreen() {
+    js("window.hideLoadingScreen && window.hideLoadingScreen()")
 }

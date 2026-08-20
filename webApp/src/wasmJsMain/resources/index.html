@@ -16,28 +16,71 @@
             color: #FFFFFF;
             font-family: system-ui, -apple-system, sans-serif;
         }
-        #loading-spinner {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
+        #loading-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #141218;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.4s ease, visibility 0.4s ease;
+        }
+        .loading-card {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 16px;
-            z-index: 0;
+            width: 320px;
+            max-width: 90%;
+            padding: 24px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(10px);
         }
-        .spinner {
-            width: 48px;
-            height: 48px;
-            border: 4px solid rgba(124, 93, 250, 0.2);
-            border-top: 4px solid #7C5DFA;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
+        .app-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #A88BFF 0%, #7C5DFA 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
         }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            font-size: 13px;
+            color: #A0A0B0;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        .progress-track {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #7C5DFA 0%, #9E86FF 100%);
+            border-radius: 4px;
+            transition: width 0.15s ease-out;
+            box-shadow: 0 0 10px rgba(124, 93, 250, 0.6);
+        }
+        .progress-footer {
+            margin-top: 10px;
+            font-size: 12px;
+            color: #707086;
         }
         #ComposeTarget {
             width: 100%;
@@ -48,10 +91,119 @@
     </style>
 </head>
 <body>
-    <div id="loading-spinner">
-        <div class="spinner"></div>
+    <div id="loading-container">
+        <div class="loading-card">
+            <div class="app-title">Meme Battle</div>
+            <div class="progress-header">
+                <span id="loading-status">Загрузка ресурсов...</span>
+                <span id="progress-percent">0%</span>
+            </div>
+            <div class="progress-track">
+                <div id="progress-bar-fill" class="progress-fill"></div>
+            </div>
+            <div id="progress-details" class="progress-footer">Подключение...</div>
+        </div>
     </div>
     <div id="ComposeTarget"></div>
+    <script type="text/javascript">
+        (function() {
+            let totalExpectedBytes = 0;
+            let totalLoadedBytes = 0;
+
+            function updateUI() {
+                const fill = document.getElementById('progress-bar-fill');
+                const percentText = document.getElementById('progress-percent');
+                const detailsText = document.getElementById('progress-details');
+                const statusText = document.getElementById('loading-status');
+
+                if (!fill) return;
+
+                let percent = 0;
+                if (totalExpectedBytes > 0) {
+                    percent = Math.min(100, Math.round((totalLoadedBytes / totalExpectedBytes) * 100));
+                    fill.style.width = percent + '%';
+                    if (percentText) percentText.innerText = percent + '%';
+                    
+                    const loadedMB = (totalLoadedBytes / (1024 * 1024)).toFixed(1);
+                    const totalMB = (totalExpectedBytes / (1024 * 1024)).toFixed(1);
+                    if (detailsText) detailsText.innerText = loadedMB + ' / ' + totalMB + ' МБ';
+                } else if (totalLoadedBytes > 0) {
+                    const loadedMB = (totalLoadedBytes / (1024 * 1024)).toFixed(1);
+                    if (detailsText) detailsText.innerText = loadedMB + ' МБ';
+                    percent = Math.min(95, Math.round((totalLoadedBytes / (8 * 1024 * 1024)) * 100));
+                    fill.style.width = percent + '%';
+                    if (percentText) percentText.innerText = percent + '%';
+                }
+
+                if (percent >= 100 && statusText) {
+                    statusText.innerText = "Инициализация Wasm...";
+                }
+            }
+
+            const originalFetch = window.fetch;
+            window.fetch = async function(...args) {
+                const response = await originalFetch.apply(this, args);
+                const url = typeof args[0] === 'string' ? args[0] : (args[0] && args[0].url ? args[0].url : '');
+
+                if (!url.includes('.wasm') && !url.includes('.js')) {
+                    return response;
+                }
+
+                const contentLength = response.headers.get('content-length');
+                const contentLengthNum = contentLength ? parseInt(contentLength, 10) : 0;
+                if (contentLengthNum > 0) {
+                    totalExpectedBytes += contentLengthNum;
+                }
+
+                if (!response.body) return response;
+
+                const reader = response.body.getReader();
+                const stream = new ReadableStream({
+                    async start(controller) {
+                        try {
+                            while (true) {
+                                const { done, value } = await reader.read();
+                                if (done) {
+                                    controller.close();
+                                    break;
+                                }
+                                if (value) {
+                                    totalLoadedBytes += value.byteLength;
+                                    updateUI();
+                                    controller.enqueue(value);
+                                }
+                            }
+                        } catch (err) {
+                            controller.error(err);
+                        }
+                    }
+                });
+
+                return new Response(stream, {
+                    headers: response.headers,
+                    status: response.status,
+                    statusText: response.statusText
+                });
+            };
+
+            window.hideLoadingScreen = function() {
+                const container = document.getElementById('loading-container');
+                if (container) {
+                    const fill = document.getElementById('progress-bar-fill');
+                    const percentText = document.getElementById('progress-percent');
+                    const statusText = document.getElementById('loading-status');
+                    if (fill) fill.style.width = '100%';
+                    if (percentText) percentText.innerText = '100%';
+                    if (statusText) statusText.innerText = 'Готово!';
+                    
+                    container.style.opacity = '0';
+                    setTimeout(function() {
+                        container.style.display = 'none';
+                    }, 400);
+                }
+            };
+        })();
+    </script>
     <script type="text/javascript" src="/webApp.js"></script>
 </body>
 </html>
