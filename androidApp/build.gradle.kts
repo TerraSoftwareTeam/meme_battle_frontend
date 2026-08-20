@@ -13,6 +13,14 @@ if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(FileInputStream(keystorePropertiesFile))
 }
 
+val appVersionName: String = (project.findProperty("app.version") as? String) ?: "1.0.0"
+val appVersionCode: Int = try {
+    val parts = appVersionName.split(".").map { it.takeWhile { char -> char.isDigit() }.toInt() }
+    parts.getOrElse(0) { 1 } * 10000 + parts.getOrElse(1) { 0 } * 100 + parts.getOrElse(2) { 0 }
+} catch (_: Exception) {
+    1
+}
+
 android {
     namespace = "com.dev.memebattle"
     compileSdk = 36
@@ -21,8 +29,8 @@ android {
         applicationId = "com.dev.memebattle"
         minSdk = 24
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0.2"
+        versionCode = appVersionCode
+        versionName = appVersionName
     }
 
     signingConfigs {

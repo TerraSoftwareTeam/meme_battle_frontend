@@ -29,6 +29,10 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data
                     android:scheme="https"
+                    android:host="meme.skyfly.hackclub.app"
+                    android:pathPrefix="/lobby/" />
+                <data
+                    android:scheme="https"
                     android:host="play.meme.skyfly.hackclub.app"
                     android:pathPrefix="/lobby/" />
             </intent-filter>
@@ -38,6 +42,10 @@
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="https"
+                    android:host="meme.skyfly.hackclub.app"
+                    android:pathPrefix="/pack/" />
                 <data
                     android:scheme="https"
                     android:host="play.meme.skyfly.hackclub.app"

@@ -76,7 +76,7 @@ fun PacksDetailsView(component: PacksDetailsComponent, modifier: Modifier = Modi
                     val kindStr = if (state.kind == PacksDetailsStore.PackKind.Situation) "situation" else "meme"
                     IconButton(
                         onClick = {
-                            val link = "https://play.meme.skyfly.hackclub.app/pack/$packId?kind=$kindStr"
+                            val link = "https://meme.skyfly.hackclub.app/pack/$packId?kind=$kindStr"
                             shareLink(link, "Пачка карт MemeBattle")
                         }
                     ) {

@@ -16,6 +16,7 @@ import com.dev.memebattle.core.navigation.output.NavigationContext
 import com.dev.memebattle.core.navigation.output.NavigationOutput
 import com.dev.memebattle.core.navigation.output.NavigationOutputHandler
 import com.dev.memebattle.core.navigation.route.AppRoute
+import com.dev.memebattle.feature.gameplay.api.route.GameplayRoute
 import com.dev.memebattle.feature.home.api.route.HomeRoute
 import com.dev.memebattle.host.root.presentation.layer.GlobalHostLayer
 import kotlinx.coroutines.flow.launchIn
@@ -39,7 +40,13 @@ class RootComponentImpl(
     override val childStack: Value<ChildStack<AppRoute, RootComponent.Child>> = childStack(
         source = navigation,
         serializer = null,
-        initialConfiguration = _initialRoute,
+        initialStack = {
+            if (_initialRoute is HomeRoute) {
+                listOf(_initialRoute)
+            } else {
+                listOf(HomeRoute(), _initialRoute)
+            }
+        },
         handleBackButton = true,
         childFactory = ::createChild
     )
@@ -84,12 +91,18 @@ class RootComponentImpl(
         }
 
         when (output) {
-            is NavigationOutput.Back -> navigation.pop()
-            is NavigationOutput.BringToFront -> navigation.bringToFront(output.route)
-            is NavigationOutput.NavigateTo -> navigation.bringToFront(output.route)
+            is NavigationOutput.Back -> {
+                if (childStack.value.items.size > 1) {
+                    navigation.pop()
+                } else if (childStack.value.active.configuration !is HomeRoute) {
+                    navigation.replaceAll(HomeRoute())
+                }
+            }
+            is NavigationOutput.BringToFront -> navigateSafely(output.route)
+            is NavigationOutput.NavigateTo -> navigateSafely(output.route)
             is NavigationOutput.PopAndBringToFront -> {
                 navigation.pop()
-                navigation.bringToFront(output.route)
+                navigateSafely(output.route)
             }
             is NavigationOutput.ReplaceAll -> navigation.replaceAll(*output.stack.toTypedArray())
             // ShowNotification перехватывается NotificationOutputHandler выше
@@ -97,7 +110,24 @@ class RootComponentImpl(
         }
     }
 
+    private fun navigateSafely(targetRoute: AppRoute) {
+        val currentActiveRoute = childStack.value.active.configuration
+
+        // 1. Если уже находимся на точно таком же роуте/лобби — игнорируем повторный переход
+        if (currentActiveRoute == targetRoute) {
+            return
+        }
+
+        // 2. При переходе в игровой режим (GameplayRoute) очищаем промежуточные экраны
+        // (диалоги создания лобби, старые лобби), делая стек чистым [HomeRoute(), GameplayRoute(gameId)]
+        if (targetRoute is GameplayRoute) {
+            navigation.replaceAll(HomeRoute(), targetRoute)
+        } else {
+            navigation.bringToFront(targetRoute)
+        }
+    }
+
     override fun onNavigate(route: AppRoute) {
-        navigation.bringToFront(route)
+        navigateSafely(route)
     }
 }

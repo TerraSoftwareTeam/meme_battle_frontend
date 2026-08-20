@@ -126,7 +126,7 @@ fun LobbyContent(
             if (gameId.isNotBlank()) {
                 OutlinedButton(
                     onClick = {
-                        val link = "https://play.meme.skyfly.hackclub.app/lobby/$gameId"
+                        val link = "https://meme.skyfly.hackclub.app/lobby/$gameId"
                         shareLink(link, "Присоединяйся к лобби MemeBattle!")
                     },
                     shape = RoundedCornerShape(14.dp),

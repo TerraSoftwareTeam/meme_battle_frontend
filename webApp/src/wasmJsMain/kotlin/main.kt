@@ -15,6 +15,7 @@ import kotlinx.browser.window
 import com.dev.memebattle.di.initKoin
 import com.dev.memebattle.core.network.WebApiConfig
 import com.dev.memebattle.core.network.utils.MediaUrlEnv
+import com.arkivanov.decompose.value.subscribe
 import org.w3c.dom.events.Event
 
 
@@ -85,8 +86,8 @@ fun main() {
     // then intercept popstate (browser back/forward) and dispatch it to Decompose.
     window.history.pushState(data = null, title = "", url = null)
     window.addEventListener("popstate", callback = { _: Event ->
-        if (!backDispatcher.back()) {
-            // Decompose stack is empty — nothing to pop, re-push so user stays in the app
+        if (backDispatcher.back()) {
+            // Intercepted by Decompose — re-push history state so browser Back remains active for future clicks
             window.history.pushState(data = null, title = "", url = null)
         }
     })
@@ -105,6 +106,17 @@ fun main() {
         ),
         initialRoute = initialRoute,
     )
+
+    // Синхронизируем URL браузера с текущим активным роутом в Decompose
+    rootComponent.childStack.subscribe { stack ->
+        val route = stack.active.configuration
+        val targetPath = when (route) {
+            is HomeRoute -> if (route.openLobbyId != null) "/lobby/${route.openLobbyId}" else "/"
+            is PacksRoute -> if (route.openPackId != null) "/pack/${route.openPackId}?kind=${route.openPackKind}" else "/"
+            else -> "/"
+        }
+        window.history.replaceState(null, "", targetPath)
+    }
 
     ComposeViewport(document.body!!) {
         RootScreen(

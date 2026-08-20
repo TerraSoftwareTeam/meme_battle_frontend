@@ -16,6 +16,7 @@ kotlin {
             implementation(projects.core.navigation)
             implementation(projects.core.ui)
             implementation(projects.feature.home.api)
+            implementation(projects.feature.gameplay.api)
             
             implementation(libs.decompose.core)
             implementation(libs.decompose.compose)

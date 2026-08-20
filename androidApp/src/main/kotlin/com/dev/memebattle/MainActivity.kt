@@ -75,9 +75,9 @@ class MainActivity : ComponentActivity() {
 
 /**
  * Парсит android Intent и возвращает соответствующий AppRoute.
- * - https://play.meme.skyfly.hackclub.app/lobby/{id} → HomeRoute(openLobbyId = id)
- * - https://play.meme.skyfly.hackclub.app/pack/{id}  → PacksRoute(openPackId = id, openPackKind = kind)
- * - всё остальное (или null)                          → HomeRoute()
+ * - https://meme.skyfly.hackclub.app/lobby/{id} → HomeRoute(openLobbyId = id)
+ * - https://meme.skyfly.hackclub.app/pack/{id}  → PacksRoute(openPackId = id, openPackKind = kind)
+ * - всё остальное (или null)                   → HomeRoute()
  */
 private fun parseDeepLink(intent: Intent): AppRoute {
     if (intent.action != Intent.ACTION_VIEW) return HomeRoute()
