@@ -55,10 +55,11 @@ private fun parseQueryParam(search: String, key: String): String? {
 fun main() {
     val origin = window.location.origin
     println("webOrigin initialized to: $origin")
-    com.dev.memebattle.core.data.packs.mapper.PlatformEnv.webOrigin = origin
+    
     // Route all API calls through local dev-server proxy to avoid CORS preflight for PATCH/DELETE
     // ONLY when running locally. In production, use the real API directly.
     if (origin.contains("localhost") || origin.contains("127.0.0.1")) {
+        com.dev.memebattle.core.data.packs.mapper.PlatformEnv.webOrigin = origin
         WebApiConfig.apiBaseUrl = "$origin/api-proxy"
         // Route WebSocket through local dev-server proxy to avoid CORS for ws/wss
         val wsOrigin = origin.replace(Regex("^http"), "ws")
