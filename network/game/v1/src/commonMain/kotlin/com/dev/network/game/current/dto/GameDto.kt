@@ -15,4 +15,8 @@ data class GameDto(
   val status: GameStatus,
   @SerialName("version")
   val version: Long,
+  @SerialName("host_id")
+  val host_id: String? = null,
+  @SerialName("host_user_id")
+  val host_user_id: String? = null,
 )

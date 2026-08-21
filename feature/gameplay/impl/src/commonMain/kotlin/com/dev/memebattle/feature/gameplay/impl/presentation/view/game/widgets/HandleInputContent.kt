@@ -84,7 +84,7 @@ fun HandleInputContent(
 
         OutlinedTextField(
             value = handleValue,
-            onValueChange = onHandleChange,
+            onValueChange = { if (it.length <= 20) onHandleChange(it) },
             modifier = Modifier.fillMaxWidth(),
             placeholder = {
                 Text(stringResource(Res.string.gameplay_handle_placeholder), color = Color.White.copy(alpha = 0.35f))

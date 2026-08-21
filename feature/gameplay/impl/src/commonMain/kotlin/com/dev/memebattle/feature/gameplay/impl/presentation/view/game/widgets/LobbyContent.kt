@@ -63,6 +63,11 @@ import com.dev.memebattle.core.ui.share.rememberLinkSharer
 import com.dev.memebattle.feature.gameplay.impl.presentation.store.players.GameplayPlayersStore
 import org.jetbrains.compose.resources.stringResource
 
+import com.dev.memebattle.core.localization.gameplay_info_min_players
+import com.dev.memebattle.core.localization.gameplay_info_start_game
+import com.dev.memebattle.core.localization.gameplay_info_too_many_players
+import com.dev.memebattle.core.localization.gameplay_info_wait_ready
+
 @Composable
 fun LobbyContent(
     gameId: String = "",
@@ -70,8 +75,13 @@ fun LobbyContent(
     readyCount: Int,
     amIReady: Boolean,
     isSettingReady: Boolean,
+    isHost: Boolean = false,
+    canStartGame: Boolean = false,
+    isStartingGame: Boolean = false,
+    isTooManyPlayersError: Boolean = false,
     maxPlayers: Int? = null,
     onToggleReady: () -> Unit,
+    onStartGame: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val totalPlayers = players.size
@@ -161,13 +171,30 @@ fun LobbyContent(
 
             Spacer(Modifier.weight(1f))
 
-            // ── Кнопка готовности ─────────────────────────────────────────────
+            // ── Динамическая кнопка действия ──────────────────────────────────
+            val actionLabel = when {
+                !isHost -> if (amIReady) stringResource(Res.string.gameplay_lobby_btn_already_ready) else stringResource(Res.string.gameplay_lobby_btn_ready)
+                !amIReady -> stringResource(Res.string.gameplay_lobby_btn_ready)
+                totalPlayers < 3 -> stringResource(Res.string.gameplay_info_min_players, totalPlayers)
+                isTooManyPlayersError || (maxPlayers != null && maxPlayers > 0 && totalPlayers > maxPlayers) -> stringResource(Res.string.gameplay_info_too_many_players)
+                readyCount < totalPlayers -> stringResource(Res.string.gameplay_info_wait_ready, readyCount, totalPlayers)
+                else -> stringResource(Res.string.gameplay_info_start_game)
+            }
+
+            val isActionEnabled = when {
+                !isHost -> !amIReady
+                !amIReady -> true
+                else -> canStartGame
+            }
+
+            val isActionLoading = if (isHost && amIReady) isStartingGame else isSettingReady
+            val onActionClick = if (isHost && amIReady) onStartGame else onToggleReady
+
             GameActionButton(
-                label = if (amIReady) stringResource(Res.string.gameplay_lobby_btn_already_ready)
-                        else stringResource(Res.string.gameplay_lobby_btn_ready),
-                enabled = !amIReady,
-                isLoading = isSettingReady,
-                onClick = onToggleReady,
+                label = actionLabel,
+                enabled = isActionEnabled,
+                isLoading = isActionLoading,
+                onClick = onActionClick,
                 modifier = Modifier
                     .widthIn(max = 480.dp)
                     .fillMaxWidth()

@@ -71,7 +71,7 @@
     <string name="lobby_create_cards_per_player">Per player: %1$d cards (hand %2$d + draw %3$d)</string>
     <string name="lobby_create_prompts_needed">Prompts in reserve: %1$d of %2$d needed</string>
     <string name="lobby_create_insufficient_cards_warning">Not enough cards in selected packs for these game settings</string>
-    <string name="lobby_create_min_players_warning">At least 3 players are required (current max: %1$d). Select more packs or decrease game settings.</string>
+    <string name="lobby_create_min_players_warning">At least 3 players are required (current max: %1$d). Change packs or adjust game settings.</string>
     <string name="gameplay_lobby_player_bounds">Lobby limits: 3 to %1$d players</string>
     <string name="gameplay_info_max_players">Max Players</string>
     <string name="pack_picker_title">Select Packs</string>
@@ -125,6 +125,7 @@
     <string name="gameplay_players_anonymous_voting_hint">Voting is anonymous — card is not bound to a player</string>
 
     <!-- Gameplay Lobby -->
+    <string name="gameplay_connection_lost">Connection lost. Reconnecting…</string>
     <string name="gameplay_lobby_title">Lobby</string>
     <string name="gameplay_lobby_subtitle">Waiting for players...</string>
     <string name="gameplay_lobby_ready_label">Ready for game</string>

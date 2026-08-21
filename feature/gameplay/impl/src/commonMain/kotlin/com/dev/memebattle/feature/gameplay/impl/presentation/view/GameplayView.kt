@@ -56,7 +56,7 @@ fun GameplayView(
                     ?.takeIf { it.isNotBlank() }
         }
 
-        // Общие состояния используемые в нескольких слотах
+        val isConnected by component.isConnected.collectAsState()
         val infoState = infoComponent?.state?.collectAsState()?.value
         val lobbyPlayersState = playersComponent?.state?.collectAsState()?.value
         val gameState = gameComponent?.state?.collectAsState()?.value
@@ -74,10 +74,14 @@ fun GameplayView(
                     GameplayGameScreen(
                         component = gameCtx,
                         myUserId = myUserId,
+                        isConnected = isConnected,
                         lobbyPlayersState = lobbyPlayersState,
                         infoState = infoState,
                         onToggleReady = {
                             infoComponent?.onIntent(GameplayInfoStore.Intent.SetReady(!amIReady))
+                        },
+                        onStartGame = {
+                            infoComponent?.onIntent(GameplayInfoStore.Intent.StartGame)
                         },
                         getPlayerHandle = getPlayerHandle,
                     )

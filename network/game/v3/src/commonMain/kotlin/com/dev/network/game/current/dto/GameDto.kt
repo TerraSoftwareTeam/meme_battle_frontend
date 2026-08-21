@@ -19,4 +19,8 @@ data class GameDto(
   val version: Long,
   @SerialName("max_players")
   val max_players: Int? = null,
+  @SerialName("host_id")
+  val host_id: String? = null,
+  @SerialName("host_user_id")
+  val host_user_id: String? = null,
 )

@@ -39,6 +39,7 @@ import com.dev.memebattle.core.localization.gameplay_round_result_no_winner
 import com.dev.memebattle.core.localization.gameplay_round_result_title
 import com.dev.memebattle.core.localization.gameplay_round_result_winner
 import org.jetbrains.compose.resources.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 
 /**
  * BottomSheet-оверлей с итогами раунда.
@@ -96,19 +97,25 @@ fun RoundResultOverlay(
                             .maxByOrNull { it.score }
                         if (roundWinner != null) {
                             Spacer(Modifier.height(4.dp))
+                            val winnerName = (roundWinner.handle ?: roundWinner.userId.take(8)).take(20)
                             Text(
-                                text = stringResource(Res.string.gameplay_round_result_winner, roundWinner.handle ?: roundWinner.userId.take(8)),
+                                text = stringResource(Res.string.gameplay_round_result_winner, winnerName),
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = Color(0xFFFFD700),
                                 fontWeight = FontWeight.SemiBold,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
                             )
                         } else if (data.winnerUserId != null && data.winnerUserId != "00000000-0000-0000-0000-000000000000") {
                             Spacer(Modifier.height(4.dp))
+                            val winnerName = (data.winnerHandle ?: data.winnerUserId.take(8)).take(20)
                             Text(
-                                text = stringResource(Res.string.gameplay_round_result_winner, data.winnerHandle ?: data.winnerUserId.take(8)),
+                                text = stringResource(Res.string.gameplay_round_result_winner, winnerName),
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = Color(0xFFFFD700),
                                 fontWeight = FontWeight.SemiBold,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
                             )
                         } else {
                             Spacer(Modifier.height(4.dp))
@@ -133,10 +140,14 @@ fun RoundResultOverlay(
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                 ) {
+                                    val entryName = (entry.handle ?: entry.userId.take(8)).take(20)
                                     Text(
-                                        text = "${index + 1}. ${entry.handle ?: entry.userId.take(8)}",
+                                        text = "${index + 1}. $entryName",
                                         style = MaterialTheme.typography.bodyMedium,
                                         color = Color.White,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                        modifier = Modifier.weight(1f, fill = false),
                                     )
                                     Surface(
                                         shape = RoundedCornerShape(8.dp),

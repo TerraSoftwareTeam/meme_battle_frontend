@@ -73,7 +73,7 @@ fun GameplayInfoScreen(
 
     val playersCount = lobbyPlayersState?.players?.size ?: state.playerCount
     val readyCount = lobbyPlayersState?.players?.count { it.isReady } ?: state.readyCount
-    val isHost = lobbyPlayersState?.players?.firstOrNull()?.userId == myUserId
+    val isHost = state.isHost
     val maxPlayers = state.maxPlayers
     val isTooManyPlayersError = state.isTooManyPlayersError
             || (state.blockedAtPlayerCount != null && playersCount >= state.blockedAtPlayerCount!!)
@@ -178,44 +178,6 @@ fun GameplayInfoScreen(
             }
 
             Spacer(Modifier.weight(1f))
-
-            // ── Кнопка Start (только хост, только в лобби, мин 3 игрока) ──────
-            if (isHost && state.phase == RoundPhase.WAITING) {
-                Button(
-                    onClick = { component.onIntent(GameplayInfoStore.Intent.StartGame) },
-                    enabled = canStartGame,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .widthIn(max = 280.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF7C5DFA),
-                        disabledContainerColor = Color(0xFF2A1F44),
-                    ),
-                ) {
-                    if (state.isStartingGame) {
-                        CircularProgressIndicator(
-                            Modifier.size(18.dp),
-                            color = Color.White,
-                            strokeWidth = 2.dp,
-                        )
-                    } else {
-                        Text(
-                            text = when {
-                                playersCount < 3 -> stringResource(Res.string.gameplay_info_min_players, playersCount)
-                                isTooManyPlayersError -> stringResource(Res.string.gameplay_info_too_many_players)
-                                isMaxExceeded && maxPlayers != null -> stringResource(Res.string.gameplay_info_max_players_exceeded, playersCount, maxPlayers)
-                                readyCount < playersCount -> stringResource(Res.string.gameplay_info_wait_ready, readyCount, playersCount)
-                                else -> stringResource(Res.string.gameplay_info_start_game)
-                            },
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = if (canStartGame) Color.White else Color.White.copy(alpha = 0.5f),
-                        )
-                    }
-                }
-                Spacer(Modifier.height(16.dp))
-            }
         }
     }
 }

@@ -33,6 +33,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.dev.network.game.current.dto.ws.ScoreboardEntry
@@ -80,10 +81,11 @@ fun GameFinishedContent(
         ) {
             Spacer(Modifier.height(32.dp))
 
-            // ── Кроссплатформенный Canvas-значок победы/финиша ────────────────────
-            FinishedHeaderBadge(isWinner = isWinner)
-
-            Spacer(Modifier.height(16.dp))
+            // ── Кроссплатформенный Canvas-значок победы ────────────────────
+            if (isWinner) {
+                FinishedHeaderBadge(isWinner = true)
+                Spacer(Modifier.height(16.dp))
+            }
 
             Text(
                 text = if (isWinner) stringResource(Res.string.gameplay_results_win) else stringResource(Res.string.gameplay_results_game_over),
@@ -96,15 +98,18 @@ fun GameFinishedContent(
             Spacer(Modifier.height(6.dp))
 
             sorted.firstOrNull()?.let { topEntry ->
-                val displayName = topEntry.handle
+                val rawName = topEntry.handle
                     ?: winnerUserId?.let { getPlayerHandle(it) }
                     ?: topEntry.userId.take(8)
+                val displayName = rawName.take(20)
                 Text(
                     text = stringResource(Res.string.gameplay_results_winner, displayName),
                     style = MaterialTheme.typography.bodyLarge,
                     color = Color(0xFFFFD700).copy(alpha = 0.9f),
                     fontWeight = FontWeight.SemiBold,
                     textAlign = TextAlign.Center,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                 )
             }
 
@@ -271,11 +276,14 @@ private fun LeaderboardRow(
             }
 
             // Ник
+            val handleName = (entry.handle ?: entry.userId.take(8)).take(20)
             Text(
-                text = (entry.handle ?: entry.userId.take(8)) + if (isMe) " ($meBadge)" else "",
+                text = handleName + if (isMe) " ($meBadge)" else "",
                 style = MaterialTheme.typography.bodyMedium,
                 color = if (isMe) Color(0xFFB39DDB) else Color.White,
                 fontWeight = if (isMe || position == 1) FontWeight.Bold else FontWeight.Normal,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f),
             )
 

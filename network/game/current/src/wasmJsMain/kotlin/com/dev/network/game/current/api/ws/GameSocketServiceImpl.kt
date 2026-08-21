@@ -14,7 +14,10 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
@@ -68,6 +71,12 @@ internal class GameSocketServiceImpl(
     private val _lobbyEvents = MutableSharedFlow<LobbyEvent>(extraBufferCapacity = 64)
     override val lobbyEvents = _lobbyEvents.asSharedFlow()
 
+    private val _reconnectedEvents = MutableSharedFlow<Unit>(extraBufferCapacity = 16)
+    override val reconnectedEvents = _reconnectedEvents.asSharedFlow()
+
+    private val _isConnected = MutableStateFlow(false)
+    override val isConnected: StateFlow<Boolean> = _isConnected.asStateFlow()
+
     private val scope = CoroutineScope(Dispatchers.Main)
     private var connectionJob: kotlinx.coroutines.Job? = null
     private var ws: WebSocket? = null
@@ -106,7 +115,7 @@ internal class GameSocketServiceImpl(
                 connectionToken = token
                 reconnectDelayMs = 2000L // сброс backoff при успехе
 
-                val wsUrl = "$wsBaseUrl/connection/websocket?token=$token"
+                val wsUrl = "$wsBaseUrl/connection/websocket"
                 println("[WS] Connecting to: $wsUrl")
                 val connected = connectWebSocket(wsUrl, token)
 
@@ -204,8 +213,10 @@ internal class GameSocketServiceImpl(
                 socket.send("{}")
             } else if (data.contains(""""id":1,"connect""")) {
                 connected = true
+                _isConnected.value = true
                 println("[WS] Connected to Centrifugo!")
                 subscribeToLobbiesIfConnected(socket)
+                scope.launch { _reconnectedEvents.emit(Unit) }
             } else if (data.contains(""""push"""")) {
                 try {
                     val push = json.decodeFromString<com.dev.network.game.current.dto.ws.CentrifugoPush>(data)
@@ -237,6 +248,7 @@ internal class GameSocketServiceImpl(
         }
         
         println("[WS] Connection ended")
+        _isConnected.value = false
         return connected
     }
 
@@ -276,6 +288,7 @@ internal class GameSocketServiceImpl(
 
     override suspend fun disconnect() {
         println("[WS] Disconnecting")
+        _isConnected.value = false
         ws?.close(1000, "Client disconnect")
         ws = null
         connectionJob?.cancel()
@@ -286,6 +299,20 @@ internal class GameSocketServiceImpl(
         activePersonalSub = null
         isLobbiesSubscribed = false
         reconnectDelayMs = 2000L
+    }
+
+    override suspend fun reconnect() {
+        println("[WS] Force reconnect requested")
+        val currentWs = ws
+        ws = null
+        try {
+            currentWs?.close(4000, "Force reconnect")
+        } catch (e: Exception) {
+            println("[WS] Error closing socket on reconnect: ${e.message}")
+        }
+        if (connectionJob?.isActive != true) {
+            connect()
+        }
     }
 
     override suspend fun subscribeToGame(gameId: String, token: String) {

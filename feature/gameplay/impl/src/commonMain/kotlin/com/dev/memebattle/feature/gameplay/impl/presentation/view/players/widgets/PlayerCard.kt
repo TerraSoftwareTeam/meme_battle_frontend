@@ -33,6 +33,8 @@ import com.dev.memebattle.core.localization.gameplay_players_status_voted
 import com.dev.memebattle.feature.gameplay.impl.presentation.store.game.GameplayGameStore
 import com.dev.memebattle.feature.gameplay.impl.presentation.store.players.GameplayPlayersStore
 
+import androidx.compose.ui.text.style.TextOverflow
+
 /**
  * Карточка одного игрока в PlayersScreen.
  *
@@ -64,10 +66,13 @@ fun PlayerCard(
             Column(Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = player.handle,
+                        text = player.handle.take(20),
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold,
                         color = Color.White,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f, fill = false),
                     )
                     if (player.isMe) {
                         Spacer(Modifier.width(6.dp))

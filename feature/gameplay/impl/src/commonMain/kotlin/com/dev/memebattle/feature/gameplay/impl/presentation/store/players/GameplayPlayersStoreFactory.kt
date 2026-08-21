@@ -86,7 +86,7 @@ internal class GameplayPlayersStoreFactory(
             val players = snapshot.players.map { dto ->
                 GameplayPlayersStore.PlayerUiModel(
                     userId = dto.user_id,
-                    handle = dto.handle,
+                    handle = dto.handle.take(20),
                     score = dto.score,
                     isReady = dto.is_ready,
                     hasSubmitted = dto.has_submitted,
@@ -107,7 +107,7 @@ internal class GameplayPlayersStoreFactory(
                             dispatch(Msg.PlayerAdded(
                                 GameplayPlayersStore.PlayerUiModel(
                                     userId = event.userId,
-                                    handle = event.handle.ifEmpty { event.userId.take(8) },
+                                    handle = event.handle.ifEmpty { event.userId.take(8) }.take(20),
                                     score = 0,
                                     isReady = false,
                                     hasSubmitted = false,

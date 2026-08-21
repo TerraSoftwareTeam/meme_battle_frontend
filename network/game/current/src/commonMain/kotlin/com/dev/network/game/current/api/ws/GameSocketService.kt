@@ -9,9 +9,12 @@ interface GameSocketService {
     val gameEvents: Flow<GameEvent>
     val personalEvents: Flow<PersonalEvent>
     val lobbyEvents: Flow<LobbyEvent>
+    val reconnectedEvents: Flow<Unit>
+    val isConnected: kotlinx.coroutines.flow.StateFlow<Boolean>
     
     suspend fun connect()
     suspend fun disconnect()
+    suspend fun reconnect()
 
     suspend fun subscribeToGame(gameId: String, token: String)
     suspend fun unsubscribeFromGame(gameId: String)

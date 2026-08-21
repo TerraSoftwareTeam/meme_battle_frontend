@@ -211,7 +211,7 @@ fun GameplaySideDrawer(
                     .padding(horizontal = 12.dp, vertical = 6.dp),
             ) {
                 Text(
-                    text = "✕",
+                    text = "X",
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.White.copy(alpha = 0.8f),

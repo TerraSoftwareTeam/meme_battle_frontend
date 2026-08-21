@@ -85,6 +85,8 @@ internal class GameplayInfoStoreFactory(
             }
         }
 
+        private var hostUserId: String? = null
+
         private fun hydrateFromSnapshot(snapshot: GameStateDto) {
             dispatch(Msg.ModeSet(snapshot.game.mode))
             dispatch(Msg.PlayerCountChanged(snapshot.players.size))
@@ -101,9 +103,17 @@ internal class GameplayInfoStoreFactory(
                 dispatch(Msg.PhaseChanged(phase))
                 dispatch(Msg.RoundUpdated(round.round_number, round.phase_expires_at))
             }
-            // isHost — тот кто создал игру; пока нет в DTO, определяем первым игроком
-            // TODO: добавить host_user_id в GameDto когда бэк добавит
-            val isHost = snapshot.players.firstOrNull()?.user_id == myUserId
+
+            val currentHost = snapshot.game.host_id
+                ?: snapshot.game.host_user_id
+                ?: hostUserId
+                ?: snapshot.players.firstOrNull()?.user_id
+
+            if (hostUserId == null && currentHost != null) {
+                hostUserId = currentHost
+            }
+
+            val isHost = (hostUserId == myUserId)
             dispatch(Msg.IsHostSet(isHost))
             
             dispatch(Msg.LoadingFinished)
@@ -195,9 +205,15 @@ internal class GameplayInfoStoreFactory(
             dispatch(Msg.IsSettingReadyChanged(true))
             scope.launch {
                 val result = gameApiService.setReady(gameId, ReadyRequest(is_ready = isReady))
-                if (result is NetworkResult.Error) {
-                    dispatch(Msg.IsSettingReadyChanged(false))
-                    publish(GameplayInfoStore.Effect.ShowError(result.error.userMessage()))
+                when (result) {
+                    is NetworkResult.Success -> {
+                        dispatch(Msg.AmIReadyChanged(isReady))
+                        dispatch(Msg.IsSettingReadyChanged(false))
+                    }
+                    is NetworkResult.Error -> {
+                        dispatch(Msg.IsSettingReadyChanged(false))
+                        publish(GameplayInfoStore.Effect.ShowError(result.error.userMessage()))
+                    }
                 }
             }
         }

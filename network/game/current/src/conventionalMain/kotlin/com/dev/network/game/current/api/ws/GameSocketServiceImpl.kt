@@ -27,7 +27,10 @@ import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -51,6 +54,12 @@ internal class GameSocketServiceImpl(
 
     private val _lobbyEvents = MutableSharedFlow<LobbyEvent>(extraBufferCapacity = 64)
     override val lobbyEvents = _lobbyEvents.asSharedFlow()
+
+    private val _reconnectedEvents = MutableSharedFlow<Unit>(extraBufferCapacity = 16)
+    override val reconnectedEvents = _reconnectedEvents.asSharedFlow()
+
+    private val _isConnected = MutableStateFlow(false)
+    override val isConnected: StateFlow<Boolean> = _isConnected.asStateFlow()
 
     // Pending commands are buffered here before/during a session
     private val pendingCommands = kotlinx.coroutines.channels.Channel<CentrifugoCommand>(kotlinx.coroutines.channels.Channel.UNLIMITED)
@@ -95,15 +104,17 @@ internal class GameSocketServiceImpl(
             try {
                 ensureConnectionToken()
 
-                println("[WS] Connecting to $wsBaseUrl/connection/websocket?token=${connectionToken}")
+                println("[WS] Connecting to $wsBaseUrl/connection/websocket")
                 httpClient.webSocket({
-                    url.takeFrom("$wsBaseUrl/connection/websocket?token=${connectionToken}")
+                    url.takeFrom("$wsBaseUrl/connection/websocket")
                 }) {
                     println("[WS] Session opened")
+                    _isConnected.value = true
                     reconnectDelay = 2.seconds // reset backoff on success
 
                     sendConnectCommand()
                     restoreSubscriptions()
+                    _reconnectedEvents.emit(Unit)
 
                     // Run writer and reader concurrently
                     val writerJob = launch { writerLoop(this@webSocket) }
@@ -113,13 +124,16 @@ internal class GameSocketServiceImpl(
                         writerJob.cancel()
                     }
                     println("[WS] Session ended")
+                    _isConnected.value = false
                 }
             } catch (e: CancellationException) {
                 println("[WS] Cancelled")
+                _isConnected.value = false
                 throw e
             } catch (e: Exception) {
                 // Invalidate token on error so it's refreshed on next attempt
                 connectionToken = null
+                _isConnected.value = false
                 println("[WS] Error: ${e::class.simpleName}: ${e.message}")
                 delay(reconnectDelay)
                 reconnectDelay = (reconnectDelay * 2).coerceAtMost(30.seconds)
@@ -267,6 +281,7 @@ internal class GameSocketServiceImpl(
 
     override suspend fun disconnect() {
         println("[WS] disconnect()")
+        _isConnected.value = false
         connectionJob?.cancel()
         connectionJob = null
         connectionToken = null
@@ -275,6 +290,15 @@ internal class GameSocketServiceImpl(
         activePersonalSub = null
         isLobbiesSubscribed = false
         channelStates.clear()
+    }
+
+    override suspend fun reconnect() {
+        mutex.withLock {
+            println("[WS] Force reconnect requested")
+            connectionToken = null
+            connectionJob?.cancel()
+            connectionJob = scope.launch { connectionLoop() }
+        }
     }
 
     private suspend fun emitSubscribeCommand(channel: String, token: String) {

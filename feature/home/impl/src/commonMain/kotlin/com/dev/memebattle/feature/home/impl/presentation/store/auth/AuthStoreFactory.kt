@@ -39,15 +39,9 @@ class AuthStoreFactory(
                         tokenStorage.authOrigin.collectLatest { origin ->
                             when (origin) {
                                 AuthOrigin.NONE -> dispatch(Action.SetIdentity(UserIdentity.Unknown))
-                                AuthOrigin.GUEST -> {
+                                AuthOrigin.GUEST, AuthOrigin.USER -> {
                                     dispatch(Action.LoadingStarted)
-                                    val identity = tryLoadGuestProfile()
-                                    dispatch(Action.SetIdentity(identity))
-                                    dispatch(Action.LoadingFinished)
-                                }
-                                AuthOrigin.USER -> {
-                                    dispatch(Action.LoadingStarted)
-                                    val identity = tryLoadAuthorizedProfile()
+                                    val identity = loadProfile()
                                     dispatch(Action.SetIdentity(identity))
                                     dispatch(Action.LoadingFinished)
                                 }
@@ -73,34 +67,28 @@ class AuthStoreFactory(
     // Bootstrapper helpers (run in coroutine scope)
     // ──────────────────────────────────────────────
 
-    private suspend fun tryLoadAuthorizedProfile(): UserIdentity {
+    private suspend fun loadProfile(): UserIdentity {
         return when (val result = userApiService.getMe()) {
             is NetworkResult.Success -> {
                 val user = result.data
-                if (user.is_guest) {
-                    val customName = user.username.takeIf { it.isNotBlank() && !it.startsWith("player-") }
-                    UserIdentity.Guest(name = customName)
-                } else {
+                if (!user.is_guest) {
+                    val currentAccess = tokenStorage.getAccessToken()
+                    val currentRefresh = tokenStorage.getRefreshToken()
+                    if (currentAccess != null && currentRefresh != null && tokenStorage.authOrigin.value != AuthOrigin.USER) {
+                        tokenStorage.saveTokens(currentAccess, currentRefresh, AuthOrigin.USER)
+                    }
                     UserIdentity.Authorized(
                         id = user.id,
                         username = user.username
                     )
+                } else {
+                    val customName = user.username.takeIf { it.isNotBlank() && !it.startsWith("player-") }
+                    UserIdentity.Guest(name = customName)
                 }
             }
             is NetworkResult.Error -> {
                 UserIdentity.Guest(name = null)
             }
-        }
-    }
-
-    private suspend fun tryLoadGuestProfile(): UserIdentity {
-        return when (val result = userApiService.getMe()) {
-            is NetworkResult.Success -> {
-                val user = result.data
-                val customName = user.username.takeIf { it.isNotBlank() && !it.startsWith("player-") }
-                UserIdentity.Guest(name = customName)
-            }
-            is NetworkResult.Error -> UserIdentity.Guest(name = null)
         }
     }
 
@@ -186,7 +174,7 @@ class AuthStoreFactory(
                             refreshToken = body.refresh_token,
                             origin = AuthOrigin.USER
                         )
-                        val profile = tryLoadAuthorizedProfile()
+                        val profile = loadProfile()
                         dispatch(Msg.SetIdentity(profile))
                         dispatch(Msg.SetLoading(false))
                         publish(AuthStore.Effect.AuthSuccess)
@@ -220,7 +208,7 @@ class AuthStoreFactory(
                 )
                 when (updateResult) {
                     is NetworkResult.Success -> {
-                        val profile = tryLoadAuthorizedProfile()
+                        val profile = loadProfile()
                         dispatch(Msg.SetIdentity(profile))
                         dispatch(Msg.SetLoading(false))
                         publish(AuthStore.Effect.AuthSuccess)
@@ -317,7 +305,7 @@ class AuthStoreFactory(
             if (!st.identity.isAuthorized) return
             scope.launch {
                 dispatch(Msg.SetLoading(true))
-                val identity = tryLoadAuthorizedProfile()
+                val identity = loadProfile()
                 dispatch(Msg.SetIdentity(identity))
                 dispatch(Msg.SetLoading(false))
             }

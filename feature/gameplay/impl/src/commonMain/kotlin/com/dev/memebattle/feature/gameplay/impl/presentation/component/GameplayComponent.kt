@@ -20,6 +20,8 @@ interface GameplayComponent : FeatureComponent {
     val panels: Value<ChildPanels<MainConfig, GameplayGameComponent, DetailsConfig, GameplayInfoComponent, ExtraConfig, GameplayPlayersComponent>>
     fun setAdaptiveMode(mode: ChildPanelsMode)
 
+    val isConnected: StateFlow<Boolean>
+
     // Transitional — kept until GameplayStore is fully migrated to sub-stores
     val state: StateFlow<GameplayStore.State>
     val effects: SharedFlow<GameplayStore.Effect>

@@ -73,7 +73,7 @@
     <string name="lobby_create_cards_per_player">На 1 игрока: %1$d карт (рука %2$d + добор %3$d)</string>
     <string name="lobby_create_prompts_needed">Промтов в резерве: %1$d из %2$d нужно</string>
     <string name="lobby_create_insufficient_cards_warning">Недостаточно карт в выбранных паках для игры с данными параметрами</string>
-    <string name="lobby_create_min_players_warning">Для игры требуется минимум 3 игрока (сейчас максимум: %1$d). Выберите больше паков или уменьшите параметры игры.</string>
+    <string name="lobby_create_min_players_warning">Для игры требуется минимум 3 игрока (сейчас максимум: %1$d). Поменяйте паки или измените параметры игры.</string>
     <string name="gameplay_lobby_player_bounds">Ограничения лобби: от 3 до %1$d игроков</string>
     <string name="gameplay_info_max_players">Макс. игроков</string>
     <string name="pack_picker_title">Выбор паков</string>
@@ -128,6 +128,7 @@
     <string name="gameplay_players_anonymous_voting_hint">Голосование анонимное — карта не привязана к игроку</string>
 
     <!-- Gameplay Lobby phase -->
+    <string name="gameplay_connection_lost">Соединение разорвано. Восстановление связи…</string>
     <string name="gameplay_lobby_title">Лобби</string>
     <string name="gameplay_lobby_subtitle">Ожидание игроков...</string>
     <string name="gameplay_lobby_ready_label">Готовы к игре</string>

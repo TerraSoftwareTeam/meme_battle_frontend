@@ -201,15 +201,44 @@ class GameplayComponentImpl(
     init {
         backHandler.register(backCallback)
         lifecycle.doOnDestroy {
-            // Отменяем корутину WS через отмену scope, не GlobalScope
-            scope.launch {
+            @OptIn(kotlinx.coroutines.DelicateCoroutinesApi::class)
+            kotlinx.coroutines.GlobalScope.launch {
+                try {
+                    gameApiService.leaveGame(gameId)
+                } catch (_: Exception) {}
                 try {
                     gameSocketService.unsubscribeFromGame(gameId)
                     gameSocketService.unsubscribeFromPersonal(myUserId)
                 } catch (_: Exception) {}
             }
         }
+        gameSocketService.reconnectedEvents.onEach {
+            println("[GameplayComponentImpl] Socket reconnected -> refreshing snapshot")
+            refreshSnapshotAndStores()
+        }.launchIn(scope)
+
         scope.launch { initializeWsSession() }
+    }
+
+    private suspend fun refreshSnapshotAndStores() {
+        val snapshotResult = gameApiService.getGameState(gameId)
+        if (snapshotResult is NetworkResult.Success) {
+            val snapshot = snapshotResult.data
+            cachedSnapshot = snapshot
+            snapshot.players.forEach { player ->
+                if (player.handle.isNotBlank()) {
+                    playerHandleCache[player.user_id] = player.handle
+                }
+            }
+            val panelsValue = panels.value
+            panelsValue.main.instance.onIntent(GameplayGameStore.Intent.Initialize(snapshot))
+            panelsValue.details?.instance?.onIntent(GameplayInfoStore.Intent.Initialize(snapshot))
+            panelsValue.extra?.instance?.onIntent(GameplayPlayersStore.Intent.Initialize(snapshot))
+
+            if (snapshot.round?.phase == com.dev.network.game.current.dto.RoundPhase.VOTING) {
+                loadSubmissionsForVoting()
+            }
+        }
     }
 
     private suspend fun initializeWsSession() {
@@ -225,25 +254,10 @@ class GameplayComponentImpl(
         gameSocketService.subscribeToGame(gameId, tokenDto.game_subscription_token)
         gameSocketService.subscribeToPersonal(myUserId, tokenDto.personal_subscription_token)
 
-        // 3. Получить снимок (если игра уже в процессе — для reconnect)
-        val snapshotResult = gameApiService.getGameState(gameId)
-        if (snapshotResult is NetworkResult.Success) {
-            cachedSnapshot = snapshotResult.data
-            // Заполняем кеш handles из snapshot
-            cachedSnapshot?.players?.forEach { player ->
-                if (player.handle.isNotBlank()) {
-                    playerHandleCache[player.user_id] = player.handle
-                }
-            }
-        }
+        // 3. Получить снимок и инициализировать дочерние сторы
+        refreshSnapshotAndStores()
 
-        // 4. Инициализировать GameStore с snapshot
-        val panelsValue = panels.value
-        panelsValue.main.instance.onIntent(GameplayGameStore.Intent.Initialize(cachedSnapshot))
-        panelsValue.details?.instance?.onIntent(GameplayInfoStore.Intent.Initialize(cachedSnapshot))
-        panelsValue.extra?.instance?.onIntent(GameplayPlayersStore.Intent.Initialize(cachedSnapshot))
-
-        // 5. Запустить fan-out и проверку таймера
+        // 4. Запустить fan-out и проверку таймера
         startFanOut()
         startTimerFallbackCheck()
     }
@@ -263,6 +277,18 @@ class GameplayComponentImpl(
                 val secondsLeft = computeSecondsLeft(phaseExpiresAt)
                 if (secondsLeft <= 0 && lastFetchedExpiresAt != phaseExpiresAt) {
                     lastFetchedExpiresAt = phaseExpiresAt
+
+                    // Если сокет отвалился, пытаемся переподключиться
+                    if (!gameSocketService.isConnected.value) {
+                        scope.launch {
+                            try {
+                                gameSocketService.reconnect()
+                            } catch (e: Exception) {
+                                println("[Gameplay] Socket reconnect error: ${e.message}")
+                            }
+                        }
+                    }
+
                     val result = gameApiService.getGameState(gameId)
                     if (result is NetworkResult.Success) {
                         val snapshot = result.data
@@ -272,6 +298,15 @@ class GameplayComponentImpl(
 
                         if (snapshot.round?.phase == com.dev.network.game.current.dto.RoundPhase.VOTING) {
                             loadSubmissionsForVoting()
+                        }
+                    } else {
+                        // Если REST запрос не удался, форсируем реконект сокета
+                        scope.launch {
+                            try {
+                                gameSocketService.reconnect()
+                            } catch (e: Exception) {
+                                println("[Gameplay] Socket reconnect error: ${e.message}")
+                            }
                         }
                     }
                 }
@@ -418,6 +453,8 @@ class GameplayComponentImpl(
 
     @OptIn(ExperimentalDecomposeApi::class)
     override fun setAdaptiveMode(mode: ChildPanelsMode) = panelsNavigation.setMode(mode)
+
+    override val isConnected: StateFlow<Boolean> = gameSocketService.isConnected
 
     override val output: Flow<NavigationOutput> = outputChannel.receiveAsFlow()
 

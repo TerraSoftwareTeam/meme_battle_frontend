@@ -28,7 +28,7 @@ val UserIdentity.isUnknown: Boolean get() = this is UserIdentity.Unknown
 val UserIdentity.displayName: String?
     get() = when (this) {
         is UserIdentity.Unknown -> null
-        is UserIdentity.Guest -> name?.takeIf { it.isNotBlank() && !it.startsWith("player-") }
-        is UserIdentity.Authorized -> username.takeIf { it.isNotBlank() && !it.startsWith("player-") && it != id }
+        is UserIdentity.Guest -> name?.takeIf { it.isNotBlank() && !it.startsWith("player-") }?.take(20)
+        is UserIdentity.Authorized -> username.takeIf { it.isNotBlank() && !it.startsWith("player-") && it != id }?.take(20)
     }
 

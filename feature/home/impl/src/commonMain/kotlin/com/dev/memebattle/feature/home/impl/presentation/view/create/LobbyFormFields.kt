@@ -68,7 +68,7 @@ fun LobbyFormFields(
 
         OutlinedTextField(
             value = handle,
-            onValueChange = onHandleChanged,
+            onValueChange = { if (it.length <= 20) onHandleChanged(it) },
             modifier = Modifier.fillMaxWidth(),
             label = { Text(stringResource(Res.string.lobby_create_nickname_label)) },
             placeholder = { Text(stringResource(Res.string.lobby_create_nickname_hint), color = Color.White.copy(alpha = 0.3f)) },

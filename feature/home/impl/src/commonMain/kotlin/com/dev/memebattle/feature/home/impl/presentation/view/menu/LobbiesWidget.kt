@@ -302,7 +302,7 @@ fun LobbiesWidget(
 
                         OutlinedTextField(
                             value = state.joinHandleInput,
-                            onValueChange = onUpdateJoinHandle,
+                            onValueChange = { if (it.length <= 20) onUpdateJoinHandle(it) },
                             modifier = Modifier.fillMaxWidth(),
                             label = { Text(stringResource(Res.string.home_join_dialog_nickname_label)) },
                             placeholder = { Text(stringResource(Res.string.home_join_dialog_nickname_hint), color = Color.White.copy(alpha = 0.3f)) },
