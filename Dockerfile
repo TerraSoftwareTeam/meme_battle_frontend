@@ -19,11 +19,18 @@ RUN --mount=type=cache,target=/root/.gradle \
 # Stage 2: Serve static files with Nginx
 FROM nginx:alpine
 
+RUN apk add --no-cache gzip
+
 # Copy custom Nginx configuration
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Copy WasmJs distribution from builder stage
 COPY --from=builder /app/webApp/build/dist/wasmJs/productionExecutable /usr/share/nginx/html
+
+# Clean up .map files and pre-compress WASM/JS/CSS/HTML assets with max gzip
+RUN rm -f /usr/share/nginx/html/*.map && \
+    find /usr/share/nginx/html -type f \( -name "*.wasm" -o -name "*.js" -o -name "*.json" -o -name "*.html" -o -name "*.css" \) \
+    -exec gzip -9 -k {} +
 
 EXPOSE 80
 
