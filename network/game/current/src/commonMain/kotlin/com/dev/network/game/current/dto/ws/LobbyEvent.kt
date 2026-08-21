@@ -16,6 +16,7 @@ sealed interface LobbyEvent {
         @SerialName("max_rounds") val maxRounds: Int,
         @SerialName("hand_size") val handSize: Int,
         @SerialName("players_count") val playersCount: Int,
+        @SerialName("max_players") val maxPlayers: Int? = null,
         @SerialName("created_at") val createdAt: String
     ) : LobbyEvent
 

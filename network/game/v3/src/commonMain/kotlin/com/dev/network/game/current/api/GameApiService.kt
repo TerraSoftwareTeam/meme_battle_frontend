@@ -1,6 +1,7 @@
 package com.dev.network.game.current.api
 
 import com.dev.memebattle.core.network.call.NetworkResult
+import com.dev.network.game.current.dto.ActiveGameInfoDto
 import com.dev.network.game.current.dto.ActiveGamesResponseDto
 import com.dev.network.game.current.dto.AddMemesToPackRequest
 import com.dev.network.game.current.dto.AddSituationsToPackRequest
@@ -30,6 +31,10 @@ import kotlin.collections.List
 
 interface GameApiService {
   suspend fun listActiveGames(): NetworkResult<ActiveGamesResponseDto>
+
+  suspend fun getActiveGame(): NetworkResult<ActiveGameInfoDto>
+
+  suspend fun leaveCurrentGame(): NetworkResult<Unit>
 
   suspend fun createGame(body: CreateGameRequest): NetworkResult<GameDto>
 
@@ -76,6 +81,8 @@ interface GameApiService {
   suspend fun updateGame(id: String, body: UpdateGameRequest): NetworkResult<GameDto>
 
   suspend fun joinGame(id: String, body: JoinGameRequest): NetworkResult<Unit>
+
+  suspend fun leaveGame(id: String): NetworkResult<Unit>
 
   suspend fun setReady(id: String, body: ReadyRequest): NetworkResult<Unit>
 

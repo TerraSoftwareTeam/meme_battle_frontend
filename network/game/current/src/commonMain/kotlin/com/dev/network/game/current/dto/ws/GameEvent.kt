@@ -15,6 +15,13 @@ sealed interface GameEvent {
     ) : GameEvent
 
     @Serializable
+    @SerialName("player_left")
+    data class PlayerLeft(
+        @SerialName("user_id") val userId: String,
+        @SerialName("players_count") val playersCount: Int = 0,
+    ) : GameEvent
+
+    @Serializable
     @SerialName("player_ready_changed")
     data class PlayerReadyChanged(
         @SerialName("user_id") val userId: String,

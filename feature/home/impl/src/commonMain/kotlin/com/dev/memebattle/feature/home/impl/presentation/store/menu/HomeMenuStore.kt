@@ -6,6 +6,7 @@ import com.dev.network.game.current.dto.ws.LobbyEvent
 
 interface HomeMenuStore : Store<HomeMenuStore.Intent, HomeMenuStore.State, HomeMenuStore.Effect> {
     sealed interface Intent {
+        data object OnCheckActiveGame : Intent
         data object OnPlayClicked : Intent
         data object OnCloseLobbiesClicked : Intent
         data object OnStoreClicked : Intent
@@ -18,6 +19,8 @@ interface HomeMenuStore : Store<HomeMenuStore.Intent, HomeMenuStore.State, HomeM
     data class State(
         val isLoading: Boolean = false,
         val isLobbyListVisible: Boolean = false,
+        val activeGameId: String? = null,
+        val activeGameStatus: com.dev.network.game.current.dto.GameStatus? = null,
         val lobbies: List<LobbyEvent.LobbyCreated> = emptyList(),
         val joinGameId: String? = null,
         val joinHandleInput: String = "",

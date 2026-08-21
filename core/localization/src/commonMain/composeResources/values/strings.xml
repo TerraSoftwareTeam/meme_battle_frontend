@@ -3,6 +3,7 @@
     <string name="app_name">Meme Battle</string>
     <string name="welcome">Welcome to Meme Battle!</string>
     <string name="play">Play</string>
+    <string name="reconnect">Reconnect</string>
     <string name="store">Store</string>
     <string name="packs_title">Packs</string>
     <string name="packs_create">Create</string>
@@ -93,6 +94,17 @@
     <string name="gameplay_info_voted">Voted</string>
     <string name="gameplay_info_wait_ready">Waiting for ready (%1$d/%2$d)</string>
     <string name="gameplay_info_min_players">Min. 3 players (%1$d/3)</string>
+    <string name="gameplay_info_too_many_players">Too many players!</string>
+    <string name="gameplay_info_max_players_exceeded">Max limit exceeded (%1$d/%2$d)</string>
+    <string name="gameplay_info_min_players_label">Min. players</string>
+    <string name="gameplay_info_max_players_label">Max. players</string>
+    <string name="gameplay_info_exceeded_tag">(Exceeded!)</string>
+    <string name="gameplay_info_too_many_players_error_msg">Too many players for selected card packs.</string>
+    <string name="gameplay_lobby_need_more_players">Need more players (min. 3)</string>
+    <string name="gameplay_lobby_too_many_players">Too many players (%1$d/%2$d)</string>
+    <string name="gameplay_lobby_max_reached">Lobby capacity reached (%1$d/%2$d)</string>
+    <string name="gameplay_lobby_bounds_min_max">Min: 3 | Max: %1$d</string>
+    <string name="gameplay_lobby_bounds_min">Min: 3</string>
     <string name="gameplay_info_start_game">Start Game</string>
     <string name="gameplay_phase_waiting">Waiting</string>
     <string name="gameplay_phase_submitting">Selecting Card</string>

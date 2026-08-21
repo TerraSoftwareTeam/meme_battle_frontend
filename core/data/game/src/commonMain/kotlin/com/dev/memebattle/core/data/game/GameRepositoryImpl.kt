@@ -108,8 +108,40 @@ internal class GameRepositoryImpl(
 
     private fun reduceEvent(state: GameStateDto, event: GameEvent): GameStateDto {
         return when (event) {
-            is GameEvent.PlayerJoined -> state // We don't have players_count in GameDto anymore
-            is GameEvent.GameStarted -> state // We don't have max_rounds in GameDto anymore
+            is GameEvent.PlayerJoined -> {
+                val existing = state.players.any { it.user_id == event.userId }
+                val updatedPlayers = if (!existing) {
+                    state.players + com.dev.network.game.current.dto.PlayerDto(
+                        user_id = event.userId,
+                        handle = event.handle.ifEmpty { event.userId.take(8) },
+                        score = 0,
+                        is_ready = false,
+                        has_submitted = false,
+                    )
+                } else {
+                    state.players
+                }
+                state.copy(players = updatedPlayers)
+            }
+            is GameEvent.PlayerLeft -> {
+                val updatedPlayers = state.players.filterNot { it.user_id == event.userId }
+                state.copy(players = updatedPlayers)
+            }
+            is GameEvent.PlayerReadyChanged -> {
+                val updatedPlayers = state.players.map { player ->
+                    if (player.user_id == event.userId) {
+                        player.copy(is_ready = event.isReady)
+                    } else {
+                        player
+                    }
+                }
+                state.copy(players = updatedPlayers)
+            }
+            is GameEvent.GameStarted -> {
+                state.copy(
+                    game = state.game.copy(status = GameStatus.PLAYING)
+                )
+            }
             is GameEvent.RoundStarted -> {
                 val promptCard = if (event.promptKind.equals("meme", ignoreCase = true)) {
                     MemeGameCard(
@@ -120,39 +152,61 @@ internal class GameRepositoryImpl(
                         SituationCardData(id = "", promptText = event.promptContent)
                     )
                 }
+                val resetPlayers = state.players.map { it.copy(has_submitted = false) }
                 
-                val updatedRound = state.round?.copy(
-                    id = event.roundId,
-                    round_number = event.roundNumber,
-                    phase = RoundPhase.valueOf(event.phase.uppercase()),
-                    prompt = promptCard,
-                    phase_expires_at = event.phaseExpiresAt
-                ) ?: RoundDto(
+                val updatedRound = RoundDto(
                     id = event.roundId,
                     round_number = event.roundNumber,
                     phase = RoundPhase.valueOf(event.phase.uppercase()),
                     prompt = promptCard,
                     phase_expires_at = event.phaseExpiresAt,
-                    has_voted = false
+                    has_voted = false,
+                    my_submission = null,
+                    submissions = null,
                 )
-                state.copy(round = updatedRound)
+                state.copy(round = updatedRound, players = resetPlayers)
             }
             is GameEvent.RoundPhaseChanged -> {
+                val newPhase = try {
+                    RoundPhase.valueOf(event.phase.uppercase())
+                } catch (_: Exception) {
+                    RoundPhase.WAITING
+                }
                 val updatedRound = state.round?.copy(
-                    phase = RoundPhase.valueOf(event.phase.uppercase()),
+                    phase = newPhase,
                     phase_expires_at = event.phaseExpiresAt
                 )
                 state.copy(round = updatedRound)
             }
-            is GameEvent.SubmissionReceived -> state
-            is GameEvent.PlayerReadyChanged -> state
+            is GameEvent.SubmissionReceived -> {
+                val updatedPlayers = state.players.map { player ->
+                    if (player.user_id == event.userId) {
+                        player.copy(has_submitted = true)
+                    } else {
+                        player
+                    }
+                }
+                state.copy(players = updatedPlayers)
+            }
             is GameEvent.VoteReceived -> state
-            is GameEvent.RoundFinished -> state
+            is GameEvent.RoundFinished -> {
+                val scoreMap = event.scoreboard.associate { it.userId to it.score }
+                val updatedPlayers = state.players.map { player ->
+                    val newScore = scoreMap[player.user_id]
+                    if (newScore != null) player.copy(score = newScore) else player
+                }
+                val updatedRound = state.round?.copy(phase = RoundPhase.FINISHED)
+                state.copy(round = updatedRound, players = updatedPlayers)
+            }
             is GameEvent.GameFinished -> {
+                val scoreMap = event.finalScoreboard.associate { it.userId to it.score }
+                val updatedPlayers = state.players.map { player ->
+                    val newScore = scoreMap[player.user_id]
+                    if (newScore != null) player.copy(score = newScore) else player
+                }
                 state.copy(
-                    game = state.game.copy(
-                        status = GameStatus.FINISHED
-                    )
+                    game = state.game.copy(status = GameStatus.FINISHED),
+                    players = updatedPlayers
                 )
             }
         }

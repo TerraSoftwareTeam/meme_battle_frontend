@@ -2,6 +2,7 @@ package com.dev.network.game.current.api
 
 import com.dev.memebattle.core.network.call.NetworkResult
 import com.dev.memebattle.core.network.call.safeCall
+import com.dev.network.game.current.dto.ActiveGameInfoDto
 import com.dev.network.game.current.dto.ActiveGamesResponseDto
 import com.dev.network.game.current.dto.AddMemesToPackRequest
 import com.dev.network.game.current.dto.AddSituationsToPackRequest
@@ -45,6 +46,18 @@ class GameApiServiceImpl(
     client.get("/games") {
     }
     .body<com.dev.memebattle.core.network.call.BaseResponse<ActiveGamesResponseDto>>().data
+  }
+
+  override suspend fun getActiveGame(): NetworkResult<ActiveGameInfoDto> = safeCall {
+    client.get("/games/active") {
+    }
+    .body<com.dev.memebattle.core.network.call.BaseResponse<ActiveGameInfoDto>>().data
+  }
+
+  override suspend fun leaveCurrentGame(): NetworkResult<Unit> = safeCall {
+    client.post("/games/leave") {
+    }
+    .let { Unit }
   }
 
   override suspend fun createGame(body: CreateGameRequest): NetworkResult<GameDto> = safeCall {
@@ -189,6 +202,12 @@ class GameApiServiceImpl(
   override suspend fun joinGame(id: String, body: JoinGameRequest): NetworkResult<Unit> = safeCall {
     client.post("/games/$id/join") {
       setBody(body)
+    }
+    .let { Unit }
+  }
+
+  override suspend fun leaveGame(id: String): NetworkResult<Unit> = safeCall {
+    client.post("/games/$id/leave") {
     }
     .let { Unit }
   }

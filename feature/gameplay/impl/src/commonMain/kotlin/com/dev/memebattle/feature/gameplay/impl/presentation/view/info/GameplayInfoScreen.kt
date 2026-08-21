@@ -47,6 +47,11 @@ import com.dev.memebattle.core.localization.gameplay_info_round
 import com.dev.memebattle.core.localization.gameplay_info_start_game
 import com.dev.memebattle.core.localization.gameplay_info_submitted
 import com.dev.memebattle.core.localization.gameplay_info_title
+import com.dev.memebattle.core.localization.gameplay_info_exceeded_tag
+import com.dev.memebattle.core.localization.gameplay_info_max_players_exceeded
+import com.dev.memebattle.core.localization.gameplay_info_max_players_label
+import com.dev.memebattle.core.localization.gameplay_info_min_players_label
+import com.dev.memebattle.core.localization.gameplay_info_too_many_players
 import com.dev.memebattle.core.localization.gameplay_info_voted
 import com.dev.memebattle.core.localization.gameplay_info_wait_ready
 import com.dev.memebattle.core.localization.gameplay_phase_finished
@@ -69,8 +74,16 @@ fun GameplayInfoScreen(
     val playersCount = lobbyPlayersState?.players?.size ?: state.playerCount
     val readyCount = lobbyPlayersState?.players?.count { it.isReady } ?: state.readyCount
     val isHost = lobbyPlayersState?.players?.firstOrNull()?.userId == myUserId
+    val maxPlayers = state.maxPlayers
+    val isTooManyPlayersError = state.isTooManyPlayersError
+            || (state.blockedAtPlayerCount != null && playersCount >= state.blockedAtPlayerCount!!)
+    val isMaxExceeded = isTooManyPlayersError || (maxPlayers != null && maxPlayers > 0 && playersCount > maxPlayers)
+
     val canStartGame = isHost && state.phase == RoundPhase.WAITING
-            && playersCount >= 3 && readyCount == playersCount && !state.isStartingGame
+            && playersCount >= 3
+            && !isMaxExceeded
+            && readyCount == playersCount
+            && !state.isStartingGame
 
     val modeStr = when (state.mode) {
         GameMode.SITUATION_TO_MEME -> stringResource(Res.string.lobby_create_mode_situation_to_meme)
@@ -148,7 +161,14 @@ fun GameplayInfoScreen(
             // ── Игроки ────────────────────────────────────────────────────────
             InfoStatRow(label = stringResource(Res.string.gameplay_info_players), value = "$playersCount")
             InfoStatRow(label = stringResource(Res.string.gameplay_info_ready), value = "$readyCount / $playersCount")
-            InfoStatRow(label = "Мин. игроков", value = "${state.minPlayers}")
+            InfoStatRow(label = stringResource(Res.string.gameplay_info_min_players_label), value = "${state.minPlayers}")
+            if (maxPlayers != null && maxPlayers > 0) {
+                val tagExceeded = stringResource(Res.string.gameplay_info_exceeded_tag)
+                InfoStatRow(
+                    label = stringResource(Res.string.gameplay_info_max_players_label),
+                    value = if (isMaxExceeded) "$maxPlayers $tagExceeded" else "$maxPlayers"
+                )
+            }
 
             if (state.phase == RoundPhase.SUBMITTING) {
                 InfoStatRow(label = stringResource(Res.string.gameplay_info_submitted), value = "${state.submittedCount} / $playersCount")
@@ -183,12 +203,14 @@ fun GameplayInfoScreen(
                         Text(
                             text = when {
                                 playersCount < 3 -> stringResource(Res.string.gameplay_info_min_players, playersCount)
+                                isTooManyPlayersError -> stringResource(Res.string.gameplay_info_too_many_players)
+                                isMaxExceeded && maxPlayers != null -> stringResource(Res.string.gameplay_info_max_players_exceeded, playersCount, maxPlayers)
                                 readyCount < playersCount -> stringResource(Res.string.gameplay_info_wait_ready, readyCount, playersCount)
                                 else -> stringResource(Res.string.gameplay_info_start_game)
                             },
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color.White,
+                            color = if (canStartGame) Color.White else Color.White.copy(alpha = 0.5f),
                         )
                     }
                 }

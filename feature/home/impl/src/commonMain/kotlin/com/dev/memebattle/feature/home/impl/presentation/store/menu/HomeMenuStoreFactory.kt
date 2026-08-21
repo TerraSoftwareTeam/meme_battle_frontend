@@ -28,11 +28,15 @@ class HomeMenuStoreFactory(
             name = "HomeMenuStore",
             initialState = HomeMenuStore.State(),
             bootstrapper = coroutineBootstrapper {
-                // Initial load
+                dispatch(Action.CheckActiveGame)
             },
             executorFactory = ::ExecutorImpl,
             reducer = { msg ->
                 when (msg) {
+                    is Msg.ActiveGameFound -> copy(
+                        activeGameId = msg.gameId,
+                        activeGameStatus = msg.status
+                    )
                     is Msg.ShowLobbies -> copy(isLobbyListVisible = true)
                     is Msg.HideLobbies -> copy(isLobbyListVisible = false, lobbies = emptyList())
                     is Msg.LoadingStarted -> copy(isLoading = true)
@@ -58,7 +62,12 @@ class HomeMenuStoreFactory(
             }
         ) {}
 
+    private sealed interface Action {
+        data object CheckActiveGame : Action
+    }
+
     private sealed interface Msg {
+        data class ActiveGameFound(val gameId: String?, val status: com.dev.network.game.current.dto.GameStatus?) : Msg
         data object ShowLobbies : Msg
         data object HideLobbies : Msg
         data object LoadingStarted : Msg
@@ -74,19 +83,32 @@ class HomeMenuStoreFactory(
         data class SetJoinError(val error: String?) : Msg
     }
 
-    private inner class ExecutorImpl : CoroutineExecutor<HomeMenuStore.Intent, Unit, HomeMenuStore.State, Msg, HomeMenuStore.Effect>() {
+    private inner class ExecutorImpl : CoroutineExecutor<HomeMenuStore.Intent, Action, HomeMenuStore.State, Msg, HomeMenuStore.Effect>() {
         
         private var socketJob: Job? = null
+
+        override fun executeAction(action: Action) {
+            when (action) {
+                is Action.CheckActiveGame -> checkActiveGame()
+            }
+        }
         
         override fun executeIntent(intent: HomeMenuStore.Intent) {
             when (intent) {
+                is HomeMenuStore.Intent.OnCheckActiveGame -> checkActiveGame()
                 is HomeMenuStore.Intent.OnPlayClicked -> {
-                    dispatch(Msg.ShowLobbies)
-                    connectToSocket()
+                    val activeId = state().activeGameId
+                    if (activeId != null) {
+                        onNavigateToGame(activeId)
+                    } else {
+                        dispatch(Msg.ShowLobbies)
+                        connectToSocket()
+                    }
                 }
                 is HomeMenuStore.Intent.OnCloseLobbiesClicked -> {
                     dispatch(Msg.HideLobbies)
                     disconnectSocket()
+                    checkActiveGame()
                 }
                 is HomeMenuStore.Intent.OnStoreClicked -> {
                     onNavigateToStore()
@@ -95,11 +117,37 @@ class HomeMenuStoreFactory(
                     onNavigateToCreateLobby()
                 }
                 is HomeMenuStore.Intent.OnJoinLobbyClicked -> {
-                    dispatch(Msg.ShowJoinDialog(intent.gameId))
+                    val activeId = state().activeGameId
+                    val lobby = state().lobbies.find { it.id == intent.gameId }
+                    if (activeId != null && activeId != intent.gameId) {
+                        dispatch(Msg.ShowJoinDialog(intent.gameId))
+                        dispatch(Msg.SetJoinError("Вы уже находитесь в активной игре! Выйдите из неё перед входом в другое лобби."))
+                    } else if (lobby != null && lobby.maxPlayers != null && lobby.maxPlayers!! > 0 && lobby.playersCount >= lobby.maxPlayers!!) {
+                        dispatch(Msg.ShowJoinDialog(intent.gameId))
+                        dispatch(Msg.SetJoinError("Достигнут лимит игроков в этом лобби!"))
+                    } else {
+                        dispatch(Msg.ShowJoinDialog(intent.gameId))
+                    }
                 }
                 is HomeMenuStore.Intent.UpdateJoinHandleInput -> dispatch(Msg.UpdateJoinHandleInput(intent.handle))
                 is HomeMenuStore.Intent.CancelJoin -> dispatch(Msg.HideJoinDialog)
                 is HomeMenuStore.Intent.ConfirmJoin -> joinGame()
+            }
+        }
+
+        private fun checkActiveGame() {
+            scope.launch {
+                val result = gameApiService.getActiveGame()
+                if (result is NetworkResult.Success) {
+                    val dto = result.data
+                    if (dto.game_id.isNotBlank() && dto.status != com.dev.network.game.current.dto.GameStatus.FINISHED) {
+                        dispatch(Msg.ActiveGameFound(dto.game_id, dto.status))
+                    } else {
+                        dispatch(Msg.ActiveGameFound(null, null))
+                    }
+                } else {
+                    dispatch(Msg.ActiveGameFound(null, null))
+                }
             }
         }
         
@@ -123,6 +171,7 @@ class HomeMenuStoreFactory(
                             maxRounds = dto.max_rounds,
                             handSize = dto.hand_size,
                             playersCount = dto.players_count,
+                            maxPlayers = dto.max_players,
                             createdAt = dto.created_at,
                         )
                     }.sortedByDescending { it.createdAt }

@@ -33,6 +33,8 @@ interface GameplayInfoStore : Store<GameplayInfoStore.Intent, GameplayInfoStore.
         val minPlayers: Int = 3,
         /** Максимальное число игроков для данного лобби (если известно, иначе null). */
         val maxPlayers: Int? = null,
+        /** Число игроков, на котором бэк вернул ошибку превышения лимита (not_enough). */
+        val blockedAtPlayerCount: Int? = null,
         /** Кол-во игроков, подавших карту (из submission_received событий). */
         val submittedCount: Int = 0,
         /** Кол-во проголосовавших в текущем раунде (из vote_received событий). */
@@ -44,12 +46,15 @@ interface GameplayInfoStore : Store<GameplayInfoStore.Intent, GameplayInfoStore.
         /** Текущий статус готовности «я». */
         val amIReady: Boolean = false,
     ) {
-        /** Кнопка "Начать игру" доступна: хост, все готовы, минимум 3 игрока. */
+        val isTooManyPlayersError: Boolean
+            get() = blockedAtPlayerCount != null && playerCount >= blockedAtPlayerCount
+
+        /** Кнопка "Начать игру" доступна: хост, все готовы, минимум 3 игрока, нет ошибки лимита. */
         val canStartGame: Boolean
             get() = isHost
                 && phase == RoundPhase.WAITING
                 && playerCount >= minPlayers
-                && (maxPlayers == null || playerCount <= maxPlayers)
+                && !isTooManyPlayersError
                 && readyCount == playerCount
                 && !isStartingGame
 

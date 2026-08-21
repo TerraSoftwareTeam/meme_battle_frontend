@@ -3,6 +3,7 @@
     <string name="app_name">Битва Мемов</string>
     <string name="welcome">Добро пожаловать в Битву Мемов!</string>
     <string name="play">Играть</string>
+    <string name="reconnect">Переподключиться</string>
     <string name="store">Магазин</string>
 
     <!-- Packs -->
@@ -95,6 +96,17 @@
     <string name="gameplay_info_voted">Проголосовали</string>
     <string name="gameplay_info_wait_ready">Ждём готовности (%1$d/%2$d)</string>
     <string name="gameplay_info_min_players">Мин. 3 игрока (%1$d/3)</string>
+    <string name="gameplay_info_too_many_players">Перебор игроков!</string>
+    <string name="gameplay_info_max_players_exceeded">Превышен лимит (%1$d/%2$d)</string>
+    <string name="gameplay_info_min_players_label">Мин. игроков</string>
+    <string name="gameplay_info_max_players_label">Макс. игроков</string>
+    <string name="gameplay_info_exceeded_tag">(Превышен!)</string>
+    <string name="gameplay_info_too_many_players_error_msg">Превышен лимит игроков! Слишком много участников для выбранных паков.</string>
+    <string name="gameplay_lobby_need_more_players">Нужно еще участников (мин. 3)</string>
+    <string name="gameplay_lobby_too_many_players">Превышен лимит игроков (%1$d/%2$d)</string>
+    <string name="gameplay_lobby_max_reached">Достигнут лимит игроков (%1$d/%2$d)</string>
+    <string name="gameplay_lobby_bounds_min_max">Мин: 3 | Макс: %1$d</string>
+    <string name="gameplay_lobby_bounds_min">Мин: 3</string>
     <string name="gameplay_info_start_game">Начать игру</string>
     <string name="gameplay_info_timer">Таймер</string>
     <string name="gameplay_phase_waiting">Ожидание</string>

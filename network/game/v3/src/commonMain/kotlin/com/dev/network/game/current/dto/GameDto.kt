@@ -17,4 +17,6 @@ data class GameDto(
   val status: GameStatus,
   @SerialName("version")
   val version: Long,
+  @SerialName("max_players")
+  val max_players: Int? = null,
 )

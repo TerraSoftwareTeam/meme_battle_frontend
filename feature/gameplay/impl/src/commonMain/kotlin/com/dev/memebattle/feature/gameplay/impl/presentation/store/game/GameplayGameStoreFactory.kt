@@ -63,8 +63,8 @@ internal class GameplayGameStoreFactory(
         
         val round = snapshot.round
         val promptCard = round?.prompt?.let { normalizeCard(it) }
-        val mySubmissionCard = round?.my_submission?.let { normalizeCard(it) }
         val submissions = round?.submissions
+        val mySubmissionCard = (round?.my_submission ?: submissions?.firstOrNull { it.is_mine || it.id == round.my_submission_id }?.card)?.let { normalizeCard(it) }
         val submissionCards = submissions?.map { normalizeCard(it.card) } ?: emptyList()
         val submissionIds = submissions?.map { it.id } ?: emptyList()
 
@@ -199,8 +199,8 @@ internal class GameplayGameStoreFactory(
 
             val round = snapshot.round
             val promptCard = round?.prompt?.let { normalizeCard(it) }
-            val mySubmissionCard = round?.my_submission?.let { normalizeCard(it) }
             val submissions = round?.submissions
+            val mySubmissionCard = (round?.my_submission ?: submissions?.firstOrNull { it.is_mine || it.id == round.my_submission_id }?.card)?.let { normalizeCard(it) }
             val submissionCards = submissions?.map { normalizeCard(it.card) } ?: emptyList()
             val submissionIds = submissions?.map { it.id } ?: emptyList()
 

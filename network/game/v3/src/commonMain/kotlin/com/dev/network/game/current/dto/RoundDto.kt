@@ -15,6 +15,8 @@ data class RoundDto(
   val id: String,
   @SerialName("my_submission")
   val my_submission: GameCard? = null,
+  @SerialName("my_submission_id")
+  val my_submission_id: String? = null,
   @SerialName("phase")
   val phase: RoundPhase,
   @SerialName("phase_expires_at")

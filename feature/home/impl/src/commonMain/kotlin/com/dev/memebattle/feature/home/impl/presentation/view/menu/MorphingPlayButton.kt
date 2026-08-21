@@ -48,6 +48,7 @@ fun MorphingPlayButton(
     isWide: Boolean,
     constraintsMaxWidth: Dp,
     constraintsMaxHeight: Dp,
+    playButtonText: String? = null,
     onPlayClick: () -> Unit,
     lobbyContent: @Composable () -> Unit
 ) {
@@ -130,7 +131,7 @@ fun MorphingPlayButton(
                         tint = Color.White
                     )
                     Text(
-                        text = stringResource(Res.string.play),
+                        text = playButtonText ?: stringResource(Res.string.play),
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White

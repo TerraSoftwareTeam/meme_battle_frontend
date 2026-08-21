@@ -76,6 +76,6 @@ Thumbs.db
 
 # Generated assets and resources
 androidApp/src/main/assets/composeResources/
-core/localization/src/androidMain/
+core/localization/src/androidMain/assets/composeResources/
 
 /docs

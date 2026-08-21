@@ -46,13 +46,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.dev.memebattle.core.localization.Res
 import com.dev.memebattle.core.localization.gameplay_lobby_all_ready
+import com.dev.memebattle.core.localization.gameplay_lobby_bounds_min
+import com.dev.memebattle.core.localization.gameplay_lobby_bounds_min_max
 import com.dev.memebattle.core.localization.gameplay_lobby_btn_already_ready
 import com.dev.memebattle.core.localization.gameplay_lobby_btn_ready
 import com.dev.memebattle.core.localization.gameplay_lobby_btn_share
+import com.dev.memebattle.core.localization.gameplay_lobby_max_reached
 import com.dev.memebattle.core.localization.gameplay_lobby_min_players_hint
+import com.dev.memebattle.core.localization.gameplay_lobby_need_more_players
 import com.dev.memebattle.core.localization.gameplay_lobby_ready_label
 import com.dev.memebattle.core.localization.gameplay_lobby_subtitle
 import com.dev.memebattle.core.localization.gameplay_lobby_title
+import com.dev.memebattle.core.localization.gameplay_lobby_too_many_players
 import com.dev.memebattle.core.localization.gameplay_lobby_waiting
 import com.dev.memebattle.core.ui.share.rememberLinkSharer
 import com.dev.memebattle.feature.gameplay.impl.presentation.store.players.GameplayPlayersStore
@@ -263,7 +268,10 @@ private fun ReadinessProgressCard(
                         color = Color.White,
                         fontWeight = FontWeight.SemiBold,
                     )
-                    val boundsText = if (maxPlayers != null) "Мин: 3 | Макс: $maxPlayers" else "Мин: 3"
+                    val boundsText = if (maxPlayers != null && maxPlayers > 0)
+                        stringResource(Res.string.gameplay_lobby_bounds_min_max, maxPlayers)
+                    else
+                        stringResource(Res.string.gameplay_lobby_bounds_min)
                     Text(
                         text = boundsText,
                         style = MaterialTheme.typography.labelSmall,
@@ -293,14 +301,24 @@ private fun ReadinessProgressCard(
                     )
                 }
                 Spacer(Modifier.height(6.dp))
+                val isMaxReached = maxPlayers != null && maxPlayers > 0 && totalCount == maxPlayers
+                val isMaxExceeded = maxPlayers != null && maxPlayers > 0 && totalCount > maxPlayers
                 Text(
-                    text = if (totalCount < 3) "Нужно еще участников (мин. 3)"
-                           else if (fraction >= 1f) labelAllReady
-                           else labelWaitOthers,
+                    text = when {
+                        totalCount < 3 -> stringResource(Res.string.gameplay_lobby_need_more_players)
+                        isMaxExceeded && maxPlayers != null -> stringResource(Res.string.gameplay_lobby_too_many_players, totalCount, maxPlayers)
+                        isMaxReached && maxPlayers != null -> stringResource(Res.string.gameplay_lobby_max_reached, totalCount, maxPlayers)
+                        fraction >= 1f -> labelAllReady
+                        else -> labelWaitOthers
+                    },
                     style = MaterialTheme.typography.labelSmall,
-                    color = if (totalCount < 3) Color(0xFFFF5252)
-                           else if (fraction >= 1f) Color(0xFF00C853)
-                           else Color.White.copy(alpha = 0.4f),
+                    color = when {
+                        totalCount < 3 -> Color(0xFFFF5252)
+                        isMaxExceeded -> Color(0xFFFF5252)
+                        isMaxReached -> Color(0xFFFFB74D)
+                        fraction >= 1f -> Color(0xFF00C853)
+                        else -> Color.White.copy(alpha = 0.4f)
+                    },
                 )
             }
         }

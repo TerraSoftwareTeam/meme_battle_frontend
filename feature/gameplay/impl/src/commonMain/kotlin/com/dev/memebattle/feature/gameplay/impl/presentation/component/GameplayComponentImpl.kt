@@ -9,6 +9,7 @@ import com.arkivanov.decompose.router.panels.PanelsNavigation
 import com.arkivanov.decompose.router.panels.childPanels
 import com.arkivanov.decompose.router.panels.setMode
 import com.arkivanov.decompose.value.Value
+import com.arkivanov.essenty.backhandler.BackCallback
 import com.arkivanov.essenty.lifecycle.coroutines.coroutineScope
 import com.arkivanov.essenty.lifecycle.doOnDestroy
 import com.arkivanov.mvikotlin.core.store.StoreFactory
@@ -130,10 +131,15 @@ class GameplayComponentImpl(
                         ?.takeIf { it.isNotBlank() }
             },
         )
-        // Слушаем ExitGame Effect — перенаправляем в навигацию
+        // Слушаем ExitGame Effect — выходим из игры и перенаправляем в навигацию
         component.effects.onEach { effect ->
             if (effect is GameplayGameStore.Effect.ExitGame) {
-                outputChannel.trySend(NavigationOutput.Back)
+                scope.launch {
+                    try {
+                        gameApiService.leaveCurrentGame()
+                    } catch (_: Exception) {}
+                    outputChannel.trySend(NavigationOutput.Back)
+                }
             }
         }.launchIn(scope)
         return component
@@ -170,7 +176,30 @@ class GameplayComponentImpl(
 
     // ── Инициализация WS (БЕЗ joinGame — его вызывает GameStore через JoinLobby) ──
 
+    private val backCallback = BackCallback {
+        val gameComponent = panels.value.main.instance
+        val currentPhase = gameComponent.state.value.uiPhase
+        when (currentPhase) {
+            GameplayGameStore.UiPhase.Lobby -> {
+                scope.launch {
+                    try {
+                        gameApiService.leaveCurrentGame()
+                    } catch (_: Exception) {}
+                    outputChannel.trySend(NavigationOutput.Back)
+                }
+            }
+            GameplayGameStore.UiPhase.GameFinished -> {
+                outputChannel.trySend(NavigationOutput.Back)
+            }
+            else -> {
+                // В самой игре (Submitting, Voting, RoundResult):
+                // Назад запрещён — не позволяем уйти с экрана во время процесса игры!
+            }
+        }
+    }
+
     init {
+        backHandler.register(backCallback)
         lifecycle.doOnDestroy {
             // Отменяем корутину WS через отмену scope, не GlobalScope
             scope.launch {
@@ -210,14 +239,77 @@ class GameplayComponentImpl(
 
         // 4. Инициализировать GameStore с snapshot
         val panelsValue = panels.value
-        panelsValue.main.instance?.let { gameComponent ->
-            gameComponent.onIntent(GameplayGameStore.Intent.Initialize(cachedSnapshot))
-        }
+        panelsValue.main.instance.onIntent(GameplayGameStore.Intent.Initialize(cachedSnapshot))
         panelsValue.details?.instance?.onIntent(GameplayInfoStore.Intent.Initialize(cachedSnapshot))
         panelsValue.extra?.instance?.onIntent(GameplayPlayersStore.Intent.Initialize(cachedSnapshot))
 
-        // 5. Запустить fan-out
+        // 5. Запустить fan-out и проверку таймера
         startFanOut()
+        startTimerFallbackCheck()
+    }
+
+    private var lastFetchedExpiresAt: String? = null
+
+    private fun startTimerFallbackCheck() {
+        scope.launch {
+            while (true) {
+                kotlinx.coroutines.delay(2000)
+                val infoComponent = panels.value.details?.instance ?: continue
+                val phaseExpiresAt = infoComponent.state.value.phaseExpiresAt ?: run {
+                    lastFetchedExpiresAt = null
+                    continue
+                }
+
+                val secondsLeft = computeSecondsLeft(phaseExpiresAt)
+                if (secondsLeft <= 0 && lastFetchedExpiresAt != phaseExpiresAt) {
+                    lastFetchedExpiresAt = phaseExpiresAt
+                    val result = gameApiService.getGameState(gameId)
+                    if (result is NetworkResult.Success) {
+                        val snapshot = result.data
+                        panels.value.main.instance.onIntent(GameplayGameStore.Intent.Initialize(snapshot))
+                        panels.value.details?.instance?.onIntent(GameplayInfoStore.Intent.Initialize(snapshot))
+                        panels.value.extra?.instance?.onIntent(GameplayPlayersStore.Intent.Initialize(snapshot))
+
+                        if (snapshot.round?.phase == com.dev.network.game.current.dto.RoundPhase.VOTING) {
+                            loadSubmissionsForVoting()
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun computeSecondsLeft(isoString: String): Int {
+        return try {
+            val clean = isoString.trimEnd('Z').substringBefore('.')
+            val parts = clean.split('T')
+            val dateParts = parts[0].split('-').map { it.toInt() }
+            val timeParts = parts[1].split(':').map { it.toInt() }
+
+            val year = dateParts[0]
+            val month = dateParts[1]
+            val day = dateParts[2]
+            val hour = timeParts[0]
+            val min = timeParts[1]
+            val sec = timeParts[2]
+
+            val y = if (month <= 2) year - 1 else year
+            val m = if (month <= 2) month + 12 else month
+            val A = y / 100
+            val B = 2 - A + A / 4
+
+            val jdn = (365.25 * (y + 4716)).toLong() +
+                    (30.6001 * (m + 1)).toLong() +
+                    day + B - 1524
+
+            val daysSinceEpoch = jdn - 2440588L
+            val secondsSinceEpoch = daysSinceEpoch * 86400L + hour * 3600L + min * 60L + sec
+            val deadlineMs = secondsSinceEpoch * 1000L
+            val nowMs = kotlin.time.Clock.System.now().toEpochMilliseconds()
+            ((deadlineMs - nowMs) / 1000L).toInt().coerceIn(0, 300)
+        } catch (_: Exception) {
+            300
+        }
     }
 
     private fun startFanOut() {
@@ -239,7 +331,7 @@ class GameplayComponentImpl(
                     _gameEventsForGame.emit(event)
                     _gameEventsForInfo.emit(event)
                     // При переходе в Voting — загружаем submission-карты для голосования
-                    if ((event as GameEvent.RoundPhaseChanged).phase == "voting") {
+                    if (event.phase == "voting") {
                         loadSubmissionsForVoting()
                     }
                 }
@@ -255,6 +347,11 @@ class GameplayComponentImpl(
                     if (event.handle.isNotBlank()) {
                         playerHandleCache[event.userId] = event.handle
                     }
+                    _gameEventsForInfo.emit(event)
+                    _gameEventsForPlayers.emit(event)
+                }
+                is GameEvent.PlayerLeft -> {
+                    playerHandleCache.remove(event.userId)
                     _gameEventsForInfo.emit(event)
                     _gameEventsForPlayers.emit(event)
                 }
@@ -290,7 +387,7 @@ class GameplayComponentImpl(
                 }
                 val ids   = submissions.map { it.id }
 
-                val mySubmissionNormalized = round.my_submission?.let { card ->
+                val mySubmissionNormalized = (round.my_submission ?: submissions.firstOrNull { it.is_mine || it.id == round.my_submission_id }?.card)?.let { card ->
                     if (card is MemeGameCard) {
                         MemeGameCard(card.data.copy(mediaUrl = normalizeMediaUrl(card.data.mediaUrl)))
                     } else {
@@ -298,7 +395,7 @@ class GameplayComponentImpl(
                     }
                 }
 
-                panels.value.main.instance?.onIntent(
+                panels.value.main.instance.onIntent(
                     GameplayGameStore.Intent.LoadSubmissions(
                         cards = cards,
                         ids = ids,
@@ -314,7 +411,7 @@ class GameplayComponentImpl(
 
     private fun handleVoteFromPlayers(submissionId: String) {
         // Vote через PlayersScreen — направляем в GameplayGameStore для согласованного стейта и обработки ошибок
-        panels.value.main.instance?.onIntent(GameplayGameStore.Intent.Vote(submissionId))
+        panels.value.main.instance.onIntent(GameplayGameStore.Intent.Vote(submissionId))
     }
 
     // ── Public API ────────────────────────────────────────────────────────────

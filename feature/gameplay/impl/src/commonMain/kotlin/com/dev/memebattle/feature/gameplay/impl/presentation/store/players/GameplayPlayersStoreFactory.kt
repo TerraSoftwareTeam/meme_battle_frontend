@@ -43,6 +43,7 @@ internal class GameplayPlayersStoreFactory(
     private sealed interface Msg {
         data class PlayersLoaded(val players: List<GameplayPlayersStore.PlayerUiModel>) : Msg
         data class PlayerAdded(val player: GameplayPlayersStore.PlayerUiModel) : Msg
+        data class PlayerRemoved(val userId: String) : Msg
         data class PlayerReadyChanged(val userId: String, val isReady: Boolean) : Msg
         data class PlayerSubmitted(val userId: String) : Msg
         data class PlayerVoted(val userId: String) : Msg
@@ -115,6 +116,8 @@ internal class GameplayPlayersStoreFactory(
                             ))
                         }
                     }
+                    is GameEvent.PlayerLeft ->
+                        dispatch(Msg.PlayerRemoved(event.userId))
                     is GameEvent.PlayerReadyChanged ->
                         dispatch(Msg.PlayerReadyChanged(event.userId, event.isReady))
 
@@ -150,6 +153,7 @@ internal class GameplayPlayersStoreFactory(
         override fun GameplayPlayersStore.State.reduce(msg: Msg): GameplayPlayersStore.State = when (msg) {
             is Msg.PlayersLoaded -> copy(players = msg.players)
             is Msg.PlayerAdded -> copy(players = players + msg.player)
+            is Msg.PlayerRemoved -> copy(players = players.filterNot { it.userId == msg.userId })
             is Msg.PlayerReadyChanged -> copy(players = players.map {
                 if (it.userId == msg.userId) it.copy(isReady = msg.isReady) else it
             })

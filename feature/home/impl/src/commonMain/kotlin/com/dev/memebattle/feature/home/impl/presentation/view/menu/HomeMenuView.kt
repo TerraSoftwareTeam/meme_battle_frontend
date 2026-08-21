@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import com.dev.memebattle.core.localization.Res
+import com.dev.memebattle.core.localization.reconnect
 import com.dev.memebattle.core.localization.store
 import com.dev.memebattle.feature.home.impl.presentation.view.menu.widgets.LanguageSwitchChip
 import com.dev.memebattle.feature.home.impl.presentation.component.create.CreateLobbyComponent
@@ -66,6 +67,7 @@ fun HomeMenuView(
     var showAuthDialog by remember { mutableStateOf(false) }
 
     androidx.compose.runtime.LaunchedEffect(Unit) {
+        component.onIntent(HomeMenuStore.Intent.OnCheckActiveGame)
         component.authEffects.collect { effect ->
             when (effect) {
                 is AuthStore.Effect.AuthSuccess -> showAuthDialog = false
@@ -98,7 +100,13 @@ fun HomeMenuView(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            LanguageSwitchChip()
+            androidx.compose.animation.AnimatedVisibility(
+                visible = !state.isLobbyListVisible,
+                enter = fadeIn(tween(300)),
+                exit = fadeOut(tween(200))
+            ) {
+                LanguageSwitchChip()
+            }
 
             androidx.compose.animation.AnimatedVisibility(
                 visible = !state.isLobbyListVisible,
@@ -158,6 +166,7 @@ fun HomeMenuView(
                     isWide = isWide,
                     constraintsMaxWidth = constraintsMaxWidth,
                     constraintsMaxHeight = constraintsMaxHeight,
+                    playButtonText = if (state.activeGameId != null) stringResource(Res.string.reconnect) else null,
                     onPlayClick = { component.onIntent(HomeMenuStore.Intent.OnPlayClicked) },
                     lobbyContent = {
                         when {

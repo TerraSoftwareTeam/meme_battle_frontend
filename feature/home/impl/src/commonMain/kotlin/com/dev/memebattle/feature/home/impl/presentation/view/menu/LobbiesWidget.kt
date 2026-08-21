@@ -145,6 +145,7 @@ fun LobbiesWidget(
                                             .padding(14.dp),
                                         verticalAlignment = Alignment.CenterVertically,
                                     ) {
+                                        val isFull = lobby.maxPlayers != null && lobby.maxPlayers!! > 0 && lobby.playersCount >= lobby.maxPlayers!!
                                         Column(modifier = Modifier.weight(1f)) {
                                             val titleText = if (!lobby.name.isNullOrBlank()) lobby.name!! else stringResource(Res.string.home_lobbies_item_title, lobby.id.take(8))
                                             Text(
@@ -164,9 +165,14 @@ fun LobbiesWidget(
                                                 color = Color(0xFFB0A2C7),
                                                 fontSize = 12.sp
                                             )
+                                            val playersText = if (lobby.maxPlayers != null && lobby.maxPlayers!! > 0) {
+                                                "${lobby.playersCount}/${lobby.maxPlayers}"
+                                            } else {
+                                                "${lobby.playersCount}"
+                                            }
                                             Text(
-                                                text = stringResource(Res.string.home_lobbies_item_players, lobby.playersCount),
-                                                color = Color(0xFF7C5DFA),
+                                                text = stringResource(Res.string.home_lobbies_item_players, playersText),
+                                                color = if (isFull) Color(0xFFFFB74D) else Color(0xFF7C5DFA),
                                                 fontSize = 12.sp,
                                                 fontWeight = FontWeight.SemiBold,
                                                 modifier = Modifier.padding(top = 2.dp)
@@ -175,8 +181,10 @@ fun LobbiesWidget(
                                         Spacer(modifier = Modifier.width(8.dp))
                                         Button(
                                             onClick = { onJoinLobby(lobby.id) },
+                                            enabled = !isFull,
                                             colors = ButtonDefaults.buttonColors(
-                                                containerColor = Color(0xFF7C5DFA)
+                                                containerColor = Color(0xFF7C5DFA),
+                                                disabledContainerColor = Color(0xFF3B2F5E),
                                             ),
                                             shape = RoundedCornerShape(10.dp),
                                             contentPadding = PaddingValues(horizontal = 14.dp, vertical = 8.dp)
@@ -184,15 +192,15 @@ fun LobbiesWidget(
                                             Icon(
                                                 imageVector = Icons.Default.PlayArrow,
                                                 contentDescription = null,
-                                                tint = Color.White,
+                                                tint = if (isFull) Color(0xFF887A9E) else Color.White,
                                                 modifier = Modifier.size(16.dp)
                                             )
                                             Spacer(modifier = Modifier.width(4.dp))
                                             Text(
-                                                text = stringResource(Res.string.home_lobbies_btn_join),
+                                                text = if (isFull) "Заполнено" else stringResource(Res.string.home_lobbies_btn_join),
                                                 fontSize = 13.sp,
                                                 fontWeight = FontWeight.Bold,
-                                                color = Color.White
+                                                color = if (isFull) Color(0xFF887A9E) else Color.White
                                             )
                                         }
                                     }

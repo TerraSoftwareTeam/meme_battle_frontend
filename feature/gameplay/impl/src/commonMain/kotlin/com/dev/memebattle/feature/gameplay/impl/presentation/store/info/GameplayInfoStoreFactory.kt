@@ -13,6 +13,9 @@ import com.dev.network.game.current.dto.GameStateDto
 import com.dev.network.game.current.dto.ReadyRequest
 import com.dev.network.game.current.dto.RoundPhase
 import com.dev.network.game.current.dto.ws.GameEvent
+import com.dev.memebattle.core.localization.Res
+import com.dev.memebattle.core.localization.gameplay_info_too_many_players_error_msg
+import org.jetbrains.compose.resources.getString
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -50,6 +53,8 @@ internal class GameplayInfoStoreFactory(
         data class RoundUpdated(val number: Int, val expiresAt: String?) : Msg
         data class TotalRoundsSet(val count: Int) : Msg
         data class PlayerCountChanged(val count: Int) : Msg
+        data class MaxPlayersSet(val count: Int?) : Msg
+        data class SetBlockedPlayerCount(val count: Int?) : Msg
         data class ReadyCountChanged(val count: Int) : Msg
         data class SubmittedCountChanged(val count: Int) : Msg
         data class VotedCountChanged(val count: Int) : Msg
@@ -83,6 +88,7 @@ internal class GameplayInfoStoreFactory(
         private fun hydrateFromSnapshot(snapshot: GameStateDto) {
             dispatch(Msg.ModeSet(snapshot.game.mode))
             dispatch(Msg.PlayerCountChanged(snapshot.players.size))
+            dispatch(Msg.MaxPlayersSet(snapshot.game.max_players))
             dispatch(Msg.ReadyCountChanged(snapshot.players.count { it.is_ready }))
             
             val me = snapshot.players.find { it.user_id == myUserId }
@@ -108,6 +114,10 @@ internal class GameplayInfoStoreFactory(
                 when (event) {
                     is GameEvent.PlayerJoined -> {
                         dispatch(Msg.PlayerCountChanged(event.playersCount))
+                    }
+                    is GameEvent.PlayerLeft -> {
+                        val newCount = if (event.playersCount > 0) event.playersCount else (state().playerCount - 1).coerceAtLeast(0)
+                        dispatch(Msg.PlayerCountChanged(newCount))
                     }
                     is GameEvent.PlayerReadyChanged -> {
                         if (event.userId == myUserId) {
@@ -153,18 +163,29 @@ internal class GameplayInfoStoreFactory(
                     is GameEvent.GameFinished -> {
                         dispatch(Msg.PhaseChanged(RoundPhase.FINISHED))
                     }
-                    else -> Unit
                 }
             }.launchIn(scope)
         }
 
         private fun startGame() {
-            if (state().isStartingGame) return
+            val st = state()
+            if (st.isStartingGame) return
             dispatch(Msg.StartingGame)
             scope.launch {
                 val result = gameApiService.startGameSession(gameId)
                 if (result is NetworkResult.Error) {
-                    publish(GameplayInfoStore.Effect.ShowError(result.error.userMessage()))
+                    val errMsg = result.error.userMessage()
+                    if (errMsg.contains("not_enough", ignoreCase = true)) {
+                        dispatch(Msg.SetBlockedPlayerCount(state().playerCount))
+                        val message = try {
+                            getString(Res.string.gameplay_info_too_many_players_error_msg)
+                        } catch (e: Exception) {
+                            "Too many players for selected card packs."
+                        }
+                        publish(GameplayInfoStore.Effect.ShowError(message))
+                    } else {
+                        publish(GameplayInfoStore.Effect.ShowError(errMsg))
+                    }
                 }
                 dispatch(Msg.StartingGameFinished)
             }
@@ -188,7 +209,12 @@ internal class GameplayInfoStoreFactory(
             is Msg.ModeSet                -> copy(mode = msg.mode)
             is Msg.RoundUpdated           -> copy(roundNumber = msg.number, phaseExpiresAt = msg.expiresAt)
             is Msg.TotalRoundsSet         -> copy(totalRounds = msg.count)
-            is Msg.PlayerCountChanged     -> copy(playerCount = msg.count)
+            is Msg.PlayerCountChanged     -> {
+                val newBlocked = if (blockedAtPlayerCount != null && msg.count < blockedAtPlayerCount) null else blockedAtPlayerCount
+                copy(playerCount = msg.count, blockedAtPlayerCount = newBlocked)
+            }
+            is Msg.MaxPlayersSet          -> copy(maxPlayers = msg.count)
+            is Msg.SetBlockedPlayerCount  -> copy(blockedAtPlayerCount = msg.count)
             is Msg.ReadyCountChanged      -> copy(readyCount = msg.count)
             is Msg.SubmittedCountChanged  -> copy(submittedCount = msg.count)
             is Msg.VotedCountChanged      -> copy(votedCount = msg.count)
