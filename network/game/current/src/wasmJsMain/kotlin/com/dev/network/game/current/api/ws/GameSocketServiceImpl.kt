@@ -115,7 +115,7 @@ internal class GameSocketServiceImpl(
                 connectionToken = token
                 reconnectDelayMs = 2000L // сброс backoff при успехе
 
-                val wsUrl = "$wsBaseUrl/connection/websocket"
+                val wsUrl = "$wsBaseUrl/connection/websocket?token=$token"
                 println("[WS] Connecting to: $wsUrl")
                 val connected = connectWebSocket(wsUrl, token)
 
@@ -128,6 +128,7 @@ internal class GameSocketServiceImpl(
                 throw e
             } catch (e: Exception) {
                 println("[WS] Error in connection loop: ${e.message}")
+                connectionToken = null
             }
             // Ждём перед следующей попыткой
             println("[WS] Reconnecting in ${reconnectDelayMs}ms...")
@@ -303,13 +304,13 @@ internal class GameSocketServiceImpl(
 
     override suspend fun reconnect() {
         println("[WS] Force reconnect requested")
-        val currentWs = ws
-        ws = null
+        // Закрываем сокет — connectionLoop сам обнаружит обрыв и переподключится со свежим токеном
         try {
-            currentWs?.close(4000, "Force reconnect")
+            ws?.close(1000, "Force reconnect")
         } catch (e: Exception) {
             println("[WS] Error closing socket on reconnect: ${e.message}")
         }
+        // Если цикл по какой-то причине не запущен — запускаем его явно
         if (connectionJob?.isActive != true) {
             connect()
         }

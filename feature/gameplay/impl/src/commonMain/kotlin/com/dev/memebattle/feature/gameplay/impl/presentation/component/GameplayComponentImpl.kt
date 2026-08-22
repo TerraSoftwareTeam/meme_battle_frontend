@@ -249,7 +249,8 @@ class GameplayComponentImpl(
             else -> return
         }
 
-        // 2. Подключить WebSocket
+        // 2. Подключить WebSocket (catalog token используется для самого соединения,
+        //    game/personal токены — только для подписок на каналы)
         gameSocketService.connect()
         gameSocketService.subscribeToGame(gameId, tokenDto.game_subscription_token)
         gameSocketService.subscribeToPersonal(myUserId, tokenDto.personal_subscription_token)

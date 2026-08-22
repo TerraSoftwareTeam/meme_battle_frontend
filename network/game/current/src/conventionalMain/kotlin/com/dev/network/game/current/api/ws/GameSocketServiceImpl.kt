@@ -113,6 +113,9 @@ internal class GameSocketServiceImpl(
                     reconnectDelay = 2.seconds // reset backoff on success
 
                     sendConnectCommand()
+                    // После отправки команды connect сбрасываем токен,
+                    // чтобы при следующем реконнекте получить свежий
+                    connectionToken = null
                     restoreSubscriptions()
                     _reconnectedEvents.emit(Unit)
 
